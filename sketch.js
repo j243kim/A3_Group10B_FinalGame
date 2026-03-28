@@ -918,6 +918,9 @@ function loadStage(index, carriedOverload) {
   overloadWarnCooldown = 0;
   calmSoundCooldown = 0;
   stageIntroTimer = 150;
+  calmAbilityCharges = calmAbilityMax;
+  calmAbilityTimer = 0;
+  calmAbilityCooldown = 0;
 }
 
 // ===================== DRAW LOOP =====================
@@ -1796,16 +1799,27 @@ function updateGame() {
   overload += overloadRate * OVERLOAD_RATE_MULT;
 
   // Calm Zone recovery [3]
+ // Calm Zone now recharges Calm Ability instead of directly healing overload
   for (let cz of calmZones) {
     if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
-      overload -= s.calmRecovery;
-      if (calmSoundCooldown <= 0) {
+      if (calmAbilityCharges < calmAbilityMax && calmSoundCooldown <= 0) {
+        calmAbilityCharges = calmAbilityMax;
         playTone(262, 0.6, "sine", 0.03);
         calmSoundCooldown = 90;
       }
     }
   }
   calmSoundCooldown--;
+
+  // Calm Ability effect
+  if (calmAbilityTimer > 0) {
+    overload -= 0.9;
+    calmAbilityTimer--;
+  }
+
+  if (calmAbilityCooldown > 0) {
+    calmAbilityCooldown--;
+  }
 
   overload = constrain(overload, 0, overloadMax);
 
@@ -2408,25 +2422,35 @@ function drawHUD() {
 
   let s = currentStageData;
   textAlign(LEFT, CENTER);
+
+  // Stage name
   fill(255, 210, 75);
   textSize(12);
   textStyle(BOLD);
   text(currentStageName(), 20, 16);
 
+  // Stage progress
   fill(COL_HUD_TEXT[0], COL_HUD_TEXT[1], COL_HUD_TEXT[2], 170);
   textSize(10);
   textStyle(NORMAL);
   text("Stage " + s.stageNum + " of " + stages.length, 20, 33);
 
+  // Respawns
   fill(COL_HUD_TEXT[0], COL_HUD_TEXT[1], COL_HUD_TEXT[2]);
   textSize(10.5);
   text("Resets left: " + (respawnsLeft + 1), 20, 50);
 
+  // Calm Ability 
+  textSize(10.5);
+  fill(180, 200, 255);
+  text("Calm (J): " + calmAbilityCharges, 20, 66);
+
+  // Center HUD (objective)
   textAlign(CENTER, CENTER);
   let hudTextX = CANVAS_W / 2;
   let hudTextY = HUD_TOP / 2 + 1;
 
-  // Objective (Memory Fade) [1]
+  // Objective (Memory Fade)
   if (showObjective) {
     fill(255);
     textSize(16);
@@ -2449,7 +2473,6 @@ function drawHUD() {
   drawOverloadBar();
   drawCheckpointToast();
 }
-
 function drawOverloadBar() {
   let barX = CANVAS_W - 200;
   let barY = 10;
@@ -2539,36 +2562,38 @@ function returnToTitleScreen() {
 function keyPressed() {
   initAudio();
 
-
+  // How to play toggle
   if (gameState === STATE_START && keyCode === 72) {
-
     showHowToPlay = !showHowToPlay;
     return;
   }
 
+  // Exit how to play
   if (gameState === STATE_START && showHowToPlay && keyCode === ESCAPE) {
     showHowToPlay = false;
     return;
   }
 
+  // Return to title
   if (keyCode === 82 && gameState !== STATE_START) {
     returnToTitleScreen();
     return;
   }
 
+  // Low sensory mode (L)
   if (keyCode === 76) {
     lowSensoryMode = !lowSensoryMode;
-    
-    if (gameState === STATE_START) 
-      
+
+    if (gameState === STATE_START)
       return;
   }
 
+  // Block input when how-to-play is open
   if (gameState === STATE_START && showHowToPlay) {
-    
     return;
   }
 
+  // Enter key (start / next stage)
   if (keyCode === ENTER) {
     if (
       gameState === STATE_START ||
@@ -2589,11 +2614,21 @@ function keyPressed() {
     }
   }
 
-  // Memory recall [1][2]
+  // Memory recall (M)
   if (gameState === STATE_PLAY && keyCode === 77 && memoryActive) {
     showObjective = true;
     memoryTimer = currentStageData.memoryRecall;
     playRecallSound();
+  }
+
+  // Calm Ability (J)
+  if (gameState === STATE_PLAY && (key === "j" || key === "J")) {
+    if (calmAbilityCharges > 0 && calmAbilityCooldown <= 0) {
+      calmAbilityCharges--;
+      calmAbilityTimer = 90;
+      calmAbilityCooldown = 120;
+      playTone(330, 0.2, "triangle", 0.05);
+    }
   }
 }
 

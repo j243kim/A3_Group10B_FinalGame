@@ -89,6 +89,9 @@ const STATE_WIN = "win";
 const STATE_LOSE = "lose";
 let gameState = STATE_START;
 
+// ===================== IMAGE =====================
+let houseImg, skyImg, carImg;
+
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -850,7 +853,11 @@ function createStages() {
     },
   ];
 }
-
+function preload() {
+  houseImg = loadImage("assets/images/house.png");
+  skyImg = loadImage("assets/images/sky.png");
+  carImg = loadImage("assets/images/car.png");
+}
 // ===================== p5.js SETUP =====================
 function setup() {
   let canvas = createCanvas(CANVAS_W, CANVAS_H);
@@ -1406,6 +1413,11 @@ function drawPlayScreen() {
   }
 
   updateGame();
+
+  // Background / environment images
+  image(skyImg, 0, PLAY_TOP, CANVAS_W, 180);
+  image(houseImg, 80, 110, 120, 100);
+  image(carImg, 220, 520, 90, 45);
 
   push();
   if (overload > 65 && !lowSensoryMode) {

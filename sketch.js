@@ -1448,9 +1448,7 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 }
 
 // ===================== PLAY SCREEN =====================
-
-
-  
+function drawPlayScreen() {
   if (lowSensoryMode) {
     background(COL_BG_LOW[0], COL_BG_LOW[1], COL_BG_LOW[2]);
   } else {

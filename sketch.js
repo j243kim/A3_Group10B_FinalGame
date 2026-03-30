@@ -92,7 +92,11 @@ let gameState = STATE_START;
 // ===================== IMAGE =====================
 //stage 1
 let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
-let houseImg, skyImg, carImg;
+let houseImg, skyImg;
+
+//stage 2
+let groceryImg, prescriptionImg, buscardImg;
+let benchImg, phoneImg, carImg;
 
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
@@ -528,6 +532,25 @@ function getStageOneTaskImage(label) {
   return null;
 }
 
+function drawStageTwoScene() {
+  imageMode(CORNER);
+
+  // 🟢 bench = calm
+  if (benchImg) {
+    image(benchImg, 260, 480, 120, 60);
+  }
+
+  // 🔴 phone = distraction
+  if (phoneImg) {
+    image(phoneImg, 150, 150, 60, 60);
+  }
+
+  // 🔴 car
+  if (carImg) {
+    image(carImg, 600, 300, 100, 60);
+  }
+}
+
 function drawStageOneScene() {
   imageMode(CORNER);
 
@@ -895,10 +918,13 @@ function preload() {
   workbagImg = loadImage("assets/images/workbag.jpg");
   floorImg = loadImage("assets/images/floor.jpg");
 
+//stage 2 assets
+  groceryImg = loadImage("assets/images/grocery.avif");
+prescriptionImg = loadImage("assets/images/prescription.jpg");
+buscardImg = loadImage("assets/images/buscard.jpg");
 
-  
-  houseImg = loadImage("assets/images/house.png");
-  skyImg = loadImage("assets/images/sky.png");
+benchImg = loadImage("assets/images/parkbench.webp");
+phoneImg = loadImage("assets/images/phone.jpg");
   carImg = loadImage("assets/images/car.png");
 }
 // ===================== p5.js SETUP =====================
@@ -1836,6 +1862,7 @@ function updateGame() {
     memoryTimer -= 1;
     if (memoryTimer <= 0) showObjective = false;
   } else {
+
     showObjective = true;
   }
 
@@ -2054,38 +2081,23 @@ function drawParticles() {
 }
 
 // ===================== STAGE RENDERING =====================
-function drawStage() {
-  if (currentStage === 0) {
-    drawStageOneScene();
+if (currentStage === 0) {
+  drawStageOneScene();
+} else if (currentStage === 1) {
+  drawStageTwoScene();
+} else {
+  if (!lowSensoryMode) {
+    drawFloorTiles();
   } else {
-    if (!lowSensoryMode) {
-      drawFloorTiles();
-    } else {
-      drawAreaLabels();
-    }
+    drawAreaLabels();
   }
+}
 
-   // Stimulus zones [3]
-  noStroke();
-  for (let sz of stimulusZones) {
-    if (currentStage === 0) {
-      // Stage 1 uses TV image instead of abstract red block
-      if (lowSensoryMode) {
-        noFill();
-        stroke(200, 100, 80, 80);
-        strokeWeight(2);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-        noStroke();
-      } else {
-        // very subtle red tint only, so the TV remains the main visual cue
-        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-      }
-      continue;
-    }
-
+// Stimulus zones [3]
+noStroke();
+for (let sz of stimulusZones) {
+  if (currentStage === 0) {
+    // Stage 1 uses TV image instead of abstract red block
     if (lowSensoryMode) {
       noFill();
       stroke(200, 100, 80, 80);
@@ -2093,25 +2105,60 @@ function drawStage() {
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
       noStroke();
-      fill(200, 100, 80, 80);
-      textSize(9);
-      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     } else {
-      let pulse = sin(frameCount * 0.05) * 10;
-      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 30 + pulse);
+      // very subtle red tint only, so the TV remains the main visual cue
+      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
-      fill(COL_STIMULUS[0], 100, 80, 60);
-      textSize(9);
-      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     }
+    continue;
   }
+
+  if (currentStage === 1) {
+    // Stage 2 uses real objects (phone / car), so hide the large abstract red blocks
+    if (lowSensoryMode) {
+      noFill();
+      stroke(200, 100, 80, 60);
+      strokeWeight(2);
+      rectMode(CORNER);
+      rect(sz.x, sz.y, sz.w, sz.h, 4);
+      noStroke();
+    } else {
+      // very light tint only
+      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
+      rectMode(CORNER);
+      rect(sz.x, sz.y, sz.w, sz.h, 4);
+    }
+    continue;
+  }
+
+  if (lowSensoryMode) {
+    noFill();
+    stroke(200, 100, 80, 80);
+    strokeWeight(2);
+    rectMode(CORNER);
+    rect(sz.x, sz.y, sz.w, sz.h, 4);
+    noStroke();
+    fill(200, 100, 80, 80);
+    textSize(9);
+    text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
+  } else {
+    let pulse = sin(frameCount * 0.05) * 10;
+    fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 30 + pulse);
+    rectMode(CORNER);
+    rect(sz.x, sz.y, sz.w, sz.h, 4);
+    fill(COL_STIMULUS[0], 100, 80, 60);
+    textSize(9);
+    text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
+  }
+}
   // Calm Zones [3]
-  if (currentStage !== 0) {
-    for (let cz of calmZones) {
-      drawCalmZone(cz);
-    }
+
+if (currentStage !== 0 && currentStage !== 1) {
+  for (let cz of calmZones) {
+    drawCalmZone(cz);
   }
+}
 
   // Walls
   for (let w of walls) {
@@ -2173,70 +2220,86 @@ function drawStage() {
       text(d.label, d.x + d.w / 2, d.y + d.h / 2);
     }
   }
-
-  // Task markers — with fading awareness [2]
-    // Task markers — with fading awareness [2]
-  noStroke();
-  for (let st of stars) {
-    let starAlpha = 255;
-    if (
-      currentStageData.fadingAwarenessOn &&
-      overload > 40 &&
-      !lowSensoryMode
-    ) {
-      let d = dist(playerX, playerY, st.x, st.y);
-      starAlpha = map(d, 80, 350, 255, 25);
-      starAlpha = constrain(starAlpha, 25, 255);
-    }
-
-    // Stage 1: use real item images instead of stars
-    if (currentStage === 0) {
-      let taskImg = getStageOneTaskImage(st.label);
-
-      if (taskImg) {
-        if (!lowSensoryMode) {
-          tint(255, starAlpha);
-        } else {
-          tint(255, 220);
-        }
-        imageMode(CENTER);
-        image(taskImg, st.x, st.y, 34, 34);
-        noTint();
-      } else {
-        fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-        ellipse(st.x, st.y, st.size * 1.6, st.size * 1.6);
-      }
-
-      fill(255, 245);
-      textAlign(CENTER, CENTER);
-      textSize(9);
-      text(st.label, st.x, st.y - 24);
-      continue;
-    }
-
-    if (lowSensoryMode) {
-      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2]);
-      ellipse(st.x, st.y, st.size * 1.6, st.size * 1.6);
-    } else {
-      let glow = sin(frameCount * 0.06 + st.x) * 3;
-      fill(
-        COL_STAR_GLOW[0],
-        COL_STAR_GLOW[1],
-        COL_STAR_GLOW[2],
-        starAlpha * 0.35
-      );
-      ellipse(st.x, st.y, st.size * 2.6 + glow, st.size * 2.6 + glow);
-
-      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-      drawStarShape(st.x, st.y, st.size * 0.6, st.size * 1.15, 5);
-    }
-
-    fill(255, 245);
-    textAlign(CENTER, CENTER);
-    textSize(9);
-    text(st.label, st.x, st.y - 22);
+// Task markers — with fading awareness [2]
+noStroke();
+for (let s of stars) {
+  let starAlpha = 255;
+  if (
+    currentStageData.fadingAwarenessOn &&
+    overload > 40 &&
+    !lowSensoryMode
+  ) {
+    let d = dist(playerX, playerY, s.x, s.y);
+    starAlpha = map(d, 80, 350, 255, 25);
+    starAlpha = constrain(starAlpha, 25, 255);
   }
 
+  // Stage 1 uses real images instead of stars
+  if (currentStage === 0) {
+    let taskImg = getStageOneTaskImage(s.label);
+
+    if (taskImg) {
+      if (!lowSensoryMode) {
+        tint(255, starAlpha);
+      } else {
+        tint(255, 220);
+      }
+
+      imageMode(CENTER);
+      image(taskImg, s.x, s.y, 34, 34);
+      noTint();
+    } else {
+      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+      ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+    }
+
+    drawTaskLabel(s, starAlpha);
+    continue;
+  }
+
+  // Stage 2 uses real images instead of stars
+  if (currentStage === 1) {
+    let taskImg = getStageTwoTaskImage(s.label);
+
+    if (taskImg) {
+      if (!lowSensoryMode) {
+        tint(255, starAlpha);
+      } else {
+        tint(255, 220);
+      }
+
+      imageMode(CENTER);
+      image(taskImg, s.x, s.y, 36, 36);
+      noTint();
+    } else {
+      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+      ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+    }
+
+    drawTaskLabel(s, starAlpha);
+    continue;
+  }
+
+  // Other stages keep original stars
+  if (lowSensoryMode) {
+    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2]);
+    ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+  } else {
+    let glow = sin(frameCount * 0.06 + s.x) * 3;
+    fill(
+      COL_STAR_GLOW[0],
+      COL_STAR_GLOW[1],
+      COL_STAR_GLOW[2],
+      40 * (starAlpha / 255)
+    );
+    ellipse(s.x, s.y, s.size * 2.5 + glow, s.size * 2.5 + glow);
+
+    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+    drawStarShape(s.x, s.y, s.size * 0.4, s.size, 5);
+  }
+
+  drawTaskLabel(s, starAlpha);
+}
   drawPlayer();
   drawCheckpointMarker();
   if (!lowSensoryMode) {

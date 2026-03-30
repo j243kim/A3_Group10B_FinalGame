@@ -1449,6 +1449,25 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 
 // ===================== PLAY SCREEN =====================
 function drawPlayScreen() {
+function drawPlayScreen() {
+  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
+
+  if (bedImg) {
+    let bedX = 200;
+    let bedY = 320;
+    let bedW = 120;
+    let bedH = 60;
+    image(bedImg, bedX, bedY, bedW, bedH);
+  }
+
+  // 3) 其它元素（tv、墙壁、星星、噪声等）——按需放置，确保 bed 不被覆盖
+}
+
+
+
+
+
+  
   if (lowSensoryMode) {
     background(COL_BG_LOW[0], COL_BG_LOW[1], COL_BG_LOW[2]);
   } else {

@@ -96,7 +96,7 @@ let houseImg, skyImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
-let benchImg, phoneImg, carImg;
+let benchImg, phoneImg, carImg, background2Img;
 
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
@@ -542,19 +542,30 @@ function getStageTwoTaskImage(label) {
 function drawStageTwoScene() {
   imageMode(CORNER);
 
-  // 🟢 bench = calm
+  // Stage 2 background
+  if (background2Img) {
+    if (lowSensoryMode) {
+      tint(255, 170);
+    } else {
+      tint(255, 255);
+    }
+    image(background2Img, 0, PLAY_TOP, CANVAS_W, PLAY_BOTTOM - PLAY_TOP);
+    noTint();
+  }
+
+  // Calm zone = bench
   if (benchImg) {
-    image(benchImg, 260, 480, 120, 60);
+    image(benchImg, 240, 480, 110, 60);
   }
 
-  // 🔴 phone = distraction
+  // Red zone 1 = phone
   if (phoneImg) {
-    image(phoneImg, 150, 150, 60, 60);
+    image(phoneImg, 30, 265, 90, 65);
   }
 
-  // 🔴 car
+  // Red zone 2 = car
   if (carImg) {
-    image(carImg, 600, 300, 100, 60);
+    image(carImg, 200, 110, 95, 60);
   }
 }
 
@@ -712,25 +723,12 @@ function createStages() {
         { x: 820, y: 470, w: 140, h: 12 },
       ],
       stimulusZones: [
-        // Traffic noise on sidewalk
-        { x: 30, y: 265, w: 90, h: 65 },
-        // Crowd noise at bus stop
-        { x: 200, y: 110, w: 80, h: 60 },
-        // Store entrance bustle
-        { x: 378, y: 404, w: 46, h: 72 },
-        // Fluorescent lights aisle 1
-        { x: 540, y: 170, w: 100, h: 55 },
-        // Announcement speaker aisle 2
-        { x: 700, y: 140, w: 90, h: 60 },
-        // Beeping checkout
-        { x: 860, y: 250, w: 70, h: 60 },
-      ],
-      calmZones: [
-        // Park bench outside
-        { x: 240, y: 480, w: 70, h: 55 },
-        // Quiet corner in pharmacy
-        { x: 870, y: 490, w: 60, h: 50 },
-      ],
+  { x: 30, y: 265, w: 90, h: 65 },   // phone
+  { x: 200, y: 110, w: 95, h: 60 },  // car
+],
+     calmZones: [
+  { x: 240, y: 480, w: 110, h: 60 },
+],
       decorations: [
         // Fire hydrant (solid, sidewalk obstacle)
         { x: 130, y: 112, w: 18, h: 30, col: [165, 60, 55], solid: true },
@@ -927,6 +925,7 @@ function preload() {
   groceryImg = loadImage("assets/images/grocery.avif");
 prescriptionImg = loadImage("assets/images/prescription.jpg");
 buscardImg = loadImage("assets/images/buscard.jpg");
+  background2Img = loadImage("assets/images/background2.png");
 
 benchImg = loadImage("assets/images/parkbench.webp");
 phoneImg = loadImage("assets/images/phone.jpg");

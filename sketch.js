@@ -2185,11 +2185,11 @@ function drawStage() {
   }
 
   // Checkpoints
-  for (let i = 0; i < checkpoints.length; i++) {
-    if (starsCollected() >= checkpoints[i].starsReq) {
-      drawCheckpoint(checkpoints[i], i === checkpointIndex);
-    }
-  }
+//  for (let i = 0; i < checkpoints.length; i++) {
+  //  if (starsCollected() >= checkpoints[i].starsReq) {
+    //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
+    //}
+  //}
 
   // Task markers — with fading awareness [2]
   noStroke();

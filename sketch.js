@@ -888,7 +888,7 @@ function createStages() {
 function preload() {
 
    // Stage 1 assets
-  bedImg = loadImage("assets/images/bed.jpg");
+ bedImg = loadImage('assets/images/newbed.jpg');
   tvImg = loadImage("assets/images/tv.jpg");
   medicineImg = loadImage("assets/images/medicine.png");
   keyImg = loadImage("assets/images/key.avif");
@@ -1457,7 +1457,16 @@ function drawPlayScreen() {
 
   updateGame();
 
-  // Background / environment images
+   if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
+
+  if (bedImg) {
+    let bedX = 200;
+    let bedY = 320;
+    let bedW = 120;
+    let bedH = 60;
+    image(bedImg, bedX, bedY, bedW, bedH);
+  }
+}
 
   push();
   if (overload > 65 && !lowSensoryMode) {

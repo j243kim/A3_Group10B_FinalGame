@@ -98,6 +98,10 @@ let houseImg, skyImg;
 let groceryImg, prescriptionImg, buscardImg;
 let benchImg, phoneImg, carImg, background2Img;
 
+//stage 3
+let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
+let communicateImg, flagImg, worknotesImg;
+
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -539,6 +543,49 @@ function getStageTwoTaskImage(label) {
   return null;
 }
 
+function getStageThreeTaskImage(label) {
+  if (label === "Work Notes") return worknotesImg;
+  if (label === "Communicate") return communicateImg;
+  if (label === "Make It Home") return flagImg;
+  return null;
+}
+
+
+function drawStageThreeScene() {
+  imageMode(CORNER);
+
+  // Stage 3 background
+  if (background3Img) {
+    if (lowSensoryMode) {
+      tint(255, 170);
+    } else {
+      tint(255, 255);
+    }
+    image(background3Img, 0, PLAY_TOP, CANVAS_W, PLAY_BOTTOM - PLAY_TOP);
+    noTint();
+  }
+
+  // Calm zone 1 = sofa
+  if (sofaImg) {
+    image(sofaImg, 420, 120, 110, 70);
+  }
+
+  // Calm zone 2 = coffee
+  if (coffeeImg) {
+    image(coffeeImg, 540, 380, 70, 70);
+  }
+
+  // Red zone 1 = computer
+  if (computerImg) {
+    image(computerImg, 180, 330, 110, 75);
+  }
+
+  // Red zone 2 = printer
+  if (printerImg) {
+    image(printerImg, 760, 300, 80, 65);
+  }
+}
+
 function drawStageTwoScene() {
   imageMode(CORNER);
 
@@ -801,11 +848,11 @@ function createStages() {
       objective: "Finish work and get home",
       starsNeeded: 3,
       introText: "Fatigue makes every step harder.",
-      stars: [
-        { x: 300, y: 170, size: 13, label: "Work Notes" },
-        { x: 372, y: 332, size: 13, label: "Break", labelDy: 22 },
-        { x: 930, y: 530, size: 13, label: "Make It Home" },
-      ],
+    stars: [
+  { x: 220, y: 180, size: 13, label: "Work Notes" },
+  { x: 520, y: 250, size: 13, label: "Communicate" },
+  { x: 900, y: 520, size: 13, label: "Make It Home" },
+],
       walls: [
         // Office outer walls
         { x: 150, y: 110, w: 12, h: 200 },
@@ -832,26 +879,14 @@ function createStages() {
         // Final stretch barrier
         { x: 900, y: 230, w: 12, h: 200 },
       ],
-      stimulusZones: [
-        // Printer noise in office
-        { x: 50, y: 180, w: 60, h: 58 },
-        // Colleague chatter
-        { x: 280, y: 310, w: 60, h: 50 },
-        // Vending machine hum
-        { x: 500, y: 188, w: 46, h: 54 },
-        // Transit door gap — crowd noise
-        { x: 640, y: 236, w: 40, h: 68 },
-        // Platform noise
-        { x: 660, y: 360, w: 70, h: 60 },
-        // Street noise near home
-        { x: 840, y: 180, w: 55, h: 60 },
-        // Final stretch fatigue zone
-        { x: 918, y: 438, w: 52, h: 52 },
-      ],
+     stimulusZones: [
+  { x: 180, y: 330, w: 110, h: 75 }, // computer
+  { x: 760, y: 300, w: 80, h: 65 },  // printer
+],
       calmZones: [
-        // Break room rest spot, moved to the lower middle section for easier access
-        { x: 344, y: 350, w: 64, h: 48 },
-      ],
+  { x: 420, y: 120, w: 110, h: 70 }, // sofa
+  { x: 540, y: 380, w: 70, h: 70 },  // coffee
+],
       decorations: [
         // Office desk 1 (solid)
         { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
@@ -930,6 +965,17 @@ buscardImg = loadImage("assets/images/buscard.jpg");
 benchImg = loadImage("assets/images/parkbench.webp");
 phoneImg = loadImage("assets/images/phone.jpg");
   carImg = loadImage("assets/images/car.png");
+
+  //stage 3 assets
+  computerImg = loadImage("assets/images/computer.jpg");
+printerImg = loadImage("assets/images/printer.jpg");
+sofaImg = loadImage("assets/images/sofa.jpg");
+coffeeImg = loadImage("assets/images/coffee.webp");
+background3Img = loadImage("assets/images/background3.jpg");
+
+communicateImg = loadImage("assets/images/communicate.webp");
+flagImg = loadImage("assets/images/flag.webp");
+worknotesImg = loadImage("assets/images/worknotes.jpg");
 }
 // ===================== p5.js SETUP =====================
 function setup() {
@@ -2086,16 +2132,19 @@ function drawParticles() {
 
 // ===================== STAGE RENDERING =====================
 function drawStage() {
-  if (currentStage === 0) {
-    drawStageOneScene();
-  } else if (currentStage === 1) {
-    drawStageTwoScene();
+ if (currentStage === 0) {
+  drawStageOneScene();
+} else if (currentStage === 1) {
+  drawStageTwoScene();
+} else if (currentStage === 2) {
+  drawStageThreeScene();
+} else {
+  if (!lowSensoryMode) {
+    drawFloorTiles();
   } else {
-    if (!lowSensoryMode) {
-      drawFloorTiles();
-    } else {
-      drawAreaLabels();
-    }
+    drawAreaLabels();
+  }
+}
   }
 
   // Stimulus zones [3]
@@ -2137,6 +2186,28 @@ function drawStage() {
       continue;
     }
 
+    // Stage 3 uses real images instead of stars
+if (currentStage === 2) {
+  let taskImg = getStageThreeTaskImage(s.label);
+
+  if (taskImg) {
+    if (!lowSensoryMode) {
+      tint(255, starAlpha);
+    } else {
+      tint(255, 220);
+    }
+    imageMode(CENTER);
+    image(taskImg, s.x, s.y, 38, 38);
+    noTint();
+  } else {
+    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+    ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+  }
+
+  drawTaskLabel(s, starAlpha);
+  continue;
+}
+
     if (lowSensoryMode) {
       noFill();
       stroke(200, 100, 80, 80);
@@ -2160,12 +2231,12 @@ function drawStage() {
     }
   }
 
-  // Calm Zones [3]
-  if (currentStage !== 0 && currentStage !== 1) {
-    for (let cz of calmZones) {
-      drawCalmZone(cz);
-    }
+// Calm Zones [3]
+if (currentStage !== 0 && currentStage !== 1 && currentStage !== 2) {
+  for (let cz of calmZones) {
+    drawCalmZone(cz);
   }
+}
 
   // Walls / barriers
   rectMode(CORNER);
@@ -2247,6 +2318,23 @@ function drawStage() {
       drawTaskLabel(s, starAlpha);
       continue;
     }
+
+    if (currentStage === 2) {
+  // Stage 3 uses real objects (computer / printer), so hide large abstract red blocks
+  if (lowSensoryMode) {
+    noFill();
+    stroke(200, 100, 80, 60);
+    strokeWeight(2);
+    rectMode(CORNER);
+    rect(sz.x, sz.y, sz.w, sz.h, 4);
+    noStroke();
+  } else {
+    fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
+    rectMode(CORNER);
+    rect(sz.x, sz.y, sz.w, sz.h, 4);
+  }
+  continue;
+}
 
     // Other stages keep original stars
     if (lowSensoryMode) {

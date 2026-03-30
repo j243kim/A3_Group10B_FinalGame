@@ -532,6 +532,13 @@ function getStageOneTaskImage(label) {
   return null;
 }
 
+function getStageTwoTaskImage(label) {
+  if (label === "Groceries") return groceryImg;
+  if (label === "Prescription") return prescriptionImg;
+  if (label === "Bus Card") return buscardImg;
+  return null;
+}
+
 function drawStageTwoScene() {
   imageMode(CORNER);
 
@@ -2081,23 +2088,58 @@ function drawParticles() {
 }
 
 // ===================== STAGE RENDERING =====================
-if (currentStage === 0) {
-  drawStageOneScene();
-} else if (currentStage === 1) {
-  drawStageTwoScene();
-} else {
-  if (!lowSensoryMode) {
-    drawFloorTiles();
-  } else {
-    drawAreaLabels();
-  }
-}
-
-// Stimulus zones [3]
-noStroke();
-for (let sz of stimulusZones) {
+function drawStage() {
   if (currentStage === 0) {
-    // Stage 1 uses TV image instead of abstract red block
+    drawStageOneScene();
+  } else if (currentStage === 1) {
+    drawStageTwoScene();
+  } else {
+    if (!lowSensoryMode) {
+      drawFloorTiles();
+    } else {
+      drawAreaLabels();
+    }
+  }
+
+  // Stimulus zones [3]
+  noStroke();
+  for (let sz of stimulusZones) {
+    if (currentStage === 0) {
+      // Stage 1 uses TV image instead of abstract red block
+      if (lowSensoryMode) {
+        noFill();
+        stroke(200, 100, 80, 80);
+        strokeWeight(2);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+        noStroke();
+      } else {
+        // very subtle red tint only, so the TV remains the main visual cue
+        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+      }
+      continue;
+    }
+
+    if (currentStage === 1) {
+      // Stage 2 uses real objects (phone / car), so hide the large abstract red blocks
+      if (lowSensoryMode) {
+        noFill();
+        stroke(200, 100, 80, 60);
+        strokeWeight(2);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+        noStroke();
+      } else {
+        // very light tint only
+        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+      }
+      continue;
+    }
+
     if (lowSensoryMode) {
       noFill();
       stroke(200, 100, 80, 80);
@@ -2105,206 +2147,138 @@ for (let sz of stimulusZones) {
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
       noStroke();
+      fill(200, 100, 80, 80);
+      textAlign(CENTER, CENTER);
+      textSize(9);
+      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     } else {
-      // very subtle red tint only, so the TV remains the main visual cue
-      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
+      let pulse = sin(frameCount * 0.05) * 10;
+      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 30 + pulse);
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
+      fill(COL_STIMULUS[0], 100, 80, 60);
+      textAlign(CENTER, CENTER);
+      textSize(9);
+      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     }
-    continue;
   }
 
-  if (currentStage === 1) {
-    // Stage 2 uses real objects (phone / car), so hide the large abstract red blocks
-    if (lowSensoryMode) {
-      noFill();
-      stroke(200, 100, 80, 60);
-      strokeWeight(2);
-      rectMode(CORNER);
-      rect(sz.x, sz.y, sz.w, sz.h, 4);
-      noStroke();
-    } else {
-      // very light tint only
-      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
-      rectMode(CORNER);
-      rect(sz.x, sz.y, sz.w, sz.h, 4);
-    }
-    continue;
-  }
-
-  if (lowSensoryMode) {
-    noFill();
-    stroke(200, 100, 80, 80);
-    strokeWeight(2);
-    rectMode(CORNER);
-    rect(sz.x, sz.y, sz.w, sz.h, 4);
-    noStroke();
-    fill(200, 100, 80, 80);
-    textSize(9);
-    text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
-  } else {
-    let pulse = sin(frameCount * 0.05) * 10;
-    fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 30 + pulse);
-    rectMode(CORNER);
-    rect(sz.x, sz.y, sz.w, sz.h, 4);
-    fill(COL_STIMULUS[0], 100, 80, 60);
-    textSize(9);
-    text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
-  }
-}
   // Calm Zones [3]
-
-if (currentStage !== 0 && currentStage !== 1) {
-  for (let cz of calmZones) {
-    drawCalmZone(cz);
-  }
-}
-
-  // Walls
-  for (let w of walls) {
-    noStroke();
-    rectMode(CORNER);
-    if (lowSensoryMode) {
-      fill(COL_WALL[0] - 15, COL_WALL[1] - 15, COL_WALL[2] - 15);
-      rect(w.x, w.y, w.w, w.h, 2);
-    } else {
-      fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
-      rect(w.x + 3, w.y + 3, w.w, w.h, 2);
-      fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
-      rect(w.x, w.y, w.w, w.h, 2);
-      fill(COL_WALL_HI[0], COL_WALL_HI[1], COL_WALL_HI[2]);
-      rect(w.x, w.y, w.w, 3, 2);
+  if (currentStage !== 0 && currentStage !== 1) {
+    for (let cz of calmZones) {
+      drawCalmZone(cz);
     }
+  }
+
+  // Walls / barriers
+  rectMode(CORNER);
+  noStroke();
+  for (let w of walls) {
+    fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
+    rect(w.x + 3, w.y + 3, w.w, w.h, 3);
+    fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
+    rect(w.x, w.y, w.w, w.h, 3);
   }
 
   // Decorations
   for (let d of decorations) {
-    noStroke();
-    rectMode(CORNER);
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+  }
+
+  // Checkpoints
+  for (let i = 0; i < checkpoints.length; i++) {
+    if (starsCollected() >= checkpoints[i].starsReq) {
+      drawCheckpoint(checkpoints[i], i === checkpointIndex);
+    }
+  }
+
+  // Task markers — with fading awareness [2]
+  noStroke();
+  for (let s of stars) {
+    let starAlpha = 255;
+    if (
+      currentStageData.fadingAwarenessOn &&
+      overload > 40 &&
+      !lowSensoryMode
+    ) {
+      let d = dist(playerX, playerY, s.x, s.y);
+      starAlpha = map(d, 80, 350, 255, 25);
+      starAlpha = constrain(starAlpha, 25, 255);
+    }
+
+    // Stage 1 uses real images instead of stars
+    if (currentStage === 0) {
+      let taskImg = getStageOneTaskImage(s.label);
+
+      if (taskImg) {
+        if (!lowSensoryMode) {
+          tint(255, starAlpha);
+        } else {
+          tint(255, 220);
+        }
+        imageMode(CENTER);
+        image(taskImg, s.x, s.y, 34, 34);
+        noTint();
+      } else {
+        fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+        ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+      }
+
+      drawTaskLabel(s, starAlpha);
+      continue;
+    }
+
+    // Stage 2 uses real images instead of stars
+    if (currentStage === 1) {
+      let taskImg = getStageTwoTaskImage(s.label);
+
+      if (taskImg) {
+        if (!lowSensoryMode) {
+          tint(255, starAlpha);
+        } else {
+          tint(255, 220);
+        }
+        imageMode(CENTER);
+        image(taskImg, s.x, s.y, 36, 36);
+        noTint();
+      } else {
+        fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+        ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+      }
+
+      drawTaskLabel(s, starAlpha);
+      continue;
+    }
+
+    // Other stages keep original stars
     if (lowSensoryMode) {
-      fill(d.col[0], d.col[1], d.col[2]);
-      rect(d.x, d.y, d.w, d.h, 3);
-      if (d.solid) {
-        stroke(d.col[0] + 30, d.col[1] + 30, d.col[2] + 30, 100);
-        strokeWeight(1);
-        noFill();
-        rect(d.x, d.y, d.w, d.h, 3);
-        noStroke();
-      }
-    } else {
-      // Shadow for solid objects is slightly deeper
-      let shAlpha = d.solid ? 60 : 35;
-      let shOff = d.solid ? 3 : 2;
-      fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], shAlpha);
-      rect(d.x + shOff, d.y + shOff, d.w, d.h, 3);
-      // Main body
-      fill(d.col[0], d.col[1], d.col[2]);
-      rect(d.x, d.y, d.w, d.h, 3);
-      // Top highlight edge
-      fill(d.col[0] + 22, d.col[1] + 22, d.col[2] + 22, d.solid ? 150 : 100);
-      rect(d.x, d.y, d.w, d.solid ? 5 : 3, 3);
-      // Solid decorations get a subtle outline to show they are obstacles
-      if (d.solid) {
-        noFill();
-        stroke(d.col[0] + 35, d.col[1] + 35, d.col[2] + 35, 50);
-        strokeWeight(1);
-        rect(d.x, d.y, d.w, d.h, 3);
-        noStroke();
-      }
-    }
-    // Draw label on labelled decorations
-    if (d.label) {
-      fill(255, 255, 255, lowSensoryMode ? 55 : 30);
-      textAlign(CENTER, CENTER);
-      textSize(8);
-      text(d.label, d.x + d.w / 2, d.y + d.h / 2);
-    }
-  }
-// Task markers — with fading awareness [2]
-noStroke();
-for (let s of stars) {
-  let starAlpha = 255;
-  if (
-    currentStageData.fadingAwarenessOn &&
-    overload > 40 &&
-    !lowSensoryMode
-  ) {
-    let d = dist(playerX, playerY, s.x, s.y);
-    starAlpha = map(d, 80, 350, 255, 25);
-    starAlpha = constrain(starAlpha, 25, 255);
-  }
-
-  // Stage 1 uses real images instead of stars
-  if (currentStage === 0) {
-    let taskImg = getStageOneTaskImage(s.label);
-
-    if (taskImg) {
-      if (!lowSensoryMode) {
-        tint(255, starAlpha);
-      } else {
-        tint(255, 220);
-      }
-
-      imageMode(CENTER);
-      image(taskImg, s.x, s.y, 34, 34);
-      noTint();
-    } else {
-      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2]);
       ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+    } else {
+      let glow = sin(frameCount * 0.06 + s.x) * 3;
+      fill(
+        COL_STAR_GLOW[0],
+        COL_STAR_GLOW[1],
+        COL_STAR_GLOW[2],
+        40 * (starAlpha / 255)
+      );
+      ellipse(s.x, s.y, s.size * 2.5 + glow, s.size * 2.5 + glow);
+
+      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+      drawStarShape(s.x, s.y, s.size * 0.4, s.size, 5);
     }
 
     drawTaskLabel(s, starAlpha);
-    continue;
   }
 
-  // Stage 2 uses real images instead of stars
-  if (currentStage === 1) {
-    let taskImg = getStageTwoTaskImage(s.label);
-
-    if (taskImg) {
-      if (!lowSensoryMode) {
-        tint(255, starAlpha);
-      } else {
-        tint(255, 220);
-      }
-
-      imageMode(CENTER);
-      image(taskImg, s.x, s.y, 36, 36);
-      noTint();
-    } else {
-      fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-      ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
-    }
-
-    drawTaskLabel(s, starAlpha);
-    continue;
-  }
-
-  // Other stages keep original stars
-  if (lowSensoryMode) {
-    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2]);
-    ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
-  } else {
-    let glow = sin(frameCount * 0.06 + s.x) * 3;
-    fill(
-      COL_STAR_GLOW[0],
-      COL_STAR_GLOW[1],
-      COL_STAR_GLOW[2],
-      40 * (starAlpha / 255)
-    );
-    ellipse(s.x, s.y, s.size * 2.5 + glow, s.size * 2.5 + glow);
-
-    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-    drawStarShape(s.x, s.y, s.size * 0.4, s.size, 5);
-  }
-
-  drawTaskLabel(s, starAlpha);
-}
   drawPlayer();
   drawCheckpointMarker();
+
   if (!lowSensoryMode) {
     drawParticles();
   }
+
   drawDistractions();
 
   // Overload haze [3]

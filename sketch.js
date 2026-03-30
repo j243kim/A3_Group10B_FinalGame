@@ -90,6 +90,8 @@ const STATE_LOSE = "lose";
 let gameState = STATE_START;
 
 // ===================== IMAGE =====================
+//stage 1
+let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
 let houseImg, skyImg, carImg;
 
 // ===================== AUDIO (Web Audio API) =====================
@@ -519,6 +521,38 @@ function drawPanel(x, y, w, h, r) {
   rect(x, y, w, h, r || 6);
 }
 
+function getStageOneTaskImage(label) {
+  if (label === "Medication") return medicineImg;
+  if (label === "Keys") return keyImg;
+  if (label === "Work Bag") return workbagImg;
+  return null;
+}
+
+function drawStageOneScene() {
+  imageMode(CORNER);
+
+  // Floor background for the whole playable area
+  if (floorImg) {
+    if (lowSensoryMode) {
+      tint(255, 170);
+    } else {
+      tint(255, 255);
+    }
+    image(floorImg, 0, PLAY_TOP, CANVAS_W, PLAY_BOTTOM - PLAY_TOP);
+    noTint();
+  }
+
+  // Bed image = calm source
+  if (bedImg) {
+    image(bedImg, 50, 200, 90, 50);
+  }
+
+  // TV image = stimulus source
+  if (tvImg) {
+    image(tvImg, 348, 292, 112, 70);
+  }
+}
+
 // ===================== STAGE DEFINITIONS =====================
 function createStages() {
   stages = [
@@ -554,15 +588,13 @@ function createStages() {
         { x: 848, y: 440, w: 12, h: 120 },
       ],
       stimulusZones: [
-        // TV in living room — mild noise
-        { x: 348, y: 292, w: 112, h: 42 },
-        // Kitchen appliances humming
-        { x: 646, y: 108, w: 68, h: 56 },
-      ],
-      calmZones: [
-        // Quiet bedroom corner — safe haven
-        { x: 60, y: 120, w: 72, h: 60 },
-      ],
+  // TV noise only
+  { x: 348, y: 292, w: 112, h: 70 },
+],
+     calmZones: [
+    // Bed = calm source
+    { x: 50, y: 200, w: 90, h: 50 },
+    ],
       decorations: [
         // Bed (solid — can't walk through it)
         { x: 50, y: 200, w: 90, h: 50, col: [88, 78, 105], solid: true },
@@ -854,6 +886,17 @@ function createStages() {
   ];
 }
 function preload() {
+
+   // Stage 1 assets
+  bedImg = loadImage("assets/images/bed.jpg");
+  tvImg = loadImage("assets/images/tv.jpg");
+  medicineImg = loadImage("assets/images/medicine.png");
+  keyImg = loadImage("assets/images/key.avif");
+  workbagImg = loadImage("assets/images/workbag.jpg");
+  floorImg = loadImage("assets/images/floor.jpg");
+
+
+  
   houseImg = loadImage("assets/images/house.png");
   skyImg = loadImage("assets/images/sky.png");
   carImg = loadImage("assets/images/car.png");
@@ -1415,9 +1458,6 @@ function drawPlayScreen() {
   updateGame();
 
   // Background / environment images
-  image(skyImg, 0, PLAY_TOP, CANVAS_W, 180);
-  image(houseImg, 80, 110, 120, 100);
-  image(carImg, 220, 520, 90, 45);
 
   push();
   if (overload > 65 && !lowSensoryMode) {
@@ -2015,15 +2055,37 @@ function drawParticles() {
 
 // ===================== STAGE RENDERING =====================
 function drawStage() {
-  if (!lowSensoryMode) {
-    drawFloorTiles();
+  if (currentStage === 0) {
+    drawStageOneScene();
   } else {
-    drawAreaLabels();
+    if (!lowSensoryMode) {
+      drawFloorTiles();
+    } else {
+      drawAreaLabels();
+    }
   }
 
-  // Stimulus zones [3]
+   // Stimulus zones [3]
   noStroke();
   for (let sz of stimulusZones) {
+    if (currentStage === 0) {
+      // Stage 1 uses TV image instead of abstract red block
+      if (lowSensoryMode) {
+        noFill();
+        stroke(200, 100, 80, 80);
+        strokeWeight(2);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+        noStroke();
+      } else {
+        // very subtle red tint only, so the TV remains the main visual cue
+        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+      }
+      continue;
+    }
+
     if (lowSensoryMode) {
       noFill();
       stroke(200, 100, 80, 80);
@@ -2044,11 +2106,12 @@ function drawStage() {
       text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     }
   }
-
   // Calm Zones [3]
-  //for (let cz of calmZones) {
-  //  drawCalmZone(cz);
-  //}
+  if (currentStage !== 0) {
+    for (let cz of calmZones) {
+      drawCalmZone(cz);
+    }
+  }
 
   // Walls
   for (let w of walls) {
@@ -2112,34 +2175,66 @@ function drawStage() {
   }
 
   // Task markers — with fading awareness [2]
+    // Task markers — with fading awareness [2]
   noStroke();
-  for (let s of stars) {
+  for (let st of stars) {
     let starAlpha = 255;
     if (
       currentStageData.fadingAwarenessOn &&
       overload > 40 &&
       !lowSensoryMode
     ) {
-      let d = dist(playerX, playerY, s.x, s.y);
+      let d = dist(playerX, playerY, st.x, st.y);
       starAlpha = map(d, 80, 350, 255, 25);
       starAlpha = constrain(starAlpha, 25, 255);
     }
+
+    // Stage 1: use real item images instead of stars
+    if (currentStage === 0) {
+      let taskImg = getStageOneTaskImage(st.label);
+
+      if (taskImg) {
+        if (!lowSensoryMode) {
+          tint(255, starAlpha);
+        } else {
+          tint(255, 220);
+        }
+        imageMode(CENTER);
+        image(taskImg, st.x, st.y, 34, 34);
+        noTint();
+      } else {
+        fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+        ellipse(st.x, st.y, st.size * 1.6, st.size * 1.6);
+      }
+
+      fill(255, 245);
+      textAlign(CENTER, CENTER);
+      textSize(9);
+      text(st.label, st.x, st.y - 24);
+      continue;
+    }
+
     if (lowSensoryMode) {
       fill(COL_STAR[0], COL_STAR[1], COL_STAR[2]);
-      ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+      ellipse(st.x, st.y, st.size * 1.6, st.size * 1.6);
     } else {
-      let glow = sin(frameCount * 0.06 + s.x) * 3;
+      let glow = sin(frameCount * 0.06 + st.x) * 3;
       fill(
         COL_STAR_GLOW[0],
         COL_STAR_GLOW[1],
         COL_STAR_GLOW[2],
-        40 * (starAlpha / 255),
+        starAlpha * 0.35
       );
-      ellipse(s.x, s.y, s.size * 2.5 + glow, s.size * 2.5 + glow);
+      ellipse(st.x, st.y, st.size * 2.6 + glow, st.size * 2.6 + glow);
+
       fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-      drawStarShape(s.x, s.y, s.size * 0.4, s.size, 5);
+      drawStarShape(st.x, st.y, st.size * 0.6, st.size * 1.15, 5);
     }
-    drawTaskLabel(s, starAlpha);
+
+    fill(255, 245);
+    textAlign(CENTER, CENTER);
+    textSize(9);
+    text(st.label, st.x, st.y - 22);
   }
 
   drawPlayer();

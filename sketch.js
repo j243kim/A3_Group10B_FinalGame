@@ -2046,9 +2046,9 @@ function drawStage() {
   }
 
   // Calm Zones [3]
-  for (let cz of calmZones) {
-    drawCalmZone(cz);
-  }
+  //for (let cz of calmZones) {
+  //  drawCalmZone(cz);
+  //}
 
   // Walls
   for (let w of walls) {

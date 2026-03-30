@@ -1448,20 +1448,6 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 }
 
 // ===================== PLAY SCREEN =====================
-function drawPlayScreen() {
-  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
-
-  if (bedImg) {
-    let bedX = 200;
-    let bedY = 320;
-    let bedW = 120;
-    let bedH = 60;
-    image(bedImg, bedX, bedY, bedW, bedH);
-  }
-}
-
-
-
 
 
   

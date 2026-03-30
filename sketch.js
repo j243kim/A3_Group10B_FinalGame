@@ -573,9 +573,9 @@ function drawStageOneScene() {
   }
 
   // Bed image = calm source
-  if (bedImg) {
-    image(bedImg, 50, 200, 90, 50);
-  }
+ if (bedImg) {
+  image(bedImg, 45, 190, 110, 70);
+}
 
   // TV image = stimulus source
   if (tvImg) {
@@ -626,8 +626,6 @@ function createStages() {
     { x: 50, y: 200, w: 90, h: 50 },
     ],
       decorations: [
-        // Bed (solid — can't walk through it)
-        { x: 50, y: 200, w: 90, h: 50, col: [88, 78, 105], solid: true },
         // Nightstand
         { x: 170, y: 210, w: 36, h: 30, col: [100, 88, 72], solid: true },
         // TV stand in living room

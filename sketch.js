@@ -693,7 +693,7 @@ function createStages() {
         // Couch (solid)
         { x: 380, y: 460, w: 110, h: 44, col: [82, 74, 100], solid: true },
         // fridge (solid)
-        { x: 520, y: 100, w: 120, h: 32, col: [160, 155, 170], solid: true },
+       { x: 500, y: 80, w: 80, h: 110, col: [160, 155, 170], solid: true },
         // Kitchen table
         { x: 560, y: 280, w: 80, h: 50, col: [115, 98, 78], solid: true },
         // Shoe rack near front door (solid)
@@ -2352,11 +2352,11 @@ else if (d.x === 380 && d.y === 460) {
   drawH = 95;
 }
 
-// fridge
-else if (d.x === 520 && d.y === 100) {
+  //fridge
+else if (d.x === 500 && d.y === 80) {
   decoImg = fridgeImg;
-  drawX = 500;
-  drawY = 70;
+  drawX = 495;
+  drawY = 72;
   drawW = 90;
   drawH = 120;
 }

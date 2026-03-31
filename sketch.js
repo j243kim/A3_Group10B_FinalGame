@@ -962,7 +962,7 @@ prescriptionImg = loadImage("assets/images/prescription.png");
 buscardImg = loadImage("assets/images/buscard.jpg");
   background2Img = loadImage("assets/images/background2.png");
 
-benchImg = loadImage("assets/images/parkbench.webp");
+benchImg = loadImage("assets/images/parkbench.png");
 phoneImg = loadImage("assets/images/phone.png");
   carImg = loadImage("assets/images/car.png");
 

@@ -697,10 +697,6 @@ function createStages() {
         { x: 560, y: 280, w: 80, h: 50, col: [115, 98, 78], solid: true },
         // Shoe rack near front door (solid)
         { x: 870, y: 460, w: 50, h: 30, col: [105, 85, 68], solid: true },
-        // Rug (solid obstacle)
-        { x: 100, y: 360, w: 120, h: 70, col: [55, 48, 42], solid: true },
-        // Hallway mat / floor obstacle near the front door
-        { x: 760, y: 470, w: 60, h: 24, col: [65, 58, 52], solid: true },
         // Bookshelf against bedroom wall
         { x: 30, y: 310, w: 28, h: 80, col: [95, 80, 65], solid: true },
       ],

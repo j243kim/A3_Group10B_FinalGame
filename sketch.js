@@ -98,6 +98,7 @@ let nightstandImg, tvstandImg, couchImg, kitchenImg, kitchentableImg, shoerackIm
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
 let benchImg, phoneImg, carImg, background2Img;
+let firehydrantImg, bushImg, newspaperImg, shoppingcartImg, transhcanImg, storeImg;
 
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
@@ -971,6 +972,13 @@ bookshelfImg = loadImage("assets/images/bookshelf.png");
   carImg = loadImage("assets/images/car.png");
   woodImg = loadImage("assets/images/wood.jpg");
 redWallImg = loadImage("assets/images/redwall.jpg");
+
+firehydrantImg = loadImage("assets/images/firehydrant.png");
+bushImg = loadImage("assets/images/bush.png");
+newspaperImg = loadImage("assets/images/newspaper.png");
+shoppingcartImg = loadImage("assets/images/shoppingcart.png");
+transhcanImg = loadImage("assets/images/transhcan.png");
+storeImg = loadImage("assets/images/store.png");
 
   // Stage 3 assets
   computerImg = loadImage("assets/images/computer.jpg");
@@ -2380,7 +2388,88 @@ else if (d.x === 30 && d.y === 310) {
   drawW = 52;
   drawH = 108;
 }
+  }else if (currentStage === 1) {
+  // Fire hydrant
+  if (d.x === 130 && d.y === 112) {
+    decoImg = firehydrantImg;
+    drawX = 122;
+    drawY = 104;
+    drawW = 30;
+    drawH = 42;
   }
+  // Hedge / bush row
+  else if (d.x === 30 && d.y === 420) {
+    decoImg = bushImg;
+    drawX = 20;
+    drawY = 410;
+    drawW = 100;
+    drawH = 50;
+  }
+  // Newspaper box
+  else if (d.x === 275 && d.y === 300) {
+    decoImg = newspaperImg;
+    drawX = 265;
+    drawY = 292;
+    drawW = 40;
+    drawH = 36;
+  }
+  // Bench seat placed just below the calm zone
+  else if (d.x === 244 && d.y === 544) {
+    decoImg = benchImg;
+    drawX = 228;
+    drawY = 530;
+    drawW = 92;
+    drawH = 36;
+  }
+  // Store shelf end-cap left
+  else if (d.x === 430 && d.y === 140) {
+    decoImg = storeImg;
+    drawX = 420;
+    drawY = 130;
+    drawW = 58;
+    drawH = 70;
+  }
+  // Store display island
+  else if (d.x === 560 && d.y === 390) {
+    decoImg = storeImg;
+    drawX = 548;
+    drawY = 380;
+    drawW = 74;
+    drawH = 58;
+  }
+  // Store shelf end-cap right
+  else if (d.x === 745 && d.y === 250) {
+    decoImg = storeImg;
+    drawX = 734;
+    drawY = 240;
+    drawW = 60;
+    drawH = 70;
+  }
+  // Shopping cart
+  else if (d.x === 460 && d.y === 300) {
+    decoImg = shoppingcartImg;
+    drawX = 450;
+    drawY = 292;
+    drawW = 42;
+    drawH = 34;
+  }
+  // Pharmacy counter
+  else if (d.x === 875 && d.y === 400) {
+    decoImg = storeImg;
+    drawX = 860;
+    drawY = 392;
+    drawW = 100;
+    drawH = 42;
+  }
+  // Trash can outside
+  else if (d.x === 320 && d.y === 150) {
+    decoImg = transhcanImg;
+    drawX = 312;
+    drawY = 144;
+    drawW = 32;
+    drawH = 36;
+  }
+}
 
   if (decoImg) {
     image(decoImg, drawX, drawY, drawW, drawH);

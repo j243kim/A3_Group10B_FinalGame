@@ -947,8 +947,7 @@ function createStages() {
   ];
 }
 function preload() {
-
-   // Stage 1 assets
+  // Stage 1 assets
   bedImg = loadImage("assets/images/bed.jpg");
   tvImg = loadImage("assets/images/tv.png");
   medicineImg = loadImage("assets/images/medicine.png");
@@ -956,35 +955,24 @@ function preload() {
   workbagImg = loadImage("assets/images/workbag.png");
   floorImg = loadImage("assets/images/floor.jpg");
 
-//stage 2 assets
+  // Stage 2 assets
   groceryImg = loadImage("assets/images/grocery.png");
-prescriptionImg = loadImage("assets/images/prescription.png");
-buscardImg = loadImage("assets/images/buscard.jpg");
+  prescriptionImg = loadImage("assets/images/prescription.png");
+  buscardImg = loadImage("assets/images/buscard.jpg");
   background2Img = loadImage("assets/images/background2.png");
-
-benchImg = loadImage("assets/images/parkbench.png");
-phoneImg = loadImage("assets/images/phone.png");
+  benchImg = loadImage("assets/images/parkbench.png");
+  phoneImg = loadImage("assets/images/phone.png");
   carImg = loadImage("assets/images/car.png");
 
-  //stage 3 assets
+  // Stage 3 assets
   computerImg = loadImage("assets/images/computer.jpg");
-printerImg = loadImage("assets/images/printer.png");
-sofaImg = loadImage("assets/images/sofa.jpg");
-coffeeImg = loadImage("assets/images/coffee.png");
-background3Img = loadImage("assets/images/background3.jpg");
-
-communicateImg = loadImage("assets/images/communicate.png");
-flagImg = loadImage("assets/images/flag.png");
-worknotesImg = loadImage("assets/images/worknotes.png");
-}
-// ===================== p5.js SETUP =====================
-function setup() {
-  let canvas = createCanvas(CANVAS_W, CANVAS_H);
-  canvas.parent("game-container");
-  textAlign(CENTER, CENTER);
-  createStages();
-  initAudio();
-  startTitleAmbient("title");
+  printerImg = loadImage("assets/images/printer.png");
+  sofaImg = loadImage("assets/images/sofa.jpg");
+  coffeeImg = loadImage("assets/images/coffee.png");
+  background3Img = loadImage("assets/images/background3.jpg");
+  communicateImg = loadImage("assets/images/communicate.png");
+  flagImg = loadImage("assets/images/flag.png");
+  worknotesImg = loadImage("assets/images/worknotes.png");
 }
 
 // ===================== GAME INIT =====================

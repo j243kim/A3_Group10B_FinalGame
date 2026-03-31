@@ -2145,7 +2145,7 @@ function drawStage() {
     drawAreaLabels();
   }
 }
-  }
+  
 
   // Stimulus zones [3]
   noStroke();
@@ -2186,27 +2186,22 @@ function drawStage() {
       continue;
     }
 
-    // Stage 3 uses real images instead of stars
-if (currentStage === 2) {
-  let taskImg = getStageThreeTaskImage(s.label);
-
-  if (taskImg) {
-    if (!lowSensoryMode) {
-      tint(255, starAlpha);
-    } else {
-      tint(255, 220);
+    if (currentStage === 2) {
+      // Stage 3 uses real objects (computer / printer), so hide large abstract red blocks
+      if (lowSensoryMode) {
+        noFill();
+        stroke(200, 100, 80, 60);
+        strokeWeight(2);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+        noStroke();
+      } else {
+        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
+        rectMode(CORNER);
+        rect(sz.x, sz.y, sz.w, sz.h, 4);
+      }
+      continue;
     }
-    imageMode(CENTER);
-    image(taskImg, s.x, s.y, 38, 38);
-    noTint();
-  } else {
-    fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-    ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
-  }
-
-  drawTaskLabel(s, starAlpha);
-  continue;
-}
 
     if (lowSensoryMode) {
       noFill();
@@ -2320,21 +2315,23 @@ if (currentStage !== 0 && currentStage !== 1 && currentStage !== 2) {
     }
 
     if (currentStage === 2) {
-  // Stage 3 uses real objects (computer / printer), so hide large abstract red blocks
-  if (lowSensoryMode) {
-    noFill();
-    stroke(200, 100, 80, 60);
-    strokeWeight(2);
-    rectMode(CORNER);
-    rect(sz.x, sz.y, sz.w, sz.h, 4);
-    noStroke();
-  } else {
-    fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
-    rectMode(CORNER);
-    rect(sz.x, sz.y, sz.w, sz.h, 4);
-  }
-  continue;
-}
+      let taskImg = getStageThreeTaskImage(s.label);
+      if (taskImg) {
+        if (!lowSensoryMode) {
+          tint(255, starAlpha);
+        } else {
+          tint(255, 220);
+        }
+        imageMode(CENTER);
+        image(taskImg, s.x, s.y, 38, 38);
+        noTint();
+      } else {
+        fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
+        ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+      }
+      drawTaskLabel(s, starAlpha);
+      continue;
+    }
 
     // Other stages keep original stars
     if (lowSensoryMode) {

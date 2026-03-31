@@ -93,7 +93,7 @@ let gameState = STATE_START;
 //stage 1
 let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
 let woodImg, redWallImg, officeWallImg;
-let nightstandImg, tvstandImg, couchImg, kitchenImg, kitchentableImg, shoerackImg, bookshelfImg;
+let nightstandImg, tvstandImg, couchImg, fridgeImg, kitchentableImg, shoerackImg, bookshelfImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
@@ -692,7 +692,7 @@ function createStages() {
         { x: 362, y: 348, w: 84, h: 28, col: [70, 70, 92], solid: true },
         // Couch (solid)
         { x: 380, y: 460, w: 110, h: 44, col: [82, 74, 100], solid: true },
-        // Kitchen counter (solid)
+        // fridge (solid)
         { x: 520, y: 100, w: 120, h: 32, col: [160, 155, 170], solid: true },
         // Kitchen table
         { x: 560, y: 280, w: 80, h: 50, col: [115, 98, 78], solid: true },
@@ -948,7 +948,7 @@ function preload() {
   nightstandImg = loadImage("assets/images/nightstand.png");
 tvstandImg = loadImage("assets/images/tvstand.png");
 couchImg = loadImage("assets/images/couch.png");
-kitchenImg = loadImage("assets/images/kitchen.png");
+fridgeImg = loadImage("assets/images/fridge.png");
 kitchentableImg = loadImage("assets/images/kitchentable.png");
 shoerackImg = loadImage("assets/images/shoerack.png");
 bookshelfImg = loadImage("assets/images/bookshelf.png");
@@ -2352,13 +2352,13 @@ else if (d.x === 380 && d.y === 460) {
   drawH = 95;
 }
 
-// Kitchen counter
+// fridge
 else if (d.x === 520 && d.y === 100) {
-  decoImg = kitchenImg;
-  drawX = 470;
-  drawY = 68;
-  drawW = 240;
-  drawH = 84;
+  decoImg = fridgeImg;
+  drawX = 500;
+  drawY = 70;
+  drawW = 90;
+  drawH = 120;
 }
     // Kitchen table
     else if (d.x === 560 && d.y === 280) {

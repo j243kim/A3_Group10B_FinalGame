@@ -92,8 +92,7 @@ let gameState = STATE_START;
 // ===================== IMAGE =====================
 //stage 1
 let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
-let houseImg, skyImg;
-let woodImg;
+let woodImg, redWallImg, officeWallImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
@@ -965,6 +964,8 @@ function preload() {
   benchImg = loadImage("assets/images/parkbench.png");
   phoneImg = loadImage("assets/images/phone.png");
   carImg = loadImage("assets/images/car.png");
+  woodImg = loadImage("assets/images/wood.jpg");
+redWallImg = loadImage("assets/images/redwall.jpg");
 
   // Stage 3 assets
   computerImg = loadImage("assets/images/computer.jpg");
@@ -975,6 +976,7 @@ function preload() {
   communicateImg = loadImage("assets/images/communicate.png");
   flagImg = loadImage("assets/images/flag.png");
   worknotesImg = loadImage("assets/images/worknotes.png");
+  officeWallImg = loadImage("assets/images/officewall.jpg");
 }
 
 
@@ -2252,26 +2254,54 @@ if (currentStage !== 0 && currentStage !== 1 && currentStage !== 2) {
   }
 }
 
-  // Walls / barriers
-  // Walls / barriers
+ // Walls / barriers
 rectMode(CORNER);
+imageMode(CORNER);
 noStroke();
+
 for (let w of walls) {
-  // shadow
-  tint(255, 90);
-  image(woodImg, w.x + 3, w.y + 3, w.w, w.h);
+  let wallTexture = null;
+  let borderCol = [60, 60, 60];
 
-  // main wall
-  tint(255, 255);
-  image(woodImg, w.x, w.y, w.w, w.h);
+  // Stage 1 = Home
+  if (currentStage === 0) {
+    wallTexture = woodImg;
+    borderCol = [70, 45, 25];
+  }
+  // Stage 2 = Outside / Store
+  else if (currentStage === 1) {
+    wallTexture = redWallImg;
+    borderCol = [110, 40, 30];
+  }
+  // Stage 3 = Office
+  else if (currentStage === 2) {
+    wallTexture = officeWallImg;
+    borderCol = [70, 70, 85];
+  }
 
-  // optional border
-  noFill();
-  stroke(70, 45, 25);
-  strokeWeight(1);
-  rect(w.x, w.y, w.w, w.h, 3);
-  noStroke();
+  if (wallTexture) {
+    // shadow
+    tint(255, 90);
+    image(wallTexture, w.x + 3, w.y + 3, w.w, w.h);
+
+    // main wall
+    tint(255, 255);
+    image(wallTexture, w.x, w.y, w.w, w.h);
+
+    // border
+    noFill();
+    stroke(borderCol[0], borderCol[1], borderCol[2]);
+    strokeWeight(1);
+    rect(w.x, w.y, w.w, w.h, 3);
+    noStroke();
+  } else {
+    fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
+    rect(w.x + 3, w.y + 3, w.w, w.h, 3);
+    fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
+    rect(w.x, w.y, w.w, w.h, 3);
+  }
 }
+
 noTint();
 
   // Decorations

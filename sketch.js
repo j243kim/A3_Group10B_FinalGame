@@ -955,7 +955,7 @@ bookshelfImg = loadImage("assets/images/bookshelf.png");
 
   // Stage 2 assets
   groceryImg = loadImage("assets/images/grocery.png");
-  prescriptionImg = loadImage("assets/images/prescription.png");
+  prescriptionImg = loadImage("assets/images/prescriptions.png");
   buscardImg = loadImage("assets/images/buscard.jpg");
   background2Img = loadImage("assets/images/background2.png");
   benchImg = loadImage("assets/images/parkbench.png");

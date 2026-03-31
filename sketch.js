@@ -2355,10 +2355,10 @@ else if (d.x === 380 && d.y === 460) {
 // Fridge
 else if (d.x === 560 && d.y === 95) {
   decoImg = fridgeImg;
-  drawX = d.x - 6;
-  drawY = d.y - 8;
-  drawW = d.w + 20;
-  drawH = d.h + 24;
+  drawX = d.x - 10;
+  drawY = d.y - 12;
+  drawW = d.w + 32;
+  drawH = d.h + 40;
 }
     // Kitchen table
    else if (d.x === 560 && d.y === 280) {

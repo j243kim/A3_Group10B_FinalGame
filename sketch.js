@@ -2343,22 +2343,23 @@ for (let d of decorations) {
       drawW = 100;
       drawH = 46;
     }
-    // Couch
-    else if (d.x === 380 && d.y === 460) {
-      decoImg = couchImg;
-      drawX = 372;
-      drawY = 452;
-      drawW = 128;
-      drawH = 60;
-    }
-    // Kitchen counter
-    else if (d.x === 520 && d.y === 100) {
-      decoImg = kitchenImg;
-      drawX = 510;
-      drawY = 95;
-      drawW = 145;
-      drawH = 42;
-    }
+   // Couch
+else if (d.x === 380 && d.y === 460) {
+  decoImg = couchImg;
+  drawX = 350;
+  drawY = 430;
+  drawW = 180;
+  drawH = 95;
+}
+
+ // Kitchen counter
+else if (d.x === 520 && d.y === 100) {
+  decoImg = kitchenImg;
+  drawX = 500;
+  drawY = 82;
+  drawW = 180;
+  drawH = 62;
+}
     // Kitchen table
     else if (d.x === 560 && d.y === 280) {
       decoImg = kitchentableImg;
@@ -2367,22 +2368,22 @@ for (let d of decorations) {
       drawW = 98;
       drawH = 74;
     }
-    // Shoe rack
-    else if (d.x === 870 && d.y === 460) {
-      decoImg = shoerackImg;
-      drawX = 862;
-      drawY = 452;
-      drawW = 62;
-      drawH = 42;
-    }
-    // Bookshelf
-    else if (d.x === 30 && d.y === 310) {
-      decoImg = bookshelfImg;
-      drawX = 28;
-      drawY = 306;
-      drawW = 34;
-      drawH = 86;
-    }
+  // Shoe rack
+else if (d.x === 870 && d.y === 460) {
+  decoImg = shoerackImg;
+  drawX = 850;
+  drawY = 445;
+  drawW = 92;
+  drawH = 60;
+}
+   // Bookshelf
+else if (d.x === 30 && d.y === 310) {
+  decoImg = bookshelfImg;
+  drawX = 22;
+  drawY = 300;
+  drawW = 52;
+  drawH = 108;
+}
   }
 
   if (decoImg) {

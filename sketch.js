@@ -2355,19 +2355,19 @@ else if (d.x === 380 && d.y === 460) {
 // Fridge
 else if (d.x === 560 && d.y === 95) {
   decoImg = fridgeImg;
-  drawX = d.x;
-  drawY = d.y;
-  drawW = d.w;
-  drawH = d.h;
+  drawX = d.x - 6;
+  drawY = d.y - 8;
+  drawW = d.w + 20;
+  drawH = d.h + 24;
 }
     // Kitchen table
-    else if (d.x === 560 && d.y === 280) {
-      decoImg = kitchentableImg;
-      drawX = 548;
-      drawY = 268;
-      drawW = 98;
-      drawH = 74;
-    }
+   else if (d.x === 560 && d.y === 280) {
+  decoImg = kitchentableImg;
+  drawX = 540;
+  drawY = 260;
+  drawW = 120;
+  drawH = 90;
+}
   // Shoe rack
 else if (d.x === 870 && d.y === 460) {
   decoImg = shoerackImg;

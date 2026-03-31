@@ -972,9 +972,9 @@ transhcanImg = loadImage("assets/images/transhcan.png");
 storeImg = loadImage("assets/images/store.png");
 
   // Stage 3 assets
-  computerImg = loadImage("assets/images/computer.jpg");
+  computerImg = loadImage("assets/images/computer.png");
   printerImg = loadImage("assets/images/printer.png");
-  sofaImg = loadImage("assets/images/sofa.jpg");
+  sofaImg = loadImage("assets/images/sofa.png");
   coffeeImg = loadImage("assets/images/coffee.png");
   background3Img = loadImage("assets/images/background3.jpg");
   communicateImg = loadImage("assets/images/communicate.png");

@@ -574,18 +574,18 @@ function drawStageThreeScene() {
 
   // Calm zone 2 = coffee
   if (coffeeImg) {
-    image(coffeeImg, 540, 380, 70, 70);
-  }
+  image(coffeeImg, 552, 392, 36, 36);
+}
 
-  // Red zone 1 = computer
-  if (computerImg) {
-    image(computerImg, 180, 330, 110, 75);
-  }
+// Red zone 1 = computer
+if (computerImg) {
+  image(computerImg, 178, 336, 92, 58);
+}
 
-  // Red zone 2 = printer
-  if (printerImg) {
-    image(printerImg, 760, 300, 80, 65);
-  }
+// Red zone 2 = printer
+if (printerImg) {
+  image(printerImg, 748, 292, 58, 42);
+}
 }
 
 function drawStageTwoScene() {
@@ -2469,72 +2469,84 @@ else if (d.x === 30 && d.y === 310) {
   // Office desk 1
   if (d.x === 40 && d.y === 130) {
     decoImg = officedeskImg;
-    drawX = 28;
+    drawX = 26;
     drawY = 118;
-    drawW = 110;
-    drawH = 56;
+    drawW = 96;
+    drawH = 52;
   }
   // Office desk 2
   else if (d.x === 170 && d.y === 320) {
     decoImg = officedeskImg;
-    drawX = 160;
+    drawX = 156;
     drawY = 308;
-    drawW = 90;
-    drawH = 52;
+    drawW = 88;
+    drawH = 50;
   }
   // Filing cabinet
   else if (d.x === 350 && d.y === 130) {
     decoImg = cabinetImg;
-    drawX = 344;
-    drawY = 124;
-    drawW = 42;
-    drawH = 54;
+    drawX = 346;
+    drawY = 126;
+    drawW = 30;
+    drawH = 42;
   }
-  // Printer
+  // Printer (left side office)
   else if (d.x === 58 && d.y === 260) {
     decoImg = printerImg;
-    drawX = 48;
-    drawY = 252;
-    drawW = 56;
-    drawH = 40;
+    drawX = 52;
+    drawY = 254;
+    drawW = 42;
+    drawH = 30;
   }
-  // Break room sofa (keep color block for now)
-
-  // Break room plant (keep color block for now)
-
+  // Break room sofa — 先保留色块，不放图
+  else if (d.x === 460 && d.y === 320) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
+  // Break room plant — 先保留色块
+  else if (d.x === 434 && d.y === 110) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
   // Water cooler
   else if (d.x === 540 && d.y === 380) {
     decoImg = watercoolerImg;
     drawX = 534;
-    drawY = 368;
+    drawY = 372;
     drawW = 34;
     drawH = 48;
   }
-  // Transit bench (keep color block for now)
-
-  // Vending machine
+  // Transit bench — 先保留色块
+  else if (d.x === 650 && d.y === 440) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
+  // Vending machine -> 用 cabinet 先代替
   else if (d.x === 460 && d.y === 200) {
     decoImg = cabinetImg;
-    drawX = 454;
-    drawY = 194;
-    drawW = 44;
-    drawH = 58;
+    drawX = 456;
+    drawY = 196;
+    drawW = 34;
+    drawH = 50;
   }
   // Trash bin transit
   else if (d.x === 760 && d.y === 320) {
     decoImg = recyclebinImg;
-    drawX = 754;
-    drawY = 314;
-    drawW = 30;
-    drawH = 34;
+    drawX = 758;
+    drawY = 318;
+    drawW = 24;
+    drawH = 28;
   }
-  // Home stretch mailbox
+  // Home stretch mailbox -> 先用 cabinet 代替
   else if (d.x === 915 && d.y === 350) {
     decoImg = cabinetImg;
-    drawX = 908;
-    drawY = 344;
-    drawW = 34;
-    drawH = 40;
+    drawX = 912;
+    drawY = 346;
+    drawW = 28;
+    drawH = 36;
   }
 }
 

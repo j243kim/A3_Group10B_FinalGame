@@ -2321,40 +2321,72 @@ noStroke();
 for (let d of decorations) {
   let decoImg = null;
 
+  // default display size = original collision box
+  let drawX = d.x;
+  let drawY = d.y;
+  let drawW = d.w;
+  let drawH = d.h;
+
   // Stage 1 home furniture mapping
   if (currentStage === 0) {
     // Nightstand
     if (d.x === 170 && d.y === 210) {
       decoImg = nightstandImg;
+      drawW = 32;
+      drawH = 28;
     }
     // TV stand
     else if (d.x === 362 && d.y === 348) {
       decoImg = tvstandImg;
+      drawX = 355;
+      drawY = 336;
+      drawW = 100;
+      drawH = 46;
     }
     // Couch
     else if (d.x === 380 && d.y === 460) {
       decoImg = couchImg;
+      drawX = 372;
+      drawY = 452;
+      drawW = 128;
+      drawH = 60;
     }
     // Kitchen counter
     else if (d.x === 520 && d.y === 100) {
       decoImg = kitchenImg;
+      drawX = 510;
+      drawY = 95;
+      drawW = 145;
+      drawH = 42;
     }
     // Kitchen table
     else if (d.x === 560 && d.y === 280) {
       decoImg = kitchentableImg;
+      drawX = 548;
+      drawY = 268;
+      drawW = 98;
+      drawH = 74;
     }
     // Shoe rack
     else if (d.x === 870 && d.y === 460) {
       decoImg = shoerackImg;
+      drawX = 862;
+      drawY = 452;
+      drawW = 62;
+      drawH = 42;
     }
     // Bookshelf
     else if (d.x === 30 && d.y === 310) {
       decoImg = bookshelfImg;
+      drawX = 28;
+      drawY = 306;
+      drawW = 34;
+      drawH = 86;
     }
   }
 
   if (decoImg) {
-    image(decoImg, d.x, d.y, d.w, d.h);
+    image(decoImg, drawX, drawY, drawW, drawH);
   } else {
     fill(d.col[0], d.col[1], d.col[2]);
     rect(d.x, d.y, d.w, d.h, 3);

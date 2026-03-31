@@ -958,10 +958,10 @@ function preload() {
   woodImg = loadImage("assets/images/wood.jpg");
 
   nightstandImg = loadImage("assets/images/nightstand.png");
-tvstandImg = loadImage("assets/images/tvstand.jpg");
+tvstandImg = loadImage("assets/images/tvstand.png");
 couchImg = loadImage("assets/images/couch.png");
 kitchenImg = loadImage("assets/images/kitchen.png");
-kitchentableImg = loadImage("assets/images/kitchentable.jpg");
+kitchentableImg = loadImage("assets/images/kitchentable.png");
 shoerackImg = loadImage("assets/images/shoerack.png");
 bookshelfImg = loadImage("assets/images/bookshelf.png");
 

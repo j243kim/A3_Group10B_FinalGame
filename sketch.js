@@ -67,7 +67,6 @@ function drawPlayScreen() {
 
 if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
 
-  // 2) Bed 测试：放在最前
   if (bedImg) {
     let bedX = 200;
     let bedY = 320;

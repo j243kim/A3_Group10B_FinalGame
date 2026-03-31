@@ -103,7 +103,7 @@ let firehydrantImg, bushImg, newspaperImg, shoppingcartImg, transhcanImg, storeI
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
 let communicateImg, flagImg, worknotesImg;
-
+let watercoolerImg, officedeskImg, recyclebinImg, cabinetImg;
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -981,6 +981,11 @@ storeImg = loadImage("assets/images/store.png");
   flagImg = loadImage("assets/images/flag.png");
   worknotesImg = loadImage("assets/images/worknotes.png");
   officeWallImg = loadImage("assets/images/officewall.jpg");
+
+  watercoolerImg = loadImage("assets/images/Watercooler.png");
+officedeskImg = loadImage("assets/images/officedesk.png");
+recyclebinImg = loadImage("assets/images/recyclebin.png");
+cabinetImg = loadImage("assets/images/cabinet.png");
 }
 
 
@@ -2459,6 +2464,77 @@ else if (d.x === 30 && d.y === 310) {
     drawY = 144;
     drawW = 32;
     drawH = 36;
+  }
+}else if (currentStage === 2) {
+  // Office desk 1
+  if (d.x === 40 && d.y === 130) {
+    decoImg = officedeskImg;
+    drawX = 28;
+    drawY = 118;
+    drawW = 110;
+    drawH = 56;
+  }
+  // Office desk 2
+  else if (d.x === 170 && d.y === 320) {
+    decoImg = officedeskImg;
+    drawX = 160;
+    drawY = 308;
+    drawW = 90;
+    drawH = 52;
+  }
+  // Filing cabinet
+  else if (d.x === 350 && d.y === 130) {
+    decoImg = cabinetImg;
+    drawX = 344;
+    drawY = 124;
+    drawW = 42;
+    drawH = 54;
+  }
+  // Printer
+  else if (d.x === 58 && d.y === 260) {
+    decoImg = printerImg;
+    drawX = 48;
+    drawY = 252;
+    drawW = 56;
+    drawH = 40;
+  }
+  // Break room sofa (keep color block for now)
+
+  // Break room plant (keep color block for now)
+
+  // Water cooler
+  else if (d.x === 540 && d.y === 380) {
+    decoImg = watercoolerImg;
+    drawX = 534;
+    drawY = 368;
+    drawW = 34;
+    drawH = 48;
+  }
+  // Transit bench (keep color block for now)
+
+  // Vending machine
+  else if (d.x === 460 && d.y === 200) {
+    decoImg = cabinetImg;
+    drawX = 454;
+    drawY = 194;
+    drawW = 44;
+    drawH = 58;
+  }
+  // Trash bin transit
+  else if (d.x === 760 && d.y === 320) {
+    decoImg = recyclebinImg;
+    drawX = 754;
+    drawY = 314;
+    drawW = 30;
+    drawH = 34;
+  }
+  // Home stretch mailbox
+  else if (d.x === 915 && d.y === 350) {
+    decoImg = cabinetImg;
+    drawX = 908;
+    drawY = 344;
+    drawW = 34;
+    drawH = 40;
   }
 }
 

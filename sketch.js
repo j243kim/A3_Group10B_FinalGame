@@ -93,6 +93,7 @@ let gameState = STATE_START;
 //stage 1
 let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
 let houseImg, skyImg;
+let woodImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
@@ -954,6 +955,7 @@ function preload() {
   keyImg = loadImage("assets/images/key.png");
   workbagImg = loadImage("assets/images/workbag.png");
   floorImg = loadImage("assets/images/floor.jpg");
+  woodImg = loadImage("assets/images/wood.jpg");
 
   // Stage 2 assets
   groceryImg = loadImage("assets/images/grocery.png");
@@ -2251,14 +2253,26 @@ if (currentStage !== 0 && currentStage !== 1 && currentStage !== 2) {
 }
 
   // Walls / barriers
-  rectMode(CORNER);
+  // Walls / barriers
+rectMode(CORNER);
+noStroke();
+for (let w of walls) {
+  // shadow
+  tint(255, 90);
+  image(woodImg, w.x + 3, w.y + 3, w.w, w.h);
+
+  // main wall
+  tint(255, 255);
+  image(woodImg, w.x, w.y, w.w, w.h);
+
+  // optional border
+  noFill();
+  stroke(70, 45, 25);
+  strokeWeight(1);
+  rect(w.x, w.y, w.w, w.h, 3);
   noStroke();
-  for (let w of walls) {
-    fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
-    rect(w.x + 3, w.y + 3, w.w, w.h, 3);
-    fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
-    rect(w.x, w.y, w.w, w.h, 3);
-  }
+}
+noTint();
 
   // Decorations
   for (let d of decorations) {

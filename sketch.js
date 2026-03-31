@@ -93,6 +93,7 @@ let gameState = STATE_START;
 //stage 1
 let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
 let woodImg, redWallImg, officeWallImg;
+let nightstandImg, tvstandImg, couchImg, kitchenImg, kitchentableImg, shoerackImg, bookshelfImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
@@ -955,6 +956,14 @@ function preload() {
   workbagImg = loadImage("assets/images/workbag.png");
   floorImg = loadImage("assets/images/floor.jpg");
   woodImg = loadImage("assets/images/wood.jpg");
+
+  nightstandImg = loadImage("assets/images/nightstand.png");
+tvstandImg = loadImage("assets/images/tvstand.jpg");
+couchImg = loadImage("assets/images/couch.png");
+kitchenImg = loadImage("assets/images/kitchen.png");
+kitchentableImg = loadImage("assets/images/kitchentable.jpg");
+shoerackImg = loadImage("assets/images/shoerack.png");
+bookshelfImg = loadImage("assets/images/bookshelf.png");
 
   // Stage 2 assets
   groceryImg = loadImage("assets/images/grocery.png");
@@ -2303,12 +2312,54 @@ for (let w of walls) {
 }
 
 noTint();
+  
+// Decorations
+rectMode(CORNER);
+imageMode(CORNER);
+noStroke();
 
-  // Decorations
-  for (let d of decorations) {
+for (let d of decorations) {
+  let decoImg = null;
+
+  // Stage 1 home furniture mapping
+  if (currentStage === 0) {
+    // Nightstand
+    if (d.x === 170 && d.y === 210) {
+      decoImg = nightstandImg;
+    }
+    // TV stand
+    else if (d.x === 362 && d.y === 348) {
+      decoImg = tvstandImg;
+    }
+    // Couch
+    else if (d.x === 380 && d.y === 460) {
+      decoImg = couchImg;
+    }
+    // Kitchen counter
+    else if (d.x === 520 && d.y === 100) {
+      decoImg = kitchenImg;
+    }
+    // Kitchen table
+    else if (d.x === 560 && d.y === 280) {
+      decoImg = kitchentableImg;
+    }
+    // Shoe rack
+    else if (d.x === 870 && d.y === 460) {
+      decoImg = shoerackImg;
+    }
+    // Bookshelf
+    else if (d.x === 30 && d.y === 310) {
+      decoImg = bookshelfImg;
+    }
+  }
+
+  if (decoImg) {
+    image(decoImg, d.x, d.y, d.w, d.h);
+  } else {
     fill(d.col[0], d.col[1], d.col[2]);
     rect(d.x, d.y, d.w, d.h, 3);
   }
+}
 
   // Checkpoints
 //  for (let i = 0; i < checkpoints.length; i++) {

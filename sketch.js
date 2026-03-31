@@ -683,7 +683,7 @@ function createStages() {
 ],
      calmZones: [
     // Bed = calm source
-    { x: 50, y: 200, w: 90, h: 50 },
+    { x: 50, y: 200, w: 90, h: 50, img: () => bedImg },
     ],
       decorations: [
         // Nightstand
@@ -772,7 +772,7 @@ function createStages() {
   { x: 200, y: 110, w: 95, h: 60 },  // car
 ],
      calmZones: [
-  { x: 240, y: 480, w: 110, h: 60 },
+  { x: 240, y: 480, w: 110, h: 60, img: () => benchImg },
 ],
       decorations: [
         // Fire hydrant (solid, sidewalk obstacle)
@@ -873,8 +873,8 @@ function createStages() {
   { x: 760, y: 300, w: 80, h: 65 },  // printer
 ],
       calmZones: [
-  { x: 420, y: 120, w: 110, h: 70 }, // sofa
-  { x: 540, y: 380, w: 70, h: 70 },  // coffee
+  { x: 420, y: 120, w: 110, h: 70, img: () => sofaImg }, // sofa
+  { x: 540, y: 380, w: 70, h: 70,  img: () => coffeeImg }, // coffee
 ],
       decorations: [
         // Office desk 1 (solid)
@@ -1957,10 +1957,10 @@ function updateGame() {
 
   overload += overloadRate * OVERLOAD_RATE_MULT;
 
-  // Calm Zone recovery [3]
- // Calm Zone now recharges Calm Ability instead of directly healing overload
+  // Calm Zone recovery: directly reduces overload and refills calm ability charges
   for (let cz of calmZones) {
     if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
+      overload -= 0.5;
       if (calmAbilityCharges < calmAbilityMax && calmSoundCooldown <= 0) {
         calmAbilityCharges = calmAbilityMax;
         playTone(262, 0.6, "sine", 0.03);
@@ -2162,6 +2162,11 @@ function drawParticles() {
 
 // ===================== STAGE RENDERING =====================
 function drawStage() {
+  // Draw calm zone glows before scene images so glow appears behind objects
+  for (let cz of calmZones) {
+    drawCalmZoneGlow(cz);
+  }
+
  if (currentStage === 0) {
   drawStageOneScene();
 } else if (currentStage === 1) {
@@ -2257,10 +2262,8 @@ function drawStage() {
   }
 
 // Calm Zones [3]
-if (currentStage !== 0 && currentStage !== 1 && currentStage !== 2) {
-  for (let cz of calmZones) {
-    drawCalmZone(cz);
-  }
+for (let cz of calmZones) {
+  drawCalmZone(cz);
 }
 
  // Walls / barriers
@@ -2761,39 +2764,42 @@ function drawTaskLabel(task, alpha) {
   text(task.label, labelX, labelY);
 }
 
-function drawCalmZone(cz) {
+function drawCalmZoneGlow(cz) {
+  // Drawn before scene images so the glow appears behind the object
+  let pulse = lowSensoryMode ? 0 : sin(frameCount * 0.07) * 10;
   rectMode(CORNER);
   noStroke();
-  let pulse = 0;
-  if (currentStage >= 1 && !lowSensoryMode) {
-    pulse = sin(frameCount * 0.07) * 4;
-  }
-  fill(COL_CALM[0], COL_CALM[1] + 20, COL_CALM[2], 20);
-  rect(
-    cz.x - 8 - pulse,
-    cz.y - 8 - pulse,
-    cz.w + 16 + pulse * 2,
-    cz.h + 16 + pulse * 2,
-    14,
-  );
-  fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 180);
-  rect(cz.x, cz.y, cz.w, cz.h, 10);
-  fill(COL_CALM[0] + 30, COL_CALM[1] + 20, COL_CALM[2] + 20, 60);
-  rect(cz.x + 6, cz.y + 6, cz.w - 12, cz.h - 12, 6);
-  noFill();
-  stroke(180, 240, 200, 120);
-  strokeWeight(2);
-  rect(cz.x - 2, cz.y - 2, cz.w + 4, cz.h + 4, 12);
+  // Three expanding layers for a soft bloom effect
+  fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 18);
+  rect(cz.x - 18 - pulse, cz.y - 18 - pulse, cz.w + 36 + pulse * 2, cz.h + 36 + pulse * 2, 18);
+  fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 30);
+  rect(cz.x - 10 - pulse * 0.5, cz.y - 10 - pulse * 0.5, cz.w + 20 + pulse, cz.h + 20 + pulse, 12);
+  fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 45);
+  rect(cz.x - 4, cz.y - 4, cz.w + 8, cz.h + 8, 8);
+}
+
+function drawCalmZone(cz) {
+  // Called after scene images — only shows feedback text
+  rectMode(CORNER);
   noStroke();
-  fill(220, 255, 230);
-  textSize(10);
-  textStyle(BOLD);
-  text("Calm", cz.x + cz.w / 2, cz.y + cz.h / 2 - 1);
-  textStyle(NORMAL);
+
+  if (!cz.img) {
+    // Fallback: original green rectangle with label for zones without an image
+    fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 180);
+    rect(cz.x, cz.y, cz.w, cz.h, 10);
+    fill(220, 255, 230);
+    textSize(10);
+    textStyle(BOLD);
+    text("Calm", cz.x + cz.w / 2, cz.y + cz.h / 2 - 1);
+    textStyle(NORMAL);
+  }
+
   if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
     fill(180, 255, 210);
     textSize(9);
-    text("Recovering...", cz.x + cz.w / 2, cz.y + cz.h / 2 + 10);
+    textStyle(BOLD);
+    text("Recovering...", cz.x + cz.w / 2, cz.y - 8);
+    textStyle(NORMAL);
   }
 }
 

@@ -795,15 +795,6 @@ function createStages() {
         { x: 875, y: 400, w: 80, h: 24, col: [100, 95, 115], solid: true },
         // Trash can outside
         { x: 320, y: 150, w: 22, h: 26, col: [75, 80, 75], solid: true },
-        // Store sign (decorative)
-        {
-          x: 540,
-          y: PLAY_TOP + 6,
-          w: 130,
-          h: 20,
-          col: [85, 80, 105],
-          passThrough: true,
-        },
       ],
       checkpoints: [
         { x: 80, y: 510, label: "Sidewalk", starsReq: 0 },

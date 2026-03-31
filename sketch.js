@@ -2347,13 +2347,13 @@ else if (d.x === 380 && d.y === 460) {
   drawH = 95;
 }
 
- // Kitchen counter
+// Kitchen counter
 else if (d.x === 520 && d.y === 100) {
   decoImg = kitchenImg;
-  drawX = 500;
-  drawY = 82;
-  drawW = 180;
-  drawH = 62;
+  drawX = 470;
+  drawY = 68;
+  drawW = 240;
+  drawH = 84;
 }
     // Kitchen table
     else if (d.x === 560 && d.y === 280) {

@@ -975,6 +975,35 @@ function preload() {
   worknotesImg = loadImage("assets/images/worknotes.png");
 }
 
+
+
+// ===================== p5.js SETUP =====================
+function setup() {
+  let canvas = createCanvas(CANVAS_W, CANVAS_H);
+  canvas.parent("game-container");
+  textAlign(CENTER, CENTER);
+  createStages();
+  initAudio();
+  startTitleAmbient("title");
+}
+
+// ===================== DRAW LOOP =====================
+function draw() {
+  cursor(ARROW);
+
+  if (gameState === STATE_START) {
+    drawStartScreen();
+  } else if (gameState === STATE_PLAY) {
+    drawPlayScreen();
+  } else if (gameState === STATE_STAGE_TRANSITION) {
+    drawStageTransitionScreen();
+  } else if (gameState === STATE_WIN) {
+    drawWinScreen();
+  } else if (gameState === STATE_LOSE) {
+    drawLoseScreen();
+  }
+}
+
 // ===================== GAME INIT =====================
 function initGame() {
   currentStage = 0;

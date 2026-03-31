@@ -950,8 +950,7 @@ function preload() {
 
    // Stage 1 assets
   bedImg = loadImage("assets/images/bed.jpg");
-  tvImg = loadImage("assets/images/tv.png
-                    ");
+  tvImg = loadImage("assets/images/tv.png");
   medicineImg = loadImage("assets/images/medicine.png");
   keyImg = loadImage("assets/images/key.png");
   workbagImg = loadImage("assets/images/workbag.png");

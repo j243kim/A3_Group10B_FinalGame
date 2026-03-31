@@ -953,30 +953,30 @@ function preload() {
   tvImg = loadImage("assets/images/tv.png
                     ");
   medicineImg = loadImage("assets/images/medicine.png");
-  keyImg = loadImage("assets/images/key.avif");
-  workbagImg = loadImage("assets/images/workbag.jpg");
+  keyImg = loadImage("assets/images/key.png");
+  workbagImg = loadImage("assets/images/workbag.png");
   floorImg = loadImage("assets/images/floor.jpg");
 
 //stage 2 assets
-  groceryImg = loadImage("assets/images/grocery.avif");
-prescriptionImg = loadImage("assets/images/prescription.jpg");
+  groceryImg = loadImage("assets/images/grocery.png");
+prescriptionImg = loadImage("assets/images/prescription.png");
 buscardImg = loadImage("assets/images/buscard.jpg");
   background2Img = loadImage("assets/images/background2.png");
 
 benchImg = loadImage("assets/images/parkbench.webp");
-phoneImg = loadImage("assets/images/phone.jpg");
+phoneImg = loadImage("assets/images/phone.png");
   carImg = loadImage("assets/images/car.png");
 
   //stage 3 assets
   computerImg = loadImage("assets/images/computer.jpg");
-printerImg = loadImage("assets/images/printer.jpg");
+printerImg = loadImage("assets/images/printer.png");
 sofaImg = loadImage("assets/images/sofa.jpg");
-coffeeImg = loadImage("assets/images/coffee.webp");
+coffeeImg = loadImage("assets/images/coffee.png");
 background3Img = loadImage("assets/images/background3.jpg");
 
-communicateImg = loadImage("assets/images/communicate.webp");
-flagImg = loadImage("assets/images/flag.webp");
-worknotesImg = loadImage("assets/images/worknotes.jpg");
+communicateImg = loadImage("assets/images/communicate.png");
+flagImg = loadImage("assets/images/flag.png");
+worknotesImg = loadImage("assets/images/worknotes.png");
 }
 // ===================== p5.js SETUP =====================
 function setup() {

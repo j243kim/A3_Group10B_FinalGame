@@ -696,6 +696,19 @@ let endSoundPlayed = false;
 let overloadWarnCooldown = 0;
 let calmSoundCooldown = 0;
 
+// ===================== PLAYER VISION =====================
+const visionRadiusBase = 75;
+const visionRadiusMin = 30;
+const visionSoftness = 60;
+let visionGraphics = null;
+
+// ===================== MINI MAP =====================
+const mapW = 160;
+const mapH = 100;
+const mapPad = 10;
+const mapBorder = 6;
+let miniMapExpanded = false;
+let mapBounds = {x:0, y:0, w:mapW, h:mapH};
 // ===================== HELPERS =====================
 function starsCollected() {
   if (!currentStageData) return 0;
@@ -1288,6 +1301,7 @@ function setup() {
   createStages();
   initAudio();
   startTitleAmbient("title");
+  initVisionGraphics();
 }
 
 // ===================== DRAW LOOP =====================
@@ -1875,8 +1889,14 @@ if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
     drawVignette();
   }
 
+  drawFog();
+  drawEmotionMessage();
+
   drawHUD();
   drawStageIntroBanner();
+
+  drawMinimap();
+  drawExpandedMap();
 
   if (lowSensoryMode) {
     fill(120, 220, 180, 180);
@@ -3312,7 +3332,7 @@ function drawEmotionMessage() {
   let tw = textWidth(emotionMsg) + 95;
   rect(CANVAS_W / 2, msgY, tw, 28, 8);
   rectMode(CORNER);
-  fill(255, 220, 200, alpha * 1.5);
+  fill(40, 25, 15, alpha * 1.5);
   textSize(13);
   textStyle(ITALIC);
   text(emotionMsg, CANVAS_W / 2, msgY);
@@ -3512,6 +3532,12 @@ function returnToTitleScreen() {
 function keyPressed() {
   initAudio();
 
+  // Toggle to expand and close map 
+  if (gameState === STATE_PLAY && keyCode === 78) {
+    miniMapExpanded = !miniMapExpanded
+    return;
+  }
+
   // How to play toggle
   if (gameState === STATE_START && keyCode === 72) {
     showHowToPlay = !showHowToPlay;
@@ -3585,6 +3611,14 @@ function keyPressed() {
 function mousePressed() {
   initAudio();
 
+  if (gameState === STATE_PLAY) {
+    if (miniMapExpanded) {
+      miniMapExpanded = false;
+      return;
+    }
+    return;
+  }
+
   if (gameState !== STATE_START) return;
 
   if (showHowToPlay) {
@@ -3632,4 +3666,227 @@ function mousePressed() {
   ) {
     showHowToPlay = true;
   }
+}
+
+// ===================== PLAYER VISION - FOG SYSTEM =====================
+function initVisionGraphics() {
+  visionGraphics = createGraphics(CANVAS_W, CANVAS_H);
+  visionGraphics.noStroke();
+}
+
+function getCurrentVisionRadius() {
+  if (lowSensoryMode) return visionRadiusBase;
+  return map(overload, 0, overloadMax, visionRadiusBase, visionRadiusMin);
+}
+
+function drawFog() {
+  if (!visionGraphics) return;
+
+  let g = visionGraphics;
+  let r = getCurrentVisionRadius();
+  let softness = visionSoftness;
+  let fogAlpha = lowSensoryMode ? 180 : 235;
+
+  g.clear();
+
+  g.background(10, 8, 20, fogAlpha);
+
+  g.blendMode(REMOVE);
+
+  let steps = 24;
+  for (let i = 0; i < steps; i++) {
+    let t = i / (steps - 1);
+    let ringR = (r + softness) - t * softness;
+    let alphaRemove = map(t, 0, 1, 20, fogAlpha);
+    g.fill(0, 0, 0, alphaRemove);
+    g.ellipse(playerX, playerY, ringR * 2, ringR * 2);
+  }
+
+  g.fill(0, 0, 0, 255);
+  g.ellipse(playerX, playerY, r * 2, r * 2);
+
+  g.blendMode(BLEND);
+
+  blendMode(BLEND);
+  image(g, 0, 0);
+}
+
+// ===================== MINI MAP =====================
+function drawMinimap() {
+  if (gameState !== STATE_PLAY) return;
+
+  let mapX = CANVAS_W - 200;
+  let mapY = HUD_TOP + mapPad;
+
+  mapBounds = {x:mapX, y:mapY, w:mapW, h: mapH};
+
+  noStroke();
+  fill (8, 10, 25, 210);
+  rectMode(CORNER);
+  rect(mapX, mapY, mapW, mapH, mapBorder);
+
+  noFill();
+  stroke(80, 90, 130, 180);
+  strokeWeight(1);
+  rect(mapX, mapY, mapW, mapH, mapBorder);
+  noStroke();
+
+  function wx(x) {
+    return mapX + x * (mapW / CANVAS_W);
+  }
+
+  function wy(y) {
+    return mapY + y * (mapH / CANVAS_H);
+  }
+
+  function ws(s) {
+    return max(1, s * (mapW / CANVAS_W));
+  }
+
+  for (let cz of calmZones) {
+    fill(50, 185, 120, 120);
+    rect(wx(cz.x), wy(cz.y), ws(cz.w), max(1, cz.h * (mapH / CANVAS_H)));
+  }
+
+  for (let w of walls) {
+    fill(90, 85, 115, 200);
+    rect(wx(w.x), wy(w.y), max(1, ws(w.w)), max(1, w.h * (mapH / CANVAS_H)));
+  }
+
+  for (let s of stars) {
+    fill(255, 210, 50);
+    ellipse(wx(s.x), wy(s.y), 4, 4);
+  }
+
+  let pulse = lowSensoryMode ? 0 : sin(frameCount * 0.12) * 1.5;
+  fill(230, 115, 70, 80);
+  ellipse(wx(playerX), wy(playerY), 10 + pulse, 10 + pulse);
+  fill(255, 160, 80);
+  ellipse(wx(playerX), wy(playerY), 5 + pulse * 0.5, 5 + pulse * 0.5);
+
+  textAlign(LEFT, TOP);
+  fill(160, 165, 200, 160);
+  textSize(8);
+  noStroke();
+  text("MAP", mapX + 5, mapY + 3);
+
+  textAlign(RIGHT, TOP);
+  textSize(8);
+  text("Press N to Expand", mapX + mapW - 5, mapY + 3);
+
+  textAlign(CENTER, CENTER);
+}
+
+function drawExpandedMap() {
+  if (!miniMapExpanded) return;
+
+  noStroke();
+  fill(0, 0, 0, 175);
+  rectMode(CORNER);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  let mW = CANVAS_W * 0.72;
+  let mH = CANVAS_H * 0.72;
+  let mX = (CANVAS_W - mW) / 2;
+  let mY = (CANVAS_H - mH) / 2;
+
+  fill(8, 10, 28, 245);
+  rect(mX, mY, mW, mH, 10);
+
+  noFill();
+  stroke(90, 100, 150, 200);
+  strokeWeight(1.5);
+  rect(mX, mY, mW, mH, 10);
+  noStroke();
+
+  function ex(x) { return mX + x * (mW / CANVAS_W); }
+  function ey(y) { return mY + y * (mH / CANVAS_H); }
+  function es(s) { return max(1, s * (mW / CANVAS_W)); }
+  function esH(h) { return max(1, h * (mH / CANVAS_H)); }
+
+  fill(20, 22, 42, 180);
+  rect(ex(0), ey(HUD_TOP), mW, mH - ey(HUD_TOP) + mY);
+
+  for (let cz of calmZones) {
+    fill(50, 185, 120, 130);
+    rect(ex(cz.x), ey(cz.y), es(cz.w), esH(cz.h), 2);
+    // Label
+    fill(120, 255, 180, 180);
+    textSize(8);
+    textAlign(CENTER, CENTER);
+    text("calm", ex(cz.x) + es(cz.w)/2, ey(cz.y) + esH(cz.h)/2);
+  }
+
+  for (let sz of stimulusZones) {
+    fill(220, 60, 50, 100);
+    rect(ex(sz.x), ey(sz.y), es(sz.w), esH(sz.h), 2);
+  }
+
+  for (let w of walls) {
+    fill(100, 95, 130, 220);
+    rect(ex(w.x), ey(w.y), es(w.w), esH(w.h), 2);
+  }
+ 
+    for (let i = 0; i < checkpoints.length; i++) {
+    let cp = checkpoints[i];
+    let isActive = (i === checkpointIndex);
+    fill(isActive ? 180 : 100, isActive ? 220 : 140, isActive ? 255 : 180, isActive ? 200 : 90);
+    ellipse(ex(cp.x), ey(cp.y), isActive ? 8 : 5, isActive ? 8 : 5);
+    if (isActive) {
+      fill(200, 230, 255, 200);
+      textSize(7);
+      textAlign(CENTER, CENTER);
+      text("CP", ex(cp.x), ey(cp.y) - 7);
+    }
+  }
+
+  for (let s of stars) {
+    fill(255, 210, 50, 220);
+    ellipse(ex(s.x), ey(s.y), 9, 9);
+    fill(255, 240, 150, 200);
+    textSize(8);
+    textAlign(CENTER, CENTER);
+    text(s.label || "★", ex(s.x), ey(s.y) - 9);
+  }
+
+  let pulse = sin(frameCount * 0.14) * 2;
+  fill(230, 115, 70, 90);
+  ellipse(ex(playerX), ey(playerY), 18 + pulse, 18 + pulse);
+  fill(255, 160, 80);
+  ellipse(ex(playerX), ey(playerY), 9, 9);
+  fill(255, 220, 180);
+  ellipse(ex(playerX), ey(playerY), 4, 4);
+
+  textAlign(CENTER, TOP);
+  fill(255, 210, 75);
+  textSize(13);
+  textStyle(BOLD);
+  text("MAP  —  " + currentStageName(), CANVAS_W / 2, mY + 10);
+  textStyle(NORMAL);
+
+  // ---- LEGEND ----
+  let legY = mY + mH - 18;
+  let legX = mX + 14;
+  textSize(8);
+  textAlign(LEFT, CENTER);
+ 
+  fill(230, 115, 70);  ellipse(legX + 4, legY, 7, 7);
+  fill(200, 200, 220); text("You", legX + 10, legY);
+ 
+  fill(255, 210, 50);  ellipse(legX + 46, legY, 7, 7);
+  fill(200, 200, 220); text("Task", legX + 52, legY);
+ 
+  fill(50, 185, 120, 160); rect(legX + 82, legY - 4, 8, 8, 2);
+  fill(200, 200, 220); text("Calm", legX + 94, legY);
+ 
+  fill(220, 60, 50, 140);  rect(legX + 126, legY - 4, 8, 8, 2);
+  fill(200, 200, 220); text("Stimulus", legX + 138, legY);
+ 
+  textAlign(RIGHT, TOP);
+  fill(140, 145, 180, 180);
+  textSize(12);
+  text("Press N to close", mX + mW - 10, mY + 10);
+
+  textAlign(CENTER, CENTER);
+  noStroke();
 }

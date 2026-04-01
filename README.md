@@ -18,6 +18,7 @@ The game emphasizes empathy and awareness by translating cognitive and sensory c
 5. Press **J** to activate the Calm Ability (if charges are available).
 6. Press **L** to toggle Low Sensory Mode.
 7. Press **R** to return to the title screen.
+8. Press **N** to toggle map.
 
 ---
 

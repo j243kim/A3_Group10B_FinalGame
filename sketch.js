@@ -91,14 +91,25 @@ let gameState = STATE_START;
 
 // ===================== IMAGE =====================
 //stage 1
-let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg; 
+let bedImg, tvImg, workbagImg, floorImg, keyImg, medicineImg;
 let woodImg, redWallImg, officeWallImg;
-let nightstandImg, tvstandImg, couchImg, fridgeImg, kitchentableImg, shoerackImg, bookshelfImg;
+let nightstandImg,
+  tvstandImg,
+  couchImg,
+  fridgeImg,
+  kitchentableImg,
+  shoerackImg,
+  bookshelfImg;
 
 //stage 2
 let groceryImg, prescriptionImg, buscardImg;
 let benchImg, phoneImg, carImg, background2Img;
-let firehydrantImg, bushImg, newspaperImg, shoppingcartImg, transhcanImg, storeImg;
+let firehydrantImg,
+  bushImg,
+  newspaperImg,
+  shoppingcartImg,
+  transhcanImg,
+  storeImg;
 
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
@@ -109,6 +120,11 @@ let audioCtx = null;
 let audioReady = false;
 let ambientOsc = null;
 let ambientGain = null;
+let pressureOsc = null;
+let pressureGain = null;
+let ringOsc = null;
+let ringGain = null;
+let zoneAudioNodes = [];
 
 // Title screen ambient soundscape nodes
 let titleDroneOsc = null;
@@ -124,7 +140,7 @@ let titleAmbientMode = "title";
 
 const TITLE_AMBIENT_LEVELS = {
   title: { drone: 0.025, tinnitus: 0.008, pulse: 0.012, lfo: 0.008 },
-  play: { drone: 0.009, tinnitus: 0.0025, pulse: 0.0045, lfo: 0.003 },
+  play: { drone: 0.032, tinnitus: 0.012, pulse: 0.018, lfo: 0.011 },
 };
 
 function initAudio() {
@@ -181,33 +197,74 @@ function duckBackgroundAudio(amount, dur) {
   if (ambientGain) {
     ambientGain.gain.cancelScheduledValues(now);
     ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
-    ambientGain.gain.linearRampToValueAtTime(ambientGain.gain.value * duckTo, now + 0.03);
-    ambientGain.gain.linearRampToValueAtTime(map(overload, 0, overloadMax, 0.003, 0.028), releaseAt);
+    ambientGain.gain.linearRampToValueAtTime(
+      ambientGain.gain.value * duckTo,
+      now + 0.03,
+    );
+    ambientGain.gain.linearRampToValueAtTime(
+      map(overload, 0, overloadMax, 0.015, 0.08),
+      releaseAt,
+    );
   }
 
-  let levels = TITLE_AMBIENT_LEVELS[titleAmbientMode] || TITLE_AMBIENT_LEVELS.title;
+  if (pressureGain) {
+    pressureGain.gain.cancelScheduledValues(now);
+    pressureGain.gain.setValueAtTime(pressureGain.gain.value, now);
+    pressureGain.gain.linearRampToValueAtTime(
+      pressureGain.gain.value * duckTo,
+      now + 0.03,
+    );
+    let pressVol =
+      overload > 30 ? map(overload, 30, overloadMax, 0.0, 0.05) : 0;
+    pressureGain.gain.linearRampToValueAtTime(pressVol, releaseAt);
+  }
+  if (ringGain) {
+    ringGain.gain.cancelScheduledValues(now);
+    ringGain.gain.setValueAtTime(ringGain.gain.value, now);
+    ringGain.gain.linearRampToValueAtTime(
+      ringGain.gain.value * duckTo,
+      now + 0.03,
+    );
+    let rVol = overload > 65 ? map(overload, 65, overloadMax, 0.0, 0.025) : 0;
+    ringGain.gain.linearRampToValueAtTime(rVol, releaseAt);
+  }
+
+  let levels =
+    TITLE_AMBIENT_LEVELS[titleAmbientMode] || TITLE_AMBIENT_LEVELS.title;
   if (titleDroneGain) {
     titleDroneGain.gain.cancelScheduledValues(now);
     titleDroneGain.gain.setValueAtTime(titleDroneGain.gain.value, now);
-    titleDroneGain.gain.linearRampToValueAtTime(levels.drone * duckTo, now + 0.03);
+    titleDroneGain.gain.linearRampToValueAtTime(
+      levels.drone * duckTo,
+      now + 0.03,
+    );
     titleDroneGain.gain.linearRampToValueAtTime(levels.drone, releaseAt);
   }
   if (titleTinnitusGain) {
     titleTinnitusGain.gain.cancelScheduledValues(now);
     titleTinnitusGain.gain.setValueAtTime(titleTinnitusGain.gain.value, now);
-    titleTinnitusGain.gain.linearRampToValueAtTime(levels.tinnitus * duckTo, now + 0.03);
+    titleTinnitusGain.gain.linearRampToValueAtTime(
+      levels.tinnitus * duckTo,
+      now + 0.03,
+    );
     titleTinnitusGain.gain.linearRampToValueAtTime(levels.tinnitus, releaseAt);
   }
   if (titlePulseGain) {
     titlePulseGain.gain.cancelScheduledValues(now);
     titlePulseGain.gain.setValueAtTime(titlePulseGain.gain.value, now);
-    titlePulseGain.gain.linearRampToValueAtTime(levels.pulse * duckTo, now + 0.03);
+    titlePulseGain.gain.linearRampToValueAtTime(
+      levels.pulse * duckTo,
+      now + 0.03,
+    );
     titlePulseGain.gain.linearRampToValueAtTime(levels.pulse, releaseAt);
   }
   if (titlePulseLfoGain) {
     titlePulseLfoGain.gain.cancelScheduledValues(now);
     titlePulseLfoGain.gain.setValueAtTime(titlePulseLfoGain.gain.value, now);
-    titlePulseLfoGain.gain.linearRampToValueAtTime(levels.lfo * duckTo, now + 0.03);
+    titlePulseLfoGain.gain.linearRampToValueAtTime(
+      levels.lfo * duckTo,
+      now + 0.03,
+    );
     titlePulseLfoGain.gain.linearRampToValueAtTime(levels.lfo, releaseAt);
   }
 }
@@ -219,7 +276,8 @@ function startTitleAmbient(mode) {
 
   let now = audioCtx.currentTime;
   let fadeIn = 2.5; // gentle fade-in over 2.5 seconds
-  let levels = TITLE_AMBIENT_LEVELS[titleAmbientMode] || TITLE_AMBIENT_LEVELS.title;
+  let levels =
+    TITLE_AMBIENT_LEVELS[titleAmbientMode] || TITLE_AMBIENT_LEVELS.title;
 
   // Layer 1: Low drone (55 Hz sine, very quiet)
   titleDroneOsc = audioCtx.createOscillator();
@@ -364,10 +422,28 @@ function startAmbient() {
   ambientGain = audioCtx.createGain();
   ambientOsc.type = "sine";
   ambientOsc.frequency.value = 65;
-  ambientGain.gain.value = 0.003;
+  ambientGain.gain.value = 0.015;
   ambientOsc.connect(ambientGain);
   ambientGain.connect(audioCtx.destination);
   ambientOsc.start();
+
+  pressureOsc = audioCtx.createOscillator();
+  pressureGain = audioCtx.createGain();
+  pressureOsc.type = "sawtooth";
+  pressureOsc.frequency.value = 110;
+  pressureGain.gain.value = 0;
+  pressureOsc.connect(pressureGain);
+  pressureGain.connect(audioCtx.destination);
+  pressureOsc.start();
+
+  ringOsc = audioCtx.createOscillator();
+  ringGain = audioCtx.createGain();
+  ringOsc.type = "sine";
+  ringOsc.frequency.value = 4200;
+  ringGain.gain.value = 0;
+  ringOsc.connect(ringGain);
+  ringGain.connect(audioCtx.destination);
+  ringOsc.start();
 }
 function stopAmbient() {
   if (ambientOsc) {
@@ -377,11 +453,178 @@ function stopAmbient() {
     ambientOsc = null;
     ambientGain = null;
   }
+  if (pressureOsc) {
+    try {
+      pressureOsc.stop();
+    } catch (e) {}
+    pressureOsc = null;
+    pressureGain = null;
+  }
+  if (ringOsc) {
+    try {
+      ringOsc.stop();
+    } catch (e) {}
+    ringOsc = null;
+    ringGain = null;
+  }
 }
 function updateAmbient() {
   if (!ambientGain || !ambientOsc) return;
-  ambientGain.gain.value = map(overload, 0, overloadMax, 0.003, 0.028);
-  ambientOsc.frequency.value = map(overload, 0, overloadMax, 60, 190);
+  let now = audioCtx.currentTime;
+
+  let baseVol = map(overload, 0, overloadMax, 0.015, 0.08);
+  let baseFreq = map(overload, 0, overloadMax, 60, 160);
+  ambientGain.gain.setTargetAtTime(baseVol, now, 0.1);
+  ambientOsc.frequency.setTargetAtTime(baseFreq, now, 0.1);
+
+  if (pressureGain && pressureOsc) {
+    let pressVol =
+      overload > 30 ? map(overload, 30, overloadMax, 0.0, 0.05) : 0;
+    pressureGain.gain.setTargetAtTime(pressVol, now, 0.1);
+    let throb =
+      sin(frameCount * map(overload, 0, overloadMax, 0.02, 0.15)) *
+      map(overload, 0, overloadMax, 2, 20);
+    pressureOsc.frequency.setTargetAtTime(110 + throb, now, 0.1);
+  }
+
+  if (ringGain && ringOsc) {
+    let rVol = overload > 65 ? map(overload, 65, overloadMax, 0.0, 0.025) : 0;
+    ringGain.gain.setTargetAtTime(rVol, now, 0.1);
+  }
+}
+
+function initZoneSounds() {
+  if (!audioCtx) return;
+  stopZoneSounds();
+
+  let now = audioCtx.currentTime;
+  for (let sz of stimulusZones) {
+    let gain = audioCtx.createGain();
+    gain.gain.value = 0;
+    gain.connect(audioCtx.destination);
+
+    let nodesToStop = [];
+    let lbl = (sz.label || "").toLowerCase();
+
+    if (lbl.includes("tv")) {
+      let osc = audioCtx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.value = 60;
+      osc.connect(gain);
+      osc.start(now);
+      nodesToStop.push(osc);
+    } else if (lbl.includes("phone")) {
+      let osc1 = audioCtx.createOscillator();
+      osc1.type = "sine";
+      osc1.frequency.value = 600;
+      let osc2 = audioCtx.createOscillator();
+      osc2.type = "sine";
+      osc2.frequency.value = 640;
+      let lfo = audioCtx.createOscillator();
+      lfo.type = "square";
+      lfo.frequency.value = 0.5;
+      let lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 1;
+      lfo.connect(lfoGain);
+      let ringGain = audioCtx.createGain();
+      ringGain.gain.value = 0;
+      lfoGain.connect(ringGain.gain);
+      osc1.connect(ringGain);
+      osc2.connect(ringGain);
+      ringGain.connect(gain);
+      osc1.start(now);
+      osc2.start(now);
+      lfo.start(now);
+      nodesToStop.push(osc1, osc2, lfo);
+    } else if (lbl.includes("car")) {
+      let osc = audioCtx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.value = 40;
+      let lfo = audioCtx.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = 15;
+      let lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 5;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      osc.connect(gain);
+      osc.start(now);
+      lfo.start(now);
+      nodesToStop.push(osc, lfo);
+    } else if (lbl.includes("screen") || lbl.includes("glare")) {
+      let osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = 8000;
+      osc.connect(gain);
+      osc.start(now);
+      nodesToStop.push(osc);
+    } else if (lbl.includes("printer")) {
+      let osc = audioCtx.createOscillator();
+      osc.type = "square";
+      osc.frequency.value = 120;
+      let lfo = audioCtx.createOscillator();
+      lfo.type = "square";
+      lfo.frequency.value = 8;
+      let lfoGain = audioCtx.createGain();
+      lfoGain.gain.value = 50;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      osc.connect(gain);
+      osc.start(now);
+      lfo.start(now);
+      nodesToStop.push(osc, lfo);
+    } else {
+      let osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = 220;
+      osc.connect(gain);
+      osc.start(now);
+      nodesToStop.push(osc);
+    }
+
+    zoneAudioNodes.push({
+      gain: gain,
+      sz: sz,
+      nodes: nodesToStop,
+    });
+  }
+}
+
+function stopZoneSounds() {
+  for (let zn of zoneAudioNodes) {
+    if (zn.nodes) {
+      for (let n of zn.nodes) {
+        try {
+          n.stop();
+        } catch (e) {}
+      }
+    }
+    if (zn.gain) {
+      try {
+        zn.gain.disconnect();
+      } catch (e) {}
+    }
+  }
+  zoneAudioNodes = [];
+}
+
+function updateZoneSounds() {
+  if (!audioCtx || zoneAudioNodes.length === 0) return;
+  let now = audioCtx.currentTime;
+  for (let zn of zoneAudioNodes) {
+    let sz = zn.sz;
+    let cx = sz.x + sz.w / 2;
+    let cy = sz.y + sz.h / 2;
+    let d = dist(playerX, playerY, cx, cy);
+
+    let maxDist = 300;
+    let vol = 0;
+    if (d < maxDist) {
+      let nDist = d / maxDist;
+      vol = Math.pow(1 - nDist, 2) * 0.15;
+    }
+    zn.gain.gain.setTargetAtTime(vol, now, 0.1);
+  }
 }
 
 // ===================== PLAYER =====================
@@ -552,7 +795,6 @@ function getStageThreeTaskImage(label) {
   return null;
 }
 
-
 function drawStageThreeScene() {
   imageMode(CORNER);
 
@@ -569,23 +811,23 @@ function drawStageThreeScene() {
 
   // Calm zone 1 = sofa
   if (sofaImg) {
-    image(sofaImg, 420, 120, 110, 70);
+    image(sofaImg, 405, 105, 143, 91);
   }
 
   // Calm zone 2 = coffee
   if (coffeeImg) {
-  image(coffeeImg, 552, 392, 36, 36);
-}
+    image(coffeeImg, 535, 375, 50, 50);
+  }
 
-// Red zone 1 = computer
-if (computerImg) {
-  image(computerImg, 178, 336, 92, 58);
-}
+  // Red zone 1 = computer
+  if (computerImg) {
+    image(computerImg, 165, 315, 143, 97);
+  }
 
-// Red zone 2 = printer
-if (printerImg) {
-  image(printerImg, 748, 292, 58, 42);
-}
+  // Red zone 2 = printer
+  if (printerImg) {
+    image(printerImg, 740, 285, 104, 84);
+  }
 }
 
 function drawStageTwoScene() {
@@ -604,17 +846,27 @@ function drawStageTwoScene() {
 
   // Calm zone = bench
   if (benchImg) {
-    image(benchImg, 240, 480, 110, 60);
+    image(benchImg, 215, 445, 175, 95);
   }
 
   // Red zone 1 = phone
   if (phoneImg) {
-    image(phoneImg, 30, 265, 90, 65);
+    let phoneZone = currentStageData.stimulusZones[0];
+    if (phoneZone) {
+      image(phoneImg, phoneZone.x, phoneZone.y, phoneZone.w, phoneZone.h);
+    } else {
+      image(phoneImg, 20, 250, 117, 84);
+    }
   }
 
   // Red zone 2 = car
   if (carImg) {
-    image(carImg, 200, 110, 95, 60);
+    let carZone = currentStageData.stimulusZones[1];
+    if (carZone) {
+      image(carImg, carZone.x, carZone.y, carZone.w, carZone.h);
+    } else {
+      image(carImg, 185, 95, 123, 78);
+    }
   }
 }
 
@@ -633,13 +885,18 @@ function drawStageOneScene() {
   }
 
   // Bed image = calm source
- if (bedImg) {
-  image(bedImg, 45, 190, 110, 70);
-}
+  if (bedImg) {
+    image(bedImg, 20, 165, 160, 110);
+  }
 
   // TV image = stimulus source
   if (tvImg) {
-    image(tvImg, 348, 292, 112, 70);
+    let tvZone = currentStageData.stimulusZones[0];
+    if (tvZone) {
+      image(tvImg, tvZone.x, tvZone.y, tvZone.w, tvZone.h);
+    } else {
+      image(tvImg, 338, 280, 145, 91);
+    }
   }
 }
 
@@ -678,13 +935,26 @@ function createStages() {
         { x: 848, y: 440, w: 12, h: 120 },
       ],
       stimulusZones: [
-  // TV noise only
-  { x: 348, y: 292, w: 112, h: 70 },
-],
-     calmZones: [
-    // Bed = calm source
-    { x: 50, y: 200, w: 90, h: 50, img: () => bedImg },
-    ],
+        // TV noise — grows and pulses to simulate flickering sensory pressure
+        {
+          x: 338,
+          y: 280,
+          w: 145,
+          h: 91,
+          label: "TV noise",
+          moveType: "pulse",
+          amplitude: 18,
+          speed: 0.025,
+          baseX: 338,
+          baseY: 280,
+          baseW: 145,
+          baseH: 91,
+        },
+      ],
+      calmZones: [
+        // Bed = calm source
+        { x: 20, y: 165, w: 160, h: 110, img: () => bedImg },
+      ],
       decorations: [
         // Nightstand
         { x: 170, y: 210, w: 36, h: 30, col: [100, 88, 72], solid: true },
@@ -693,7 +963,7 @@ function createStages() {
         // Couch (solid)
         { x: 380, y: 460, w: 110, h: 44, col: [82, 74, 100], solid: true },
         // fridge (solid)
-       { x: 560, y: 95, w: 42, h: 72, col: [160, 155, 170], solid: true },
+        { x: 560, y: 95, w: 42, h: 72, col: [160, 155, 170], solid: true },
         // Kitchen table
         { x: 560, y: 280, w: 80, h: 50, col: [115, 98, 78], solid: true },
         // Shoe rack near front door (solid)
@@ -707,14 +977,14 @@ function createStages() {
         { x: 450, y: 280, label: "Living Room", starsReq: 1 },
         { x: 780, y: 480, label: "Front Door", starsReq: 2 },
       ],
-      overloadBase: 0.018,
-      stimulusBonus: 0.08,
+      overloadBase: 0.038,
+      stimulusBonus: 0.14,
       memoryFadeAfter: 1,
       memoryTimer: 130,
       memoryRefresh: 45,
       memoryRecall: 100,
-      distractionsOn: false,
-      emotionsOn: false,
+      distractionsOn: true,
+      emotionsOn: true,
       driftOn: false,
       fadingAwarenessOn: false,
       calmRecovery: 1.5,
@@ -722,14 +992,12 @@ function createStages() {
       startOverload: 0,
       carryOverFactor: 0.0,
       respawnOverload: 28,
-      distractionThreshold: 100,
-      emotionThreshold: 100,
+      distractionThreshold: 55,
+      emotionThreshold: 50,
       driftThreshold: 100,
       bgTint: [45, 35, 28, 10],
       // hint: "Move slowly. Even a familiar routine can take real effort.",
-      hintMemory:
-        "Press M to steady the thought for a moment.",
-  
+      hintMemory: "Press M to steady the thought for a moment.",
     },
 
     // ========== STAGE 2: OUTSIDE / STORE ==========
@@ -768,12 +1036,36 @@ function createStages() {
         { x: 820, y: 470, w: 140, h: 12 },
       ],
       stimulusZones: [
-  { x: 30, y: 265, w: 90, h: 65 },   // phone
-  { x: 200, y: 110, w: 95, h: 60 },  // car
-],
-     calmZones: [
-  { x: 240, y: 480, w: 110, h: 60, img: () => benchImg },
-],
+        {
+          x: 20,
+          y: 250,
+          w: 117,
+          h: 84,
+          label: "phone ringing",
+          moveType: "horizontal",
+          amplitude: 25,
+          speed: 0.03,
+          baseX: 20,
+          baseY: 250,
+          baseW: 117,
+          baseH: 84,
+        },
+        {
+          x: 185,
+          y: 95,
+          w: 123,
+          h: 78,
+          label: "car noise",
+          moveType: "horizontal",
+          amplitude: 35,
+          speed: 0.018,
+          baseX: 185,
+          baseY: 95,
+          baseW: 123,
+          baseH: 78,
+        },
+      ],
+      calmZones: [{ x: 215, y: 445, w: 175, h: 95, img: () => benchImg }],
       decorations: [
         // Fire hydrant (solid, sidewalk obstacle)
         { x: 130, y: 112, w: 18, h: 30, col: [165, 60, 55], solid: true },
@@ -801,8 +1093,8 @@ function createStages() {
         { x: 420, y: 440, label: "Store Entrance", starsReq: 1 },
         { x: 740, y: 430, label: "Back Aisle", starsReq: 2 },
       ],
-      overloadBase: 0.055,
-      stimulusBonus: 0.18,
+      overloadBase: 0.09,
+      stimulusBonus: 0.28,
       memoryFadeAfter: 0,
       memoryTimer: 65,
       memoryRefresh: 35,
@@ -816,8 +1108,8 @@ function createStages() {
       startOverload: 18,
       carryOverFactor: 0.38,
       respawnOverload: 42,
-      distractionThreshold: 40,
-      emotionThreshold: 62,
+      distractionThreshold: 28,
+      emotionThreshold: 38,
       driftThreshold: 100,
       bgTint: [30, 45, 38, 10],
       // hint: "Noise stacks up quickly here. Route around it when you can.",
@@ -837,11 +1129,11 @@ function createStages() {
       objective: "Finish work and get home",
       starsNeeded: 3,
       introText: "Fatigue makes every step harder.",
-    stars: [
-  { x: 220, y: 180, size: 13, label: "Work Notes" },
-  { x: 520, y: 250, size: 13, label: "Communicate" },
-  { x: 900, y: 520, size: 13, label: "Make It Home" },
-],
+      stars: [
+        { x: 220, y: 180, size: 13, label: "Work Notes" },
+        { x: 520, y: 250, size: 13, label: "Communicate" },
+        { x: 900, y: 520, size: 13, label: "Make It Home" },
+      ],
       walls: [
         // Office outer walls
         { x: 150, y: 110, w: 12, h: 200 },
@@ -868,14 +1160,14 @@ function createStages() {
         // Final stretch barrier
         { x: 900, y: 230, w: 12, h: 200 },
       ],
-     stimulusZones: [
-  { x: 180, y: 330, w: 110, h: 75 }, // computer
-  { x: 760, y: 300, w: 80, h: 65 },  // printer
-],
+      stimulusZones: [
+        { x: 165, y: 315, w: 143, h: 97, label: "screen glare" },
+        { x: 740, y: 285, w: 104, h: 84, label: "printer noise" },
+      ],
       calmZones: [
-  { x: 420, y: 120, w: 110, h: 70, img: () => sofaImg }, // sofa
-  { x: 540, y: 380, w: 70, h: 70,  img: () => coffeeImg }, // coffee
-],
+        { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg }, // sofa
+        { x: 535, y: 375, w: 50, h: 50, img: () => coffeeImg }, // coffee
+      ],
       decorations: [
         // Office desk 1 (solid)
         { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
@@ -946,12 +1238,12 @@ function preload() {
   woodImg = loadImage("assets/images/wood.jpg");
 
   nightstandImg = loadImage("assets/images/nightstand.png");
-tvstandImg = loadImage("assets/images/tvstand.png");
-couchImg = loadImage("assets/images/couch.png");
-fridgeImg = loadImage("assets/images/fridge.png");
-kitchentableImg = loadImage("assets/images/kitchentable.png");
-shoerackImg = loadImage("assets/images/shoerack.png");
-bookshelfImg = loadImage("assets/images/bookshelf.png");
+  tvstandImg = loadImage("assets/images/tvstand.png");
+  couchImg = loadImage("assets/images/couch.png");
+  fridgeImg = loadImage("assets/images/fridge.png");
+  kitchentableImg = loadImage("assets/images/kitchentable.png");
+  shoerackImg = loadImage("assets/images/shoerack.png");
+  bookshelfImg = loadImage("assets/images/bookshelf.png");
 
   // Stage 2 assets
   groceryImg = loadImage("assets/images/grocery.png");
@@ -962,14 +1254,14 @@ bookshelfImg = loadImage("assets/images/bookshelf.png");
   phoneImg = loadImage("assets/images/phone.png");
   carImg = loadImage("assets/images/car.png");
   woodImg = loadImage("assets/images/wood.jpg");
-redWallImg = loadImage("assets/images/redwall.jpg");
+  redWallImg = loadImage("assets/images/redwall.jpg");
 
-firehydrantImg = loadImage("assets/images/firehydrant.png");
-bushImg = loadImage("assets/images/bush.png");
-newspaperImg = loadImage("assets/images/newspaper.png");
-shoppingcartImg = loadImage("assets/images/shoppingcart.png");
-transhcanImg = loadImage("assets/images/transhcan.png");
-storeImg = loadImage("assets/images/store.png");
+  firehydrantImg = loadImage("assets/images/firehydrant.png");
+  bushImg = loadImage("assets/images/bush.png");
+  newspaperImg = loadImage("assets/images/newspaper.png");
+  shoppingcartImg = loadImage("assets/images/shoppingcart.png");
+  transhcanImg = loadImage("assets/images/transhcan.png");
+  storeImg = loadImage("assets/images/store.png");
 
   // Stage 3 assets
   computerImg = loadImage("assets/images/computer.png");
@@ -983,12 +1275,10 @@ storeImg = loadImage("assets/images/store.png");
   officeWallImg = loadImage("assets/images/officewall.jpg");
 
   watercoolerImg = loadImage("assets/images/Watercooler.png");
-officedeskImg = loadImage("assets/images/officedesk.png");
-recyclebinImg = loadImage("assets/images/recyclebin.png");
-cabinetImg = loadImage("assets/images/cabinet.png");
+  officedeskImg = loadImage("assets/images/officedesk.png");
+  recyclebinImg = loadImage("assets/images/recyclebin.png");
+  cabinetImg = loadImage("assets/images/cabinet.png");
 }
-
-
 
 // ===================== p5.js SETUP =====================
 function setup() {
@@ -1105,11 +1395,9 @@ function draw() {
 function drawStartScreen() {
   background(COL_BG[0], COL_BG[1], COL_BG[2]);
 
-
   // Start title ambient soundscape if audio is ready and not already playing
   if (audioReady && !titleActive) {
-    stopAmbient(); 
-
+    stopAmbient();
   }
 
   drawStartBackdrop();
@@ -1310,9 +1598,9 @@ function drawStartBackdrop() {
     { x: 760, y: 510, w: 38, h: 4 },
     { x: 400, y: 560, w: 32, h: 4 },
     { x: 620, y: 100, w: 36, h: 4 },
-    { x: 90,  y: 340, w: 28, h: 4 },
+    { x: 90, y: 340, w: 28, h: 4 },
     { x: 910, y: 360, w: 34, h: 4 },
-    { x: 310, y: 80,  w: 42, h: 4 },
+    { x: 310, y: 80, w: 42, h: 4 },
     { x: 700, y: 580, w: 30, h: 4 },
   ];
   for (let i = 0; i < fragments.length; i++) {
@@ -1594,11 +1882,7 @@ function drawPlayScreen() {
 
 // ===================== STAGE TRANSITION SCREEN =====================
 function drawStageTransitionScreen() {
-  background(
-    COL_TRANSITION_BG[0],
-    COL_TRANSITION_BG[1],
-    COL_TRANSITION_BG[2],
-  );
+  background(COL_TRANSITION_BG[0], COL_TRANSITION_BG[1], COL_TRANSITION_BG[2]);
 
   if (!endSoundPlayed) {
     playStageCompleteSound();
@@ -1630,17 +1914,31 @@ function drawStageTransitionScreen() {
     rect(cx, cy + 8, TRANSITION_CARD_W + 16, TRANSITION_CARD_H + 16, 24);
   }
 
-  fill(COL_TRANSITION_CARD[0], COL_TRANSITION_CARD[1], COL_TRANSITION_CARD[2], 236);
+  fill(
+    COL_TRANSITION_CARD[0],
+    COL_TRANSITION_CARD[1],
+    COL_TRANSITION_CARD[2],
+    236,
+  );
   rectMode(CENTER);
   rect(cx, cy, TRANSITION_CARD_W, TRANSITION_CARD_H, 20);
 
   textAlign(CENTER, CENTER);
   textStyle(NORMAL);
   textSize(10.5);
-  fill(COL_TRANSITION_SUB[0], COL_TRANSITION_SUB[1], COL_TRANSITION_SUB[2], 185);
+  fill(
+    COL_TRANSITION_SUB[0],
+    COL_TRANSITION_SUB[1],
+    COL_TRANSITION_SUB[2],
+    185,
+  );
   text(progressText, cx, progressY);
 
-  fill(COL_TRANSITION_TITLE[0], COL_TRANSITION_TITLE[1], COL_TRANSITION_TITLE[2]);
+  fill(
+    COL_TRANSITION_TITLE[0],
+    COL_TRANSITION_TITLE[1],
+    COL_TRANSITION_TITLE[2],
+  );
   textSize(31);
   textStyle(BOLD);
   text("Stage " + currentStageData.stageNum + " Complete", cx, titleY);
@@ -1663,13 +1961,28 @@ function drawStageTransitionScreen() {
   drawTransitionInfoLine(cx, infoY, nextStage.name, carryOverload);
 
   if (!lowSensoryMode) {
-    fill(COL_TRANSITION_TITLE[0], COL_TRANSITION_TITLE[1], COL_TRANSITION_TITLE[2], 14);
+    fill(
+      COL_TRANSITION_TITLE[0],
+      COL_TRANSITION_TITLE[1],
+      COL_TRANSITION_TITLE[2],
+      14,
+    );
     rect(cx, buttonY, TRANSITION_BUTTON_W + 18, TRANSITION_BUTTON_H + 10, 18);
   }
-  fill(COL_TRANSITION_BUTTON[0], COL_TRANSITION_BUTTON[1], COL_TRANSITION_BUTTON[2], 245);
+  fill(
+    COL_TRANSITION_BUTTON[0],
+    COL_TRANSITION_BUTTON[1],
+    COL_TRANSITION_BUTTON[2],
+    245,
+  );
   rect(cx, buttonY, TRANSITION_BUTTON_W, TRANSITION_BUTTON_H, 16);
   noFill();
-  stroke(COL_TRANSITION_LINE[0], COL_TRANSITION_LINE[1], COL_TRANSITION_LINE[2], 95);
+  stroke(
+    COL_TRANSITION_LINE[0],
+    COL_TRANSITION_LINE[1],
+    COL_TRANSITION_LINE[2],
+    95,
+  );
   strokeWeight(1.2);
   rect(cx, buttonY, TRANSITION_BUTTON_W, TRANSITION_BUTTON_H, 16);
   noStroke();
@@ -1681,7 +1994,12 @@ function drawStageTransitionScreen() {
   textStyle(NORMAL);
 
   if (lowSensoryMode) {
-    fill(COL_TRANSITION_SUB[0], COL_TRANSITION_SUB[1], COL_TRANSITION_SUB[2], 150);
+    fill(
+      COL_TRANSITION_SUB[0],
+      COL_TRANSITION_SUB[1],
+      COL_TRANSITION_SUB[2],
+      150,
+    );
     textSize(10);
     text("Low Sensory Mode [ON]", cx, buttonY + 38);
   }
@@ -1734,7 +2052,6 @@ function drawWinScreen() {
       let a = map(py, CANVAS_H, 0, 20, 4);
       let sz = map(py, CANVAS_H, 0, 3, 1.5);
     }
-   
   }
 
   // --- Centered panel ---
@@ -1743,7 +2060,8 @@ function drawWinScreen() {
   let panelX = cx - panelW / 2;
   let panelY = cy - panelH / 2;
 
-  noStroke(); rectMode(CORNER);
+  noStroke();
+  rectMode(CORNER);
   // Panel shadow
   if (!lowSensoryMode) {
     fill(10, 20, 12, 60);
@@ -1778,9 +2096,17 @@ function drawWinScreen() {
   textSize(12);
   fill(160, 195, 170);
   if (totalRespawnsUsed === 0) {
-    text("Not overwhelmed once — but notice how hard it still felt.", cx, contentTop + 82);
+    text(
+      "Not overwhelmed once — but notice how hard it still felt.",
+      cx,
+      contentTop + 82,
+    );
   } else {
-    text("Overwhelmed " + totalRespawnsUsed + " time(s) along the way.", cx, contentTop + 82);
+    text(
+      "Overwhelmed " + totalRespawnsUsed + " time(s) along the way.",
+      cx,
+      contentTop + 82,
+    );
   }
 
   // Divider
@@ -1794,11 +2120,19 @@ function drawWinScreen() {
   textSize(13);
   fill(180, 210, 185);
   textStyle(ITALIC);
-  text("For many TBI survivors, this effort is part of every single day.", cx, contentTop + 142);
+  text(
+    "For many TBI survivors, this effort is part of every single day.",
+    cx,
+    contentTop + 142,
+  );
   textStyle(NORMAL);
   textSize(12);
   fill(160, 180, 168);
-  text("It doesn't mean they can't do things. It means everything costs more.", cx, contentTop + 166);
+  text(
+    "It doesn't mean they can't do things. It means everything costs more.",
+    cx,
+    contentTop + 166,
+  );
 
   // Continue prompt
   fill(255);
@@ -1844,7 +2178,8 @@ function drawLoseScreen() {
   let panelX = cx - panelW / 2;
   let panelY = cy - panelH / 2;
 
-  noStroke(); rectMode(CORNER);
+  noStroke();
+  rectMode(CORNER);
   // Panel shadow
   if (!lowSensoryMode) {
     fill(15, 8, 8, 60);
@@ -1886,11 +2221,19 @@ function drawLoseScreen() {
   textSize(13);
   fill(200, 170, 175);
   textStyle(ITALIC);
-  text("Needing to stop is not failure — it's your brain protecting itself.", cx, contentTop + 110);
+  text(
+    "Needing to stop is not failure — it's your brain protecting itself.",
+    cx,
+    contentTop + 110,
+  );
   textStyle(NORMAL);
   textSize(12);
   fill(180, 155, 160);
-  text("The struggle you felt is real. So is the resilience it takes to try again.", cx, contentTop + 136);
+  text(
+    "The struggle you felt is real. So is the resilience it takes to try again.",
+    cx,
+    contentTop + 136,
+  );
 
   // Continue prompt
   fill(255);
@@ -1900,9 +2243,35 @@ function drawLoseScreen() {
   textStyle(NORMAL);
 }
 
+// ===================== STIMULUS ZONE MOVEMENT =====================
+// Moves stimulus zones in Stages 1 & 2 to create a sense of unpredictable
+// sensory pressure — representing how real-world noise sources feel to
+// someone with TBI: shifting, hard to avoid, always encroaching [3].
+function updateStimulusZoneMovement() {
+  for (let sz of stimulusZones) {
+    if (!sz.moveType) continue;
+    let t = frameCount;
+    if (sz.moveType === "horizontal") {
+      // Obstacle drifts left/right along its axis
+      let offset = sin(t * sz.speed) * sz.amplitude;
+      sz.x = sz.baseX + offset;
+    } else if (sz.moveType === "pulse") {
+      // Zone expands and contracts — TV flicker / noise radiating outward
+      let expand = sin(t * sz.speed) * sz.amplitude;
+      sz.x = sz.baseX - expand * 0.5;
+      sz.y = sz.baseY - expand * 0.5;
+      sz.w = sz.baseW + expand;
+      sz.h = sz.baseH + expand;
+    }
+  }
+}
+
 // ===================== GAME UPDATE =====================
 function updateGame() {
   let s = currentStageData;
+
+  // Update moving stimulus zones (Stages 1 & 2) [3]
+  updateStimulusZoneMovement();
 
   // --- PLAYER MOVEMENT (cognitive fatigue) [2] ---
   let speed = baseSpeed * map(overload, 0, overloadMax, 1.0, 0.5);
@@ -1942,7 +2311,6 @@ function updateGame() {
     memoryTimer -= 1;
     if (memoryTimer <= 0) showObjective = false;
   } else {
-
     showObjective = true;
   }
 
@@ -1990,6 +2358,7 @@ function updateGame() {
   overloadWarnCooldown--;
 
   updateAmbient();
+  updateZoneSounds();
 
   // --- CHECKPOINT AUTO-ADVANCE ---
   for (let i = checkpoints.length - 1; i > checkpointIndex; i--) {
@@ -2078,9 +2447,11 @@ function updateStageProgression() {
     if (currentStage >= stages.length - 1) {
       endSoundPlayed = false;
       gameState = STATE_WIN;
+      stopZoneSounds();
     } else {
       endSoundPlayed = false;
       gameState = STATE_STAGE_TRANSITION;
+      stopZoneSounds();
     }
     return;
   }
@@ -2097,6 +2468,7 @@ function updateStageProgression() {
     } else {
       endSoundPlayed = false;
       gameState = STATE_LOSE;
+      stopZoneSounds();
     }
   }
 }
@@ -2121,6 +2493,7 @@ function advanceStage() {
   gameState = STATE_PLAY;
   setTitleAmbientMix("play", 0.8);
   startAmbient();
+  initZoneSounds();
 }
 
 // ===================== PARTICLES =====================
@@ -2167,77 +2540,24 @@ function drawStage() {
     drawCalmZoneGlow(cz);
   }
 
- if (currentStage === 0) {
-  drawStageOneScene();
-} else if (currentStage === 1) {
-  drawStageTwoScene();
-} else if (currentStage === 2) {
-  drawStageThreeScene();
-} else {
-  if (!lowSensoryMode) {
-    drawFloorTiles();
+  if (currentStage === 0) {
+    drawStageOneScene();
+  } else if (currentStage === 1) {
+    drawStageTwoScene();
+  } else if (currentStage === 2) {
+    drawStageThreeScene();
   } else {
-    drawAreaLabels();
+    if (!lowSensoryMode) {
+      drawFloorTiles();
+    } else {
+      drawAreaLabels();
+    }
   }
-}
-  
 
   // Stimulus zones [3]
   noStroke();
   for (let sz of stimulusZones) {
-    if (currentStage === 0) {
-      // Stage 1 uses TV image instead of abstract red block
-      if (lowSensoryMode) {
-        noFill();
-        stroke(200, 100, 80, 80);
-        strokeWeight(2);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-        noStroke();
-      } else {
-        // very subtle red tint only, so the TV remains the main visual cue
-        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 18);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-      }
-      continue;
-    }
-
-    if (currentStage === 1) {
-      // Stage 2 uses real objects (phone / car), so hide the large abstract red blocks
-      if (lowSensoryMode) {
-        noFill();
-        stroke(200, 100, 80, 60);
-        strokeWeight(2);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-        noStroke();
-      } else {
-        // very light tint only
-        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-      }
-      continue;
-    }
-
-    if (currentStage === 2) {
-      // Stage 3 uses real objects (computer / printer), so hide large abstract red blocks
-      if (lowSensoryMode) {
-        noFill();
-        stroke(200, 100, 80, 60);
-        strokeWeight(2);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-        noStroke();
-      } else {
-        fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 12);
-        rectMode(CORNER);
-        rect(sz.x, sz.y, sz.w, sz.h, 4);
-      }
-      continue;
-    }
-
+    // All stages: subtle red tint over stimulus zone + descriptive label
     if (lowSensoryMode) {
       noFill();
       stroke(200, 100, 80, 80);
@@ -2245,327 +2565,350 @@ function drawStage() {
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
       noStroke();
-      fill(200, 100, 80, 80);
-      textAlign(CENTER, CENTER);
-      textSize(9);
-      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     } else {
-      let pulse = sin(frameCount * 0.05) * 10;
-      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 30 + pulse);
+      let pulse = sin(frameCount * 0.05) * 8;
+      fill(COL_STIMULUS[0], COL_STIMULUS[1], COL_STIMULUS[2], 2 + pulse * 0.2);
       rectMode(CORNER);
       rect(sz.x, sz.y, sz.w, sz.h, 4);
-      fill(COL_STIMULUS[0], 100, 80, 60);
-      textAlign(CENTER, CENTER);
-      textSize(9);
-      text("noise", sz.x + sz.w / 2, sz.y + sz.h / 2);
     }
-  }
 
-// Calm Zones [3]
-for (let cz of calmZones) {
-  drawCalmZone(cz);
-}
+    // Draw descriptive label above the stimulus zone so players
+    // understand what real-world sensory trigger this represents [3][5]
+    let szLabel = sz.label || "noise";
+    let labelY = sz.y - 14;
 
- // Walls / barriers
-rectMode(CORNER);
-imageMode(CORNER);
-noStroke();
+    textSize(10);
+    textStyle(BOLD);
+    let tw = textWidth(szLabel);
 
-for (let w of walls) {
-  let wallTexture = null;
-  let borderCol = [60, 60, 60];
+    fill(0, 0, 0, 220);
+    rectMode(CENTER);
+    rect(sz.x + sz.w / 2, labelY, tw + 12, 18, 4);
 
-  // Stage 1 = Home
-  if (currentStage === 0) {
-    wallTexture = woodImg;
-    borderCol = [70, 45, 25];
-  }
-  // Stage 2 = Outside / Store
-  else if (currentStage === 1) {
-    wallTexture = redWallImg;
-    borderCol = [110, 40, 30];
-  }
-  // Stage 3 = Office
-  else if (currentStage === 2) {
-    wallTexture = officeWallImg;
-    borderCol = [70, 70, 85];
-  }
-
-  if (wallTexture) {
-    // shadow
-    tint(255, 90);
-    image(wallTexture, w.x + 3, w.y + 3, w.w, w.h);
-
-    // main wall
-    tint(255, 255);
-    image(wallTexture, w.x, w.y, w.w, w.h);
-
-    // border
     noFill();
-    stroke(borderCol[0], borderCol[1], borderCol[2]);
     strokeWeight(1);
-    rect(w.x, w.y, w.w, w.h, 3);
+    stroke(255, 100, 100, 150);
+    rect(sz.x + sz.w / 2, labelY, tw + 12, 18, 4);
+
+    textAlign(CENTER, CENTER);
     noStroke();
-  } else {
-    fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
-    rect(w.x + 3, w.y + 3, w.w, w.h, 3);
-    fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
-    rect(w.x, w.y, w.w, w.h, 3);
-  }
-}
-
-noTint();
-  
-// Decorations
-rectMode(CORNER);
-imageMode(CORNER);
-noStroke();
-
-for (let d of decorations) {
-  let decoImg = null;
-
-  // default display size = original collision box
-  let drawX = d.x;
-  let drawY = d.y;
-  let drawW = d.w;
-  let drawH = d.h;
-
-  // Stage 1 home furniture mapping
-  if (currentStage === 0) {
-    // Nightstand
-    if (d.x === 170 && d.y === 210) {
-      decoImg = nightstandImg;
-      drawW = 32;
-      drawH = 28;
+    if (lowSensoryMode) {
+      fill(255, 200, 200);
+    } else {
+      fill(255, 100, 100);
     }
-    // TV stand
-    else if (d.x === 362 && d.y === 348) {
-      decoImg = tvstandImg;
-      drawX = 355;
-      drawY = 336;
-      drawW = 100;
-      drawH = 46;
+    text(szLabel, sz.x + sz.w / 2, labelY);
+    textStyle(NORMAL);
+    rectMode(CORNER);
+  }
+
+  // Calm Zones [3]
+  for (let cz of calmZones) {
+    drawCalmZone(cz);
+  }
+
+  // Walls / barriers
+  rectMode(CORNER);
+  imageMode(CORNER);
+  noStroke();
+
+  for (let w of walls) {
+    let wallTexture = null;
+    let borderCol = [60, 60, 60];
+
+    // Stage 1 = Home
+    if (currentStage === 0) {
+      wallTexture = woodImg;
+      borderCol = [70, 45, 25];
     }
-   // Couch
-else if (d.x === 380 && d.y === 460) {
-  decoImg = couchImg;
-  drawX = 350;
-  drawY = 430;
-  drawW = 180;
-  drawH = 95;
-}
+    // Stage 2 = Outside / Store
+    else if (currentStage === 1) {
+      wallTexture = redWallImg;
+      borderCol = [110, 40, 30];
+    }
+    // Stage 3 = Office
+    else if (currentStage === 2) {
+      wallTexture = officeWallImg;
+      borderCol = [70, 70, 85];
+    }
 
-// Fridge
-else if (d.x === 560 && d.y === 95) {
-  decoImg = fridgeImg;
-  drawX = d.x - 10;
-  drawY = d.y - 12;
-  drawW = d.w + 32;
-  drawH = d.h + 40;
-}
-    // Kitchen table
-   else if (d.x === 560 && d.y === 280) {
-  decoImg = kitchentableImg;
-  drawX = 540;
-  drawY = 260;
-  drawW = 120;
-  drawH = 90;
-}
-  // Shoe rack
-else if (d.x === 870 && d.y === 460) {
-  decoImg = shoerackImg;
-  drawX = 850;
-  drawY = 445;
-  drawW = 92;
-  drawH = 60;
-}
-   // Bookshelf
-else if (d.x === 30 && d.y === 310) {
-  decoImg = bookshelfImg;
-  drawX = 22;
-  drawY = 300;
-  drawW = 52;
-  drawH = 108;
-}
-  }else if (currentStage === 1) {
-  // Fire hydrant
-  if (d.x === 130 && d.y === 112) {
-    decoImg = firehydrantImg;
-    drawX = 122;
-    drawY = 104;
-    drawW = 30;
-    drawH = 42;
-  }
-  // Hedge / bush row
-  else if (d.x === 30 && d.y === 420) {
-    decoImg = bushImg;
-    drawX = 20;
-    drawY = 410;
-    drawW = 100;
-    drawH = 50;
-  }
-  // Newspaper box
-  else if (d.x === 275 && d.y === 300) {
-    decoImg = newspaperImg;
-    drawX = 265;
-    drawY = 292;
-    drawW = 40;
-    drawH = 36;
-  }
-  // Bench seat placed just below the calm zone
-  else if (d.x === 244 && d.y === 544) {
-    decoImg = benchImg;
-    drawX = 228;
-    drawY = 530;
-    drawW = 92;
-    drawH = 36;
-  }
-  // Store shelf end-cap left
-  else if (d.x === 430 && d.y === 140) {
-    decoImg = storeImg;
-    drawX = 420;
-    drawY = 130;
-    drawW = 58;
-    drawH = 70;
-  }
-  // Store display island
-  else if (d.x === 560 && d.y === 390) {
-    decoImg = storeImg;
-    drawX = 548;
-    drawY = 380;
-    drawW = 74;
-    drawH = 58;
-  }
-  // Store shelf end-cap right
-  else if (d.x === 745 && d.y === 250) {
-    decoImg = storeImg;
-    drawX = 734;
-    drawY = 240;
-    drawW = 60;
-    drawH = 70;
-  }
-  // Shopping cart
-  else if (d.x === 460 && d.y === 300) {
-    decoImg = shoppingcartImg;
-    drawX = 450;
-    drawY = 292;
-    drawW = 42;
-    drawH = 34;
-  }
-  // Pharmacy counter
-  else if (d.x === 875 && d.y === 400) {
-    decoImg = storeImg;
-    drawX = 860;
-    drawY = 392;
-    drawW = 100;
-    drawH = 42;
-  }
-  // Trash can outside
-  else if (d.x === 320 && d.y === 150) {
-    decoImg = transhcanImg;
-    drawX = 312;
-    drawY = 144;
-    drawW = 32;
-    drawH = 36;
-  }
-}else if (currentStage === 2) {
-  // Office desk 1
-  if (d.x === 40 && d.y === 130) {
-    decoImg = officedeskImg;
-    drawX = 26;
-    drawY = 118;
-    drawW = 96;
-    drawH = 52;
-  }
-  // Office desk 2
-  else if (d.x === 170 && d.y === 320) {
-    decoImg = officedeskImg;
-    drawX = 156;
-    drawY = 308;
-    drawW = 88;
-    drawH = 50;
-  }
-  // Filing cabinet
-  else if (d.x === 350 && d.y === 130) {
-    decoImg = cabinetImg;
-    drawX = 346;
-    drawY = 126;
-    drawW = 30;
-    drawH = 42;
-  }
-  // Printer (left side office)
-  else if (d.x === 58 && d.y === 260) {
-    decoImg = printerImg;
-    drawX = 52;
-    drawY = 254;
-    drawW = 42;
-    drawH = 30;
-  }
-  // Break room sofa — 先保留色块，不放图
-  else if (d.x === 460 && d.y === 320) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Break room plant — 先保留色块
-  else if (d.x === 434 && d.y === 110) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Water cooler
-  else if (d.x === 540 && d.y === 380) {
-    decoImg = watercoolerImg;
-    drawX = 534;
-    drawY = 372;
-    drawW = 34;
-    drawH = 48;
-  }
-  // Transit bench — 先保留色块
-  else if (d.x === 650 && d.y === 440) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Vending machine -> 用 cabinet 先代替
-  else if (d.x === 460 && d.y === 200) {
-    decoImg = cabinetImg;
-    drawX = 456;
-    drawY = 196;
-    drawW = 34;
-    drawH = 50;
-  }
-  // Trash bin transit
-  else if (d.x === 760 && d.y === 320) {
-    decoImg = recyclebinImg;
-    drawX = 758;
-    drawY = 318;
-    drawW = 24;
-    drawH = 28;
-  }
-  // Home stretch mailbox -> 先用 cabinet 代替
-  else if (d.x === 915 && d.y === 350) {
-    decoImg = cabinetImg;
-    drawX = 912;
-    drawY = 346;
-    drawW = 28;
-    drawH = 36;
-  }
-}
+    if (wallTexture) {
+      // shadow
+      tint(255, 90);
+      image(wallTexture, w.x + 3, w.y + 3, w.w, w.h);
 
-  if (decoImg) {
-    image(decoImg, drawX, drawY, drawW, drawH);
-  } else {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
+      // main wall
+      tint(255, 255);
+      image(wallTexture, w.x, w.y, w.w, w.h);
+
+      // border
+      noFill();
+      stroke(borderCol[0], borderCol[1], borderCol[2]);
+      strokeWeight(1);
+      rect(w.x, w.y, w.w, w.h, 3);
+      noStroke();
+    } else {
+      fill(COL_WALL_SH[0], COL_WALL_SH[1], COL_WALL_SH[2], 80);
+      rect(w.x + 3, w.y + 3, w.w, w.h, 3);
+      fill(COL_WALL[0], COL_WALL[1], COL_WALL[2]);
+      rect(w.x, w.y, w.w, w.h, 3);
+    }
   }
-}
+
+  noTint();
+
+  // Decorations
+  rectMode(CORNER);
+  imageMode(CORNER);
+  noStroke();
+
+  for (let d of decorations) {
+    let decoImg = null;
+
+    // default display size = original collision box
+    let drawX = d.x;
+    let drawY = d.y;
+    let drawW = d.w;
+    let drawH = d.h;
+
+    // Stage 1 home furniture mapping
+    if (currentStage === 0) {
+      // Nightstand
+      if (d.x === 170 && d.y === 210) {
+        decoImg = nightstandImg;
+        drawX = 162;
+        drawY = 202;
+        drawW = 48;
+        drawH = 42;
+      }
+      // TV stand
+      else if (d.x === 362 && d.y === 348) {
+        decoImg = tvstandImg;
+        drawX = 340;
+        drawY = 325;
+        drawW = 140;
+        drawH = 64;
+      }
+      // Couch
+      else if (d.x === 380 && d.y === 460) {
+        decoImg = couchImg;
+        drawX = 330;
+        drawY = 415;
+        drawW = 230;
+        drawH = 120;
+      }
+
+      // Fridge
+      else if (d.x === 560 && d.y === 95) {
+        decoImg = fridgeImg;
+        drawX = d.x - 18;
+        drawY = d.y - 20;
+        drawW = d.w + 48;
+        drawH = d.h + 60;
+      }
+      // Kitchen table
+      else if (d.x === 560 && d.y === 280) {
+        decoImg = kitchentableImg;
+        drawX = 520;
+        drawY = 245;
+        drawW = 160;
+        drawH = 120;
+      }
+      // Shoe rack
+      else if (d.x === 870 && d.y === 460) {
+        decoImg = shoerackImg;
+        drawX = 835;
+        drawY = 435;
+        drawW = 125;
+        drawH = 80;
+      }
+      // Bookshelf
+      else if (d.x === 30 && d.y === 310) {
+        decoImg = bookshelfImg;
+        drawX = 12;
+        drawY = 285;
+        drawW = 70;
+        drawH = 145;
+      }
+    } else if (currentStage === 1) {
+      // Fire hydrant
+      if (d.x === 130 && d.y === 112) {
+        decoImg = firehydrantImg;
+        drawX = 115;
+        drawY = 95;
+        drawW = 42;
+        drawH = 58;
+      }
+      // Hedge / bush row
+      else if (d.x === 30 && d.y === 420) {
+        decoImg = bushImg;
+        drawX = 5;
+        drawY = 395;
+        drawW = 135;
+        drawH = 68;
+      }
+      // Newspaper box
+      else if (d.x === 275 && d.y === 300) {
+        decoImg = newspaperImg;
+        drawX = 258;
+        drawY = 284;
+        drawW = 54;
+        drawH = 48;
+      }
+      // Bench seat placed just below the calm zone
+      else if (d.x === 244 && d.y === 544) {
+        decoImg = benchImg;
+        drawX = 212;
+        drawY = 520;
+        drawW = 125;
+        drawH = 50;
+      }
+      // Store shelf end-cap left
+      else if (d.x === 430 && d.y === 140) {
+        decoImg = storeImg;
+        drawX = 410;
+        drawY = 115;
+        drawW = 78;
+        drawH = 95;
+      }
+      // Store display island
+      else if (d.x === 560 && d.y === 390) {
+        decoImg = storeImg;
+        drawX = 535;
+        drawY = 370;
+        drawW = 100;
+        drawH = 78;
+      }
+      // Store shelf end-cap right
+      else if (d.x === 745 && d.y === 250) {
+        decoImg = storeImg;
+        drawX = 720;
+        drawY = 225;
+        drawW = 82;
+        drawH = 95;
+      }
+      // Shopping cart
+      else if (d.x === 460 && d.y === 300) {
+        decoImg = shoppingcartImg;
+        drawX = 440;
+        drawY = 284;
+        drawW = 56;
+        drawH = 46;
+      }
+      // Pharmacy counter
+      else if (d.x === 875 && d.y === 400) {
+        decoImg = storeImg;
+        drawX = 845;
+        drawY = 382;
+        drawW = 135;
+        drawH = 56;
+      }
+      // Trash can outside
+      else if (d.x === 320 && d.y === 150) {
+        decoImg = transhcanImg;
+        drawX = 304;
+        drawY = 136;
+        drawW = 44;
+        drawH = 50;
+      }
+    } else if (currentStage === 2) {
+      // Office desk 1
+      if (d.x === 40 && d.y === 130) {
+        decoImg = officedeskImg;
+        drawX = 12;
+        drawY = 105;
+        drawW = 130;
+        drawH = 70;
+      }
+      // Office desk 2
+      else if (d.x === 170 && d.y === 320) {
+        decoImg = officedeskImg;
+        drawX = 140;
+        drawY = 295;
+        drawW = 120;
+        drawH = 68;
+      }
+      // Filing cabinet
+      else if (d.x === 350 && d.y === 130) {
+        decoImg = cabinetImg;
+        drawX = 340;
+        drawY = 115;
+        drawW = 42;
+        drawH = 58;
+      }
+      // Printer (left side office)
+      else if (d.x === 58 && d.y === 260) {
+        decoImg = printerImg;
+        drawX = 42;
+        drawY = 245;
+        drawW = 58;
+        drawH = 42;
+      }
+      // Break room sofa — 先保留色块，不放图
+      else if (d.x === 460 && d.y === 320) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Break room plant — 先保留色块
+      else if (d.x === 434 && d.y === 110) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Water cooler
+      else if (d.x === 540 && d.y === 380) {
+        decoImg = watercoolerImg;
+        drawX = 526;
+        drawY = 360;
+        drawW = 48;
+        drawH = 66;
+      }
+      // Transit bench — 先保留色块
+      else if (d.x === 650 && d.y === 440) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Vending machine -> 用 cabinet 先代替
+      else if (d.x === 460 && d.y === 200) {
+        decoImg = cabinetImg;
+        drawX = 448;
+        drawY = 186;
+        drawW = 48;
+        drawH = 70;
+      }
+      // Trash bin transit
+      else if (d.x === 760 && d.y === 320) {
+        decoImg = recyclebinImg;
+        drawX = 750;
+        drawY = 310;
+        drawW = 34;
+        drawH = 40;
+      }
+      // Home stretch mailbox -> 先用 cabinet 代替
+      else if (d.x === 915 && d.y === 350) {
+        decoImg = cabinetImg;
+        drawX = 906;
+        drawY = 336;
+        drawW = 40;
+        drawH = 50;
+      }
+    }
+
+    if (decoImg) {
+      image(decoImg, drawX, drawY, drawW, drawH);
+    } else {
+      fill(d.col[0], d.col[1], d.col[2]);
+      rect(d.x, d.y, d.w, d.h, 3);
+    }
+  }
 
   // Checkpoints
-//  for (let i = 0; i < checkpoints.length; i++) {
+  //  for (let i = 0; i < checkpoints.length; i++) {
   //  if (starsCollected() >= checkpoints[i].starsReq) {
-    //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
-    //}
+  //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
+  //}
   //}
 
   // Task markers — with fading awareness [2]
@@ -2593,7 +2936,7 @@ else if (d.x === 30 && d.y === 310) {
           tint(255, 220);
         }
         imageMode(CENTER);
-        image(taskImg, s.x, s.y, 34, 34);
+        image(taskImg, s.x, s.y, 48, 48);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -2615,7 +2958,7 @@ else if (d.x === 30 && d.y === 310) {
           tint(255, 220);
         }
         imageMode(CENTER);
-        image(taskImg, s.x, s.y, 36, 36);
+        image(taskImg, s.x, s.y, 50, 50);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -2635,7 +2978,7 @@ else if (d.x === 30 && d.y === 310) {
           tint(255, 220);
         }
         imageMode(CENTER);
-        image(taskImg, s.x, s.y, 38, 38);
+        image(taskImg, s.x, s.y, 52, 52);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -2655,7 +2998,7 @@ else if (d.x === 30 && d.y === 310) {
         COL_STAR_GLOW[0],
         COL_STAR_GLOW[1],
         COL_STAR_GLOW[2],
-        40 * (starAlpha / 255)
+        40 * (starAlpha / 255),
       );
       ellipse(s.x, s.y, s.size * 2.5 + glow, s.size * 2.5 + glow);
 
@@ -2756,12 +3099,23 @@ function drawTaskLabel(task, alpha) {
 
   let labelAlpha = lowSensoryMode ? 210 : min(alpha, d < 130 ? 210 : 90);
   let labelX = task.x + (task.labelDx || 0);
-  let labelY = task.y + (task.labelDy !== undefined ? task.labelDy : -task.size - 12);
+  let labelY =
+    task.y + (task.labelDy !== undefined ? task.labelDy : -task.size - 12);
+
+  textSize(9.5);
+  textStyle(BOLD);
+  let tw = textWidth(task.label);
+
+  fill(10, 15, 30, Math.min(200, labelAlpha));
+  rectMode(CENTER);
+  rect(labelX, labelY, tw + 10, 16, 4);
+
   textAlign(CENTER, CENTER);
   fill(255, 240, 200, labelAlpha);
   noStroke();
-  textSize(9.5);
   text(task.label, labelX, labelY);
+  textStyle(NORMAL);
+  rectMode(CORNER);
 }
 
 function drawCalmZoneGlow(cz) {
@@ -2771,9 +3125,21 @@ function drawCalmZoneGlow(cz) {
   noStroke();
   // Three expanding layers for a soft bloom effect
   fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 18);
-  rect(cz.x - 18 - pulse, cz.y - 18 - pulse, cz.w + 36 + pulse * 2, cz.h + 36 + pulse * 2, 18);
+  rect(
+    cz.x - 18 - pulse,
+    cz.y - 18 - pulse,
+    cz.w + 36 + pulse * 2,
+    cz.h + 36 + pulse * 2,
+    18,
+  );
   fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 30);
-  rect(cz.x - 10 - pulse * 0.5, cz.y - 10 - pulse * 0.5, cz.w + 20 + pulse, cz.h + 20 + pulse, 12);
+  rect(
+    cz.x - 10 - pulse * 0.5,
+    cz.y - 10 - pulse * 0.5,
+    cz.w + 20 + pulse,
+    cz.h + 20 + pulse,
+    12,
+  );
   fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 45);
   rect(cz.x - 4, cz.y - 4, cz.w + 8, cz.h + 8, 8);
 }
@@ -2787,19 +3153,51 @@ function drawCalmZone(cz) {
     // Fallback: original green rectangle with label for zones without an image
     fill(COL_CALM[0], COL_CALM[1], COL_CALM[2], 180);
     rect(cz.x, cz.y, cz.w, cz.h, 10);
-    fill(220, 255, 230);
-    textSize(10);
-    textStyle(BOLD);
-    text("Calm", cz.x + cz.w / 2, cz.y + cz.h / 2 - 1);
-    textStyle(NORMAL);
   }
 
+  // Clear label pointing out the restorative zone
+  let labelY = cz.y + cz.h / 2;
+  textSize(10);
+  textStyle(BOLD);
+  let tw = textWidth("Calm Area");
+
+  fill(10, 30, 20, 220);
+  rectMode(CENTER);
+  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
+
+  noFill();
+  strokeWeight(1);
+  stroke(150, 255, 180, 150);
+  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
+
+  noStroke();
+  fill(150, 255, 180);
+  textAlign(CENTER, CENTER);
+  text("Calm Area", cz.x + cz.w / 2, labelY);
+  textStyle(NORMAL);
+  rectMode(CORNER);
+
   if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
-    fill(180, 255, 210);
-    textSize(9);
+    let recY = cz.y - 16;
+    textSize(9.5);
     textStyle(BOLD);
-    text("Recovering...", cz.x + cz.w / 2, cz.y - 8);
+    let recTw = textWidth("Recovering...");
+
+    fill(10, 30, 20, 220);
+    rectMode(CENTER);
+    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
+
+    noFill();
+    strokeWeight(1);
+    stroke(180, 255, 210, 150);
+    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
+
+    noStroke();
+    fill(180, 255, 210);
+    textAlign(CENTER, CENTER);
+    text("Recovering...", cz.x + cz.w / 2, recY);
     textStyle(NORMAL);
+    rectMode(CORNER);
   }
 }
 
@@ -2981,7 +3379,7 @@ function drawHUD() {
   textSize(10.5);
   text("Resets left: " + (respawnsLeft + 1), 20, 50);
 
-  // Calm Ability 
+  // Calm Ability
   textSize(10.5);
   fill(180, 200, 255);
   text("Calm (J): " + calmAbilityCharges, 20, 66);
@@ -3077,6 +3475,7 @@ function drawCheckpointToast() {
 
 function returnToTitleScreen() {
   stopAmbient();
+  stopZoneSounds();
   if (!titleActive) {
     startTitleAmbient("title");
   } else {
@@ -3125,8 +3524,7 @@ function keyPressed() {
   if (keyCode === 76) {
     lowSensoryMode = !lowSensoryMode;
 
-    if (gameState === STATE_START)
-      return;
+    if (gameState === STATE_START) return;
   }
 
   // Block input when how-to-play is open
@@ -3150,6 +3548,7 @@ function keyPressed() {
         setTitleAmbientMix("play", 1.2);
       }
       startAmbient();
+      initZoneSounds();
     } else if (gameState === STATE_STAGE_TRANSITION) {
       advanceStage();
     }

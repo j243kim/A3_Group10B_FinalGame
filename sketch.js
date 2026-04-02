@@ -114,7 +114,7 @@ let firehydrantImg,
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
 let communicateImg, flagImg, worknotesImg;
-let watercoolerImg, officedeskImg, recyclebinImg, cabinetImg, booksImg, npcImg;
+let WatercoolerImg, officedeskImg, recyclebinImg, cabinetImg, booksImg, npcImg;
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -1221,8 +1221,31 @@ function createStages() {
         }, // printer
       ],
       calmZones: [
-        { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg, label: "Sofa" }, // sofa
-        { x: 450, y: 480, w: 50, h: 50, img: () => coffeeImg, label: "Coffee" }, // coffee
+        {
+          x: 405,
+          y: 105,
+          w: 143,
+          h: 91,
+          img: () => sofaImg,
+          label: "Sofa",
+          labelLayout: {
+            area: { position: "below", offset: 12, anchorInsetBottom: 24 },
+            name: { position: "below", offset: 34, anchorInsetBottom: 24 },
+            status: { position: "above", offset: 8, anchorInsetTop: 15 },
+          },
+        }, // sofa
+        {
+          x: 450,
+          y: 480,
+          w: 50,
+          h: 50,
+          img: () => coffeeImg,
+          label: "Coffee",
+          labelLayout: {
+            area: { position: "below", offset: 12 },
+            name: { position: "below", offset: 36 },
+          },
+        }, // coffee
       ],
       decorations: [
         // Office desk 1 (solid)
@@ -1330,7 +1353,7 @@ function preload() {
   worknotesImg = loadImage("assets/images/worknotes.png");
   officeWallImg = loadImage("assets/images/officewall.jpg");
 
-  watercoolerImg = loadImage("assets/images/Watercooler.png");
+  WatercoolerImg = loadImage("assets/images/Watercooler.png");
   officedeskImg = loadImage("assets/images/officedesk.png");
   recyclebinImg = loadImage("assets/images/recyclebin.png");
   cabinetImg = loadImage("assets/images/cabinet.png");
@@ -2678,34 +2701,14 @@ function drawStage() {
   for (let cz of calmZones) {
     drawCalmZone(cz);
 
-    if (currentStage === 2) {
-      // Draw label for calm zones
-      let czLabel = cz.label || "Calm Area";
-      let labelY = cz.y + cz.h + 10; // Position label below the image
-
-      if (cz.label === "Sofa") {
-        labelY = cz.y - 10; // Located in the middle between the sofa image and the recovering message
-      } else if (cz.label === "Coffee") {
-        labelY = cz.y + cz.h + 30; // Placed directly below the "Calm Area" label
-      }
-
-      textSize(10);
-      textStyle(BOLD);
-      let tw = textWidth(czLabel);
-
-      fill(10, 30, 20, 220);
-      rectMode(CENTER);
-      rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-
-      noFill();
-      strokeWeight(1);
-      stroke(150, 255, 180, 150);
-      rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-      noStroke();
-      fill(150, 255, 180);
-      text(czLabel, cz.x + cz.w / 2, labelY);
-      textStyle(NORMAL);
-      rectMode(CORNER);
+    if (currentStage === 2 && cz.label) {
+      let namePos = getCalmZoneLabelPoint(cz, "name");
+      drawZoneBadge(cz.label, namePos.x, namePos.y, {
+        clampToPlayArea: true,
+        fill: [10, 30, 20, 220],
+        stroke: [150, 255, 180, 150],
+        text: [150, 255, 180],
+      });
     }
   }
 
@@ -2959,10 +2962,10 @@ function drawStage() {
         continue;
       }
       // Water cooler
-      else if (d.x === 540 && d.y === 380) {
-        decoImg = watercoolerImg;
-        drawX = 534;
-        drawY = 372;
+      else if (d.x === 560 && d.y === 430) {
+        decoImg = WatercoolerImg;
+        drawX = d.x - 6;
+        drawY = d.y - 8;
         drawW = 34;
         drawH = 48;
       }
@@ -2995,6 +2998,40 @@ function drawStage() {
         drawY = 346;
         drawW = 28;
         drawH = 36;
+      }
+
+      // NPC bottom left (blocking)
+      else if (d.x === 110 && d.y === 520) {
+        decoImg = npcImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 32;
+        drawH = 32;
+      }
+
+      // NPC top right (blocking)
+      else if (d.x === 850 && d.y === 150) {
+        decoImg = npcImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 32;
+        drawH = 32;
+      }
+      // books left
+      else if (d.x === 120 && d.y === 240) {
+        decoImg = booksImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 34;
+        drawH = 26;
+      }
+      // books right
+      else if (d.x === 820 && d.y === 120) {
+        decoImg = booksImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 34;
+        drawH = 26;
       }
     }
 
@@ -3219,6 +3256,80 @@ function drawTaskLabel(task, alpha) {
   rectMode(CORNER);
 }
 
+function getCalmZoneLabelPoint(cz, kind) {
+  let layout = (cz.labelLayout && cz.labelLayout[kind]) || {};
+  let position = layout.position || (kind === "area" ? "center" : "above");
+
+  if (kind === "name" && !layout.position) {
+    position = "below";
+  }
+
+  let offset =
+    layout.offset !== undefined
+      ? layout.offset
+      : kind === "status"
+        ? 16
+        : kind === "name"
+          ? 14
+          : position === "center"
+            ? 0
+            : 10;
+
+  let x = cz.x + cz.w / 2 + (layout.xOffset || 0);
+  let y = cz.y + cz.h / 2;
+  let anchorTop = cz.y + (layout.anchorInsetTop || 0);
+  let anchorBottom = cz.y + cz.h - (layout.anchorInsetBottom || 0);
+
+  if (position === "above") {
+    y = anchorTop - offset;
+  } else if (position === "below") {
+    y = anchorBottom + offset;
+  } else {
+    y += offset;
+  }
+
+  return { x, y };
+}
+
+function drawZoneBadge(label, x, y, style = {}) {
+  let textSizeValue = style.textSize || 10;
+  let height = style.height || 18;
+  let paddingX = style.paddingX || 12;
+  let radius = style.radius || 4;
+  let playAreaPadding = style.playAreaPadding || 6;
+  let fillCol = style.fill || [10, 30, 20, 220];
+  let strokeCol = style.stroke || [150, 255, 180, 150];
+  let textCol = style.text || [150, 255, 180];
+
+  if (style.clampToPlayArea) {
+    let minY = PLAY_TOP + height / 2 + playAreaPadding;
+    let maxY = PLAY_BOTTOM - height / 2 - playAreaPadding;
+    y = constrain(y, minY, maxY);
+  }
+
+  textSize(textSizeValue);
+  textStyle(BOLD);
+  let tw = textWidth(label);
+
+  fill(...fillCol);
+  rectMode(CENTER);
+  rect(x, y, tw + paddingX, height, radius);
+
+  if (strokeCol) {
+    noFill();
+    strokeWeight(1);
+    stroke(...strokeCol);
+    rect(x, y, tw + paddingX, height, radius);
+  }
+
+  noStroke();
+  fill(...textCol);
+  textAlign(CENTER, CENTER);
+  text(label, x, y);
+  textStyle(NORMAL);
+  rectMode(CORNER);
+}
+
 function drawCalmZoneGlow(cz) {
   // Drawn before scene images so the glow appears behind the object
   let pulse = lowSensoryMode ? 0 : sin(frameCount * 0.07) * 10;
@@ -3256,59 +3367,24 @@ function drawCalmZone(cz) {
     rect(cz.x, cz.y, cz.w, cz.h, 10);
   }
 
-  // Clear label pointing out the restorative zone
-  let labelY = cz.y + cz.h / 2;
-
-  if (currentStage === 2 && cz.label === "Coffee") {
-    labelY = cz.y + cz.h + 10; // Replaces the position where the original Coffee label was
-  }
-
-  textSize(10);
-  textStyle(BOLD);
-  let tw = textWidth("Calm Area");
-
-  fill(10, 30, 20, 220);
-  rectMode(CENTER);
-  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-
-  noFill();
-  strokeWeight(1);
-  stroke(150, 255, 180, 150);
-  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-
-  noStroke();
-  fill(150, 255, 180);
-  textAlign(CENTER, CENTER);
-  text("Calm Area", cz.x + cz.w / 2, labelY);
-  textStyle(NORMAL);
-  rectMode(CORNER);
+  let areaPos = getCalmZoneLabelPoint(cz, "area");
+  drawZoneBadge("Calm Area", areaPos.x, areaPos.y, {
+    clampToPlayArea: true,
+    fill: [10, 30, 20, 220],
+    stroke: [150, 255, 180, 150],
+    text: [150, 255, 180],
+  });
 
   if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
-    let recY = cz.y - 16;
-
-    if (currentStage === 2 && cz.label === "Sofa") {
-      recY = cz.y - 32; // Move higher so the sofa label fits perfectly in the middle
-    }
-
-    textSize(9.5);
-    textStyle(BOLD);
-    let recTw = textWidth("Recovering...");
-
-    fill(10, 30, 20, 220);
-    rectMode(CENTER);
-    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
-
-    noFill();
-    strokeWeight(1);
-    stroke(180, 255, 210, 150);
-    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
-
-    noStroke();
-    fill(180, 255, 210);
-    textAlign(CENTER, CENTER);
-    text("Recovering...", cz.x + cz.w / 2, recY);
-    textStyle(NORMAL);
-    rectMode(CORNER);
+    let statusPos = getCalmZoneLabelPoint(cz, "status");
+    drawZoneBadge("Recovering...", statusPos.x, statusPos.y, {
+      clampToPlayArea: true,
+      textSize: 9.5,
+      height: 16,
+      fill: [10, 30, 20, 220],
+      stroke: [180, 255, 210, 150],
+      text: [180, 255, 210],
+    });
   }
 }
 

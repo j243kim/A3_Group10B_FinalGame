@@ -1456,6 +1456,57 @@ function drawStartScreen() {
   rect(panelX, panelY, panelW, panelH, 20);
 
   if (!lowSensoryMode) {
+    let crackGlow = 14 + sin(frameCount * 0.09) * 8;
+    stroke(110, 135, 190, crackGlow);
+    strokeWeight(1);
+
+    line(panelX + 90, panelY + 24, panelX + 140, panelY + 78);
+    line(panelX + 140, panelY + 78, panelX + 210, panelY + 118);
+
+    line(
+      panelX + panelW - 120,
+      panelY + 42,
+      panelX + panelW - 170,
+      panelY + 96,
+    );
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 230,
+      panelY + 128,
+    );
+
+    line(
+      panelX + 70,
+      panelY + panelH - 70,
+      panelX + 130,
+      panelY + panelH - 120,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 210,
+      panelY + panelH - 155,
+    );
+
+    line(panelX + 140, panelY + 78, panelX + 125, panelY + 104);
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 150,
+      panelY + 124,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 108,
+      panelY + panelH - 145,
+    );
+
+    noStroke();
+  }
+
+  if (!lowSensoryMode) {
     let panelFlash = max(0, sin(frameCount * 0.21) - 0.9) * 60;
     fill(255, 255, 255, panelFlash);
     rect(panelX, panelY, panelW, panelH, 18);
@@ -1469,11 +1520,25 @@ function drawStartScreen() {
   }
 
   textAlign(CENTER, CENTER);
-
-  fill(255, 210, 75);
   textSize(54);
   textStyle(BOLD);
-  text("Fragmented", heroCX, titleY);
+
+  if (!lowSensoryMode) {
+    let glitchX = sin(frameCount * 0.18) * 2.2;
+    let glitchY = cos(frameCount * 0.14) * 1.1;
+
+    fill(255, 80, 80, 42);
+    text("Fragmented", heroCX - 3 + glitchX, titleY - 1);
+
+    fill(120, 180, 255, 38);
+    text("Fragmented", heroCX + 3 - glitchX, titleY + 1);
+
+    fill(255, 210, 75);
+    text("Fragmented", heroCX + glitchX * 0.4, titleY + glitchY * 0.3);
+  } else {
+    fill(255, 210, 75);
+    text("Fragmented", heroCX, titleY);
+  }
 
   textStyle(NORMAL);
   textSize(13);
@@ -1581,62 +1646,96 @@ function drawStartBackdrop() {
   // =========================
   // 3) Neural pathway lines with stronger instability
   // =========================
-  let neuralSeeds = [
-    { sx: 280, sy: 180, ang: 0.4 },
-    { sx: 720, sy: 180, ang: 2.7 },
-    { sx: 200, sy: 420, ang: 0.9 },
-    { sx: 800, sy: 420, ang: 2.2 },
-    { sx: 500, sy: 130, ang: 1.5 },
-    { sx: 370, sy: 500, ang: 0.2 },
-    { sx: 630, sy: 500, ang: 2.9 },
-    { sx: 150, sy: 300, ang: 0.6 },
-    { sx: 850, sy: 300, ang: 2.5 },
+  // --- Layer 2: Fragment shards / broken neural mesh ---
+  let shardSeeds = [
+    { x: 220, y: 170, sides: 5, r: 34 },
+    { x: 760, y: 180, sides: 4, r: 42 },
+    { x: 180, y: 420, sides: 6, r: 30 },
+    { x: 820, y: 420, sides: 5, r: 36 },
+    { x: 500, y: 120, sides: 4, r: 28 },
+    { x: 340, y: 520, sides: 5, r: 24 },
+    { x: 650, y: 520, sides: 6, r: 26 },
+    { x: 120, y: 300, sides: 4, r: 22 },
+    { x: 890, y: 290, sides: 5, r: 24 },
   ];
 
-  for (let n = 0; n < neuralSeeds.length; n++) {
-    let seed = neuralSeeds[n];
-    let px = seed.sx;
-    let py = seed.sy;
-    let ang = seed.ang + sin(t * 0.005 + n * 1.3) * 0.3;
-    let segLen = 18;
-    let segments = 6 + (n % 3);
+  for (let i = 0; i < shardSeeds.length; i++) {
+    let s = shardSeeds[i];
+    let crackAlpha = map(sin(t * 0.02 + i * 1.7), -1, 1, 6, 24);
 
-    // opacity flutter
-    let flickerPhase = sin(t * 0.018 + n * 2.1);
-    let pathAlpha = map(flickerPhase, -1, 1, 2, 20);
-
-    // occasional hard flicker drops
-    if (sin(t * 0.16 + n * 3.7) > 0.86) {
-      pathAlpha *= 0.22;
+    if (sin(t * 0.18 + i * 2.9) > 0.82) {
+      crackAlpha *= 0.25;
     }
 
-    stroke(90, 100, 150, pathAlpha);
-    strokeWeight(1);
+    push();
+    translate(s.x, s.y);
+    rotate(sin(t * 0.006 + i) * 0.18);
 
-    for (let s = 0; s < segments; s++) {
-      let nx = px + cos(ang) * segLen;
-      let ny = py + sin(ang) * segLen;
+    stroke(95, 110, 165, crackAlpha);
+    strokeWeight(1.1);
+    fill(50, 60, 95, crackAlpha * 0.12);
 
-      // more unstable break pattern
-      let broken = sin(t * 0.025 + n * 3.7 + s * 1.9) > 0.35;
+    beginShape();
+    for (let a = 0; a < TWO_PI; a += TWO_PI / s.sides) {
+      let rr = s.r + sin(t * 0.01 + a * 3 + i) * 6;
+      let vx = cos(a) * rr;
+      let vy = sin(a) * rr;
+      vertex(vx, vy);
+    }
+    endShape(CLOSE);
 
-      if (!broken) {
-        line(px, py, nx, ny);
+    for (let k = 0; k < s.sides; k++) {
+      let ang = (TWO_PI / s.sides) * k;
+      let ex = cos(ang) * (s.r * 0.85);
+      let ey = sin(ang) * (s.r * 0.85);
+      line(0, 0, ex, ey);
+    }
+
+    for (let k = 0; k < 3; k++) {
+      let a1 = i * 0.9 + k * 1.7;
+      let len = s.r + 14 + k * 10;
+      let x1 = cos(a1) * 8;
+      let y1 = sin(a1) * 8;
+      let x2 = cos(a1) * len;
+      let y2 = sin(a1) * len;
+      if (sin(t * 0.04 + i * 3 + k) > -0.2) {
+        line(x1, y1, x2, y2);
       }
+    }
 
-      if (s < segments - 1) {
-        noStroke();
-        fill(100, 120, 170, broken ? 3 : pathAlpha * 0.8);
-        ellipse(nx, ny, 3, 3);
-        stroke(90, 100, 150, pathAlpha);
-        strokeWeight(1);
-      }
+    pop();
+  }
 
-      px = nx;
-      py = ny;
-      ang += sin(t * 0.008 + s * 0.9 + n) * 0.5;
+  let links = [
+    [0, 4],
+    [4, 1],
+    [0, 2],
+    [1, 3],
+    [2, 5],
+    [3, 6],
+    [5, 6],
+    [7, 0],
+    [1, 8],
+  ];
+
+  strokeWeight(1);
+  for (let i = 0; i < links.length; i++) {
+    let a = shardSeeds[links[i][0]];
+    let b = shardSeeds[links[i][1]];
+    let linkAlpha = map(sin(t * 0.016 + i * 2.4), -1, 1, 3, 18);
+    stroke(80, 95, 145, linkAlpha);
+
+    let mx = (a.x + b.x) / 2 + sin(t * 0.01 + i) * 18;
+    let my = (a.y + b.y) / 2 + cos(t * 0.012 + i) * 12;
+
+    if (sin(t * 0.09 + i * 1.8) > 0.15) {
+      line(a.x, a.y, mx, my);
+    }
+    if (sin(t * 0.09 + i * 1.8 + 0.8) > 0.28) {
+      line(mx, my, b.x, b.y);
     }
   }
+
   noStroke();
 
   // =========================

@@ -696,6 +696,19 @@ let endSoundPlayed = false;
 let overloadWarnCooldown = 0;
 let calmSoundCooldown = 0;
 
+// ===================== PLAYER VISION =====================
+const visionRadiusBase = 75;
+const visionRadiusMin = 30;
+const visionSoftness = 60;
+let visionGraphics = null;
+
+// ===================== MINI MAP =====================
+const mapW = 160;
+const mapH = 100;
+const mapPad = 10;
+const mapBorder = 6;
+let miniMapExpanded = false;
+let mapBounds = { x: 0, y: 0, w: mapW, h: mapH };
 // ===================== HELPERS =====================
 function starsCollected() {
   if (!currentStageData) return 0;
@@ -1369,6 +1382,7 @@ function setup() {
   createStages();
   initAudio();
   startTitleAmbient("title");
+  initVisionGraphics();
 }
 
 // ===================== DRAW LOOP =====================
@@ -1516,9 +1530,68 @@ function drawStartScreen() {
     rect(panelX - 10, panelY - 10, panelW + 20, panelH + 20, 24);
   }
 
-  fill(18, 20, 42, 206);
+  let panelFlutter =
+    206 + sin(frameCount * 0.05) * 10 + sin(frameCount * 0.12 + 1.8) * 4;
+  fill(18, 20, 42, panelFlutter);
   rectMode(CORNER);
   rect(panelX, panelY, panelW, panelH, 20);
+
+  if (!lowSensoryMode) {
+    let crackGlow = 14 + sin(frameCount * 0.09) * 8;
+    stroke(110, 135, 190, crackGlow);
+    strokeWeight(1);
+
+    line(panelX + 90, panelY + 24, panelX + 140, panelY + 78);
+    line(panelX + 140, panelY + 78, panelX + 210, panelY + 118);
+
+    line(
+      panelX + panelW - 120,
+      panelY + 42,
+      panelX + panelW - 170,
+      panelY + 96,
+    );
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 230,
+      panelY + 128,
+    );
+
+    line(
+      panelX + 70,
+      panelY + panelH - 70,
+      panelX + 130,
+      panelY + panelH - 120,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 210,
+      panelY + panelH - 155,
+    );
+
+    line(panelX + 140, panelY + 78, panelX + 125, panelY + 104);
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 150,
+      panelY + 124,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 108,
+      panelY + panelH - 145,
+    );
+
+    noStroke();
+  }
+
+  if (!lowSensoryMode) {
+    let panelFlash = max(0, sin(frameCount * 0.21) - 0.9) * 60;
+    fill(255, 255, 255, panelFlash);
+    rect(panelX, panelY, panelW, panelH, 18);
+  }
 
   if (!lowSensoryMode) {
     fill(255, 210, 75, 16);
@@ -1528,20 +1601,25 @@ function drawStartScreen() {
   }
 
   textAlign(CENTER, CENTER);
+  textSize(54);
   textStyle(BOLD);
 
-  let titlePulse = map(sin(frameCount * 0.06), -1, 1, 52, 58);
-  let titleBright = map(sin(frameCount * 0.06), -1, 1, 210, 255);
+  if (!lowSensoryMode) {
+    let glitchX = sin(frameCount * 0.18) * 2.2;
+    let glitchY = cos(frameCount * 0.14) * 1.1;
 
-  // soft glow behind title
-  textSize(titlePulse + 8);
-  fill(255, 210, 75, 35);
-  text("Fragmented", heroCX, titleY);
+    fill(255, 80, 80, 42);
+    text("Fragmented", heroCX - 3 + glitchX, titleY - 1);
 
-  // main title
-  textSize(titlePulse);
-  fill(255, titleBright, 75);
-  text("Fragmented", heroCX, titleY);
+    fill(120, 180, 255, 38);
+    text("Fragmented", heroCX + 3 - glitchX, titleY + 1);
+
+    fill(255, 210, 75);
+    text("Fragmented", heroCX + glitchX * 0.4, titleY + glitchY * 0.3);
+  } else {
+    fill(255, 210, 75);
+    text("Fragmented", heroCX, titleY);
+  }
 
   textStyle(NORMAL);
   textSize(13);
@@ -1611,122 +1689,202 @@ function drawStartBackdrop() {
   let cy = CANVAS_H / 2;
   let t = frameCount;
 
-  // --- Layer 1: Faint head silhouette outline (centered behind panel) ---
-  // A simple abstract oval representing the head, with a subtle inner shape
-  // for the brain region — grounding the TBI theme visually.
+  // =========================
+  // 1) Global background flutter
+  // =========================
+  let bgFlutter = 12 + sin(t * 0.045) * 6 + sin(t * 0.11 + 1.4) * 3;
+  fill(22, 24, 42, bgFlutter);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  // very light irregular flicker pulses
+  if (sin(t * 0.23) > 0.92) {
+    fill(90, 100, 150, 8);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+  if (sin(t * 0.31 + 2.1) > 0.95) {
+    fill(255, 210, 75, 5);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  // =========================
+  // 2) Faint head silhouette
+  // =========================
   push();
   translate(cx, cy - 20);
   noFill();
-  // Outer head outline — faint, slightly breathing
+
   let headBreath = sin(t * 0.012) * 3;
-  stroke(60, 65, 95, 18 + sin(t * 0.02) * 4);
+  let headAlpha = 12 + sin(t * 0.04) * 5;
+  stroke(60, 65, 95, headAlpha);
   strokeWeight(1.5);
   ellipse(0, 0, 320 + headBreath, 390 + headBreath);
-  // Inner brain region — smaller oval, even fainter
-  stroke(70, 75, 110, 12);
+
+  stroke(70, 75, 110, 8 + sin(t * 0.028 + 0.8) * 3);
   strokeWeight(1);
   ellipse(0, -30, 220 + headBreath * 0.6, 240 + headBreath * 0.6);
   pop();
 
-  // --- Layer 2: Neural pathway lines ---
-  // Branching lines that flicker, break, and reconnect — representing
-  // damaged neural connections and the effort to maintain cognitive pathways.
-  let neuralSeeds = [
-    { sx: 280, sy: 180, ang: 0.4 },
-    { sx: 720, sy: 180, ang: 2.7 },
-    { sx: 200, sy: 420, ang: 0.9 },
-    { sx: 800, sy: 420, ang: 2.2 },
-    { sx: 500, sy: 130, ang: 1.5 },
-    { sx: 370, sy: 500, ang: 0.2 },
-    { sx: 630, sy: 500, ang: 2.9 },
-    { sx: 150, sy: 300, ang: 0.6 },
-    { sx: 850, sy: 300, ang: 2.5 },
+  // =========================
+  // 3) Neural pathway lines with stronger instability
+  // =========================
+  // --- Layer 2: Fragment shards / broken neural mesh ---
+  let shardSeeds = [
+    { x: 220, y: 170, sides: 5, r: 34 },
+    { x: 760, y: 180, sides: 4, r: 42 },
+    { x: 180, y: 420, sides: 6, r: 30 },
+    { x: 820, y: 420, sides: 5, r: 36 },
+    { x: 500, y: 120, sides: 4, r: 28 },
+    { x: 340, y: 520, sides: 5, r: 24 },
+    { x: 650, y: 520, sides: 6, r: 26 },
+    { x: 120, y: 300, sides: 4, r: 22 },
+    { x: 890, y: 290, sides: 5, r: 24 },
   ];
-  for (let n = 0; n < neuralSeeds.length; n++) {
-    let seed = neuralSeeds[n];
-    let px = seed.sx;
-    let py = seed.sy;
-    let ang = seed.ang + sin(t * 0.005 + n * 1.3) * 0.3;
-    let segLen = 18;
-    let segments = 6 + (n % 3);
-    // Each pathway flickers in and out on its own cycle
-    let flickerPhase = sin(t * 0.018 + n * 2.1);
-    let pathAlpha = map(flickerPhase, -1, 1, 4, 22);
 
-    stroke(90, 100, 150, pathAlpha);
-    strokeWeight(1);
-    for (let s = 0; s < segments; s++) {
-      let nx = px + cos(ang) * segLen;
-      let ny = py + sin(ang) * segLen;
-      // Broken connections — skip drawing some segments to show damage
-      let broken = sin(t * 0.025 + n * 3.7 + s * 1.9) > 0.4;
-      if (!broken) {
-        line(px, py, nx, ny);
+  for (let i = 0; i < shardSeeds.length; i++) {
+    let s = shardSeeds[i];
+    let crackAlpha = map(sin(t * 0.02 + i * 1.7), -1, 1, 6, 24);
+
+    if (sin(t * 0.18 + i * 2.9) > 0.82) {
+      crackAlpha *= 0.25;
+    }
+
+    push();
+    translate(s.x, s.y);
+    rotate(sin(t * 0.006 + i) * 0.18);
+
+    stroke(95, 110, 165, crackAlpha);
+    strokeWeight(1.1);
+    fill(50, 60, 95, crackAlpha * 0.12);
+
+    beginShape();
+    for (let a = 0; a < TWO_PI; a += TWO_PI / s.sides) {
+      let rr = s.r + sin(t * 0.01 + a * 3 + i) * 6;
+      let vx = cos(a) * rr;
+      let vy = sin(a) * rr;
+      vertex(vx, vy);
+    }
+    endShape(CLOSE);
+
+    for (let k = 0; k < s.sides; k++) {
+      let ang = (TWO_PI / s.sides) * k;
+      let ex = cos(ang) * (s.r * 0.85);
+      let ey = sin(ang) * (s.r * 0.85);
+      line(0, 0, ex, ey);
+    }
+
+    for (let k = 0; k < 3; k++) {
+      let a1 = i * 0.9 + k * 1.7;
+      let len = s.r + 14 + k * 10;
+      let x1 = cos(a1) * 8;
+      let y1 = sin(a1) * 8;
+      let x2 = cos(a1) * len;
+      let y2 = sin(a1) * len;
+      if (sin(t * 0.04 + i * 3 + k) > -0.2) {
+        line(x1, y1, x2, y2);
       }
-      // Small synapse node at each joint
-      if (s < segments - 1) {
-        noStroke();
-        fill(100, 120, 170, broken ? 5 : pathAlpha * 0.8);
-        ellipse(nx, ny, 3, 3);
-        stroke(90, 100, 150, pathAlpha);
-        strokeWeight(1);
-      }
-      px = nx;
-      py = ny;
-      // Branch direction drifts
-      ang += sin(t * 0.008 + s * 0.9 + n) * 0.5;
+    }
+
+    pop();
+  }
+
+  let links = [
+    [0, 4],
+    [4, 1],
+    [0, 2],
+    [1, 3],
+    [2, 5],
+    [3, 6],
+    [5, 6],
+    [7, 0],
+    [1, 8],
+  ];
+
+  strokeWeight(1);
+  for (let i = 0; i < links.length; i++) {
+    let a = shardSeeds[links[i][0]];
+    let b = shardSeeds[links[i][1]];
+    let linkAlpha = map(sin(t * 0.016 + i * 2.4), -1, 1, 3, 18);
+    stroke(80, 95, 145, linkAlpha);
+
+    let mx = (a.x + b.x) / 2 + sin(t * 0.01 + i) * 18;
+    let my = (a.y + b.y) / 2 + cos(t * 0.012 + i) * 12;
+
+    if (sin(t * 0.09 + i * 1.8) > 0.15) {
+      line(a.x, a.y, mx, my);
+    }
+    if (sin(t * 0.09 + i * 1.8 + 0.8) > 0.28) {
+      line(mx, my, b.x, b.y);
     }
   }
+
   noStroke();
 
-  // --- Layer 3: Drifting thought fragments ---
-  // Small text-like shapes that float and fade, representing scattered
-  // thoughts, memory fragments, and the difficulty holding onto ideas.
+  // =========================
+  // 4) Small static clusters
+  // =========================
+  let staticClusters = [
+    { x: 118, y: 128, w: 52, h: 28 },
+    { x: 820, y: 148, w: 58, h: 30 },
+    { x: 145, y: 485, w: 64, h: 30 },
+    { x: 760, y: 500, w: 70, h: 34 },
+    { x: 415, y: 555, w: 58, h: 24 },
+    { x: 612, y: 108, w: 56, h: 24 },
+    { x: 88, y: 298, w: 50, h: 26 },
+    { x: 874, y: 288, w: 52, h: 24 },
+  ];
+
+  for (let i = 0; i < staticClusters.length; i++) {
+    let c = staticClusters[i];
+    let clusterAlpha = 8 + sin(t * 0.06 + i * 1.9) * 5;
+
+    for (let j = 0; j < 16; j++) {
+      let px = c.x + ((j * 13 + i * 7) % c.w);
+      let py = c.y + ((j * 9 + i * 11) % c.h);
+      let sz = 1 + ((j + i) % 2);
+
+      if (sin(t * 0.14 + i * 2.4 + j * 0.7) > -0.15) {
+        fill(170, 180, 215, clusterAlpha);
+      } else {
+        fill(255, 210, 75, clusterAlpha * 0.45);
+      }
+      rect(px, py, sz, sz);
+    }
+  }
+
+  // =========================
+  // 5) Drifting thought fragments
+  // =========================
   let fragments = [
     { x: 120, y: 150, w: 40, h: 4 },
     { x: 870, y: 170, w: 35, h: 4 },
     { x: 180, y: 480, w: 45, h: 4 },
     { x: 760, y: 510, w: 38, h: 4 },
     { x: 400, y: 560, w: 32, h: 4 },
-    { x: 620, y: 100, w: 36, h: 4 },
-    { x: 90, y: 340, w: 28, h: 4 },
-    { x: 910, y: 360, w: 34, h: 4 },
-    { x: 310, y: 80, w: 42, h: 4 },
-    { x: 700, y: 580, w: 30, h: 4 },
+    { x: 620, y: 110, w: 48, h: 4 },
+    { x: 90, y: 300, w: 42, h: 4 },
+    { x: 900, y: 290, w: 36, h: 4 },
   ];
+
   for (let i = 0; i < fragments.length; i++) {
     let f = fragments[i];
-    // Each fragment drifts slowly and fades in/out
-    let drift = sin(t * 0.01 + i * 1.7) * 15;
-    let driftY = cos(t * 0.008 + i * 2.3) * 8;
-    let fadeAlpha = map(sin(t * 0.015 + i * 2.9), -1, 1, 3, 18);
-    fill(160, 165, 200, fadeAlpha);
-    rectMode(CORNER);
-    rect(f.x + drift, f.y + driftY, f.w, f.h, 2);
-    // Some fragments have a second shorter "word" next to them
-    if (i % 3 === 0) {
-      rect(f.x + drift + f.w + 6, f.y + driftY, f.w * 0.5, f.h, 2);
-    }
+    let driftX = sin(t * 0.01 + i * 1.7) * 6;
+    let driftY = cos(t * 0.013 + i * 1.2) * 4;
+    let a = 8 + sin(t * 0.02 + i * 2.5) * 5;
+
+    fill(170, 180, 215, a);
+    rect(f.x + driftX, f.y + driftY, f.w, f.h, 3);
+
+    // ghost double-vision copy
+    fill(255, 210, 75, a * 0.18);
+    rect(f.x + driftX + 4, f.y + driftY + 1, f.w * 0.85, f.h, 3);
   }
 
-  // --- Layer 4: Fading awareness particles ---
-  // Tiny dots that pulse gently, representing moments of clarity
-  // flickering in and out — the struggle to stay present.
-  for (let i = 0; i < 50; i++) {
-    let px = (i * 173 + 47) % CANVAS_W;
-    let py = (i * 113 + 31) % CANVAS_H;
-    let pulse = sin(t * 0.03 + i * 0.8);
-    let a = map(pulse, -1, 1, 0, 10);
-    let sz = map(pulse, -1, 1, 1, 2.5);
-    fill(140, 150, 200, a);
-    ellipse(px, py, sz, sz);
-  }
-
-  // --- Layer 5: Subtle pressure halo around center ---
-  // A soft warm glow behind the title area, representing the persistent
-  // low-grade discomfort — always there, hard to ignore.
+  // =========================
+  // 6) Pressure halo around center
+  // =========================
   fill(255, 200, 80, 8 + sin(t * 0.015) * 3);
   ellipse(cx, cy - 50, 350, 200);
+
   fill(80, 60, 120, 6 + sin(t * 0.02 + 1) * 2);
   ellipse(cx, cy + 80, 400, 180);
 
@@ -1840,75 +1998,59 @@ function drawHowToPlayOverlay() {
     howToPlayCloseBounds.h,
   );
 
-  fill(closeHovered ? 48 : 32, 36, 58, 255);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noFill();
-  stroke(255, 210, 75, closeHovered ? 130 : 70);
-  strokeWeight(1.2);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noStroke();
-  fill(255, 210, 75);
+  fill(closeHovered ? 255 : 210, closeHovered ? 220 : 210, 75);
   textAlign(CENTER, CENTER);
+  textSize(18);
   textStyle(BOLD);
-  textSize(14);
   text(
-    "X",
+    "×",
     howToPlayCloseBounds.x + howToPlayCloseBounds.w / 2,
-    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2 + 1,
+    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2,
   );
 
   fill(255, 210, 75);
   textSize(24);
   text("How to Play", cx, panelY + 46);
+
   textStyle(NORMAL);
   textSize(11.5);
   fill(180, 184, 200);
   text(
-    "Complete the day while managing overload, fatigue, and fading memory.",
+    "Complete the day while managing overload and fatigue.",
     cx,
     panelY + 76,
   );
 
-  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys", "Move");
-  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Recall objective");
-  drawHowToPlayRow(panelX + 54, panelY + 208, "L", "Toggle Low Sensory Mode");
-  drawHowToPlayRow(panelX + 54, panelY + 252, "R", "Return to title");
+  drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
+  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
+  drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
+  drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");
+  drawHowToPlayRow(panelX + 54, panelY + 296, "R", "Return to title");
 
   fill(255, 210, 75);
   textSize(12);
   textStyle(BOLD);
   textAlign(LEFT, CENTER);
-  text("Gameplay Guidance", panelX + 62, panelY + 300);
+  text("Gameplay Guidance", panelX + 62, panelY + 348);
 
   fill(214, 218, 230);
   textStyle(NORMAL);
   textSize(12);
-  text("Green zones help reduce overload.", panelX + 62, panelY + 326);
-  text("Red noise zones increase overload.", panelX + 62, panelY + 350);
+  text("Green zones help reduce overload.", panelX + 62, panelY + 374);
+  text("Red noise zones increase overload.", panelX + 62, panelY + 398);
   text(
-    "Manage memory, fatigue, and overload while completing the day.",
+    "Use calm ability and safe routing to finish each stage.",
     panelX + 62,
-    panelY + 373,
+    panelY + 422,
   );
 
-  textAlign(CENTER, CENTER);
+  textAlign(LEFT, TOP);
   fill(144, 150, 168);
   textSize(10.5);
-  text("Press H or ESC to close", cx, panelY + panelH - 26);
+  text("Press H or ESC to close", panelX + 20, panelY + 20);
 
   rectMode(CORNER);
+  textStyle(NORMAL);
 }
 
 function drawHowToPlayRow(x, y, keyLabel, label) {
@@ -1934,12 +2076,19 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 
 // ===================== PLAY SCREEN =====================
 function drawPlayScreen() {
-  if (lowSensoryMode) {
-    background(COL_BG_LOW[0], COL_BG_LOW[1], COL_BG_LOW[2]);
-  } else {
-    background(COL_BG[0], COL_BG[1], COL_BG[2]);
+  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
+
+  if (bedImg) {
+    let bedX = 200;
+    let bedY = 320;
+    let bedW = 120;
+    let bedH = 60;
+    image(bedImg, bedX, bedY, bedW, bedH);
   }
 
+  background(40, 40, 80);
+
+  // --- UPDATE GAME LOGIC HERE ---
   updateGame();
 
   // Background / environment images
@@ -1956,8 +2105,14 @@ function drawPlayScreen() {
     drawVignette();
   }
 
+  drawFog();
+  drawEmotionMessage();
+
   drawHUD();
   drawStageIntroBanner();
+
+  drawMinimap();
+  drawExpandedMap();
 
   if (lowSensoryMode) {
     fill(120, 220, 180, 180);
@@ -2373,10 +2528,16 @@ function updateGame() {
 
   let newX = playerX;
   let newY = playerY;
-  if (keyIsDown(LEFT_ARROW)) newX -= speed;
-  if (keyIsDown(RIGHT_ARROW)) newX += speed;
-  if (keyIsDown(UP_ARROW)) newY -= speed;
-  if (keyIsDown(DOWN_ARROW)) newY += speed;
+
+  let moveLeft = keyIsDown(LEFT_ARROW) || keyIsDown(65); // A
+  let moveRight = keyIsDown(RIGHT_ARROW) || keyIsDown(68); // D
+  let moveUp = keyIsDown(UP_ARROW) || keyIsDown(87); // W
+  let moveDown = keyIsDown(DOWN_ARROW) || keyIsDown(83); // S
+
+  if (moveLeft) newX -= speed;
+  if (moveRight) newX += speed;
+  if (moveUp) newY -= speed;
+  if (moveDown) newY += speed;
 
   // Attention drift [2]
   if (s.driftOn && overload > s.driftThreshold) {
@@ -2395,19 +2556,9 @@ function updateGame() {
   if (!hitsWall(newX, playerY)) playerX = newX;
   if (!hitsWall(playerX, newY)) playerY = newY;
 
-  // --- MEMORY FADE ACTIVATION [1][2] ---
-  if (!memoryActive && starsCollected() >= s.memoryFadeAfter) {
-    memoryActive = true;
-    showObjective = true;
-    memoryTimer = s.memoryTimer;
-  }
-
-  if (memoryActive) {
-    memoryTimer -= 1;
-    if (memoryTimer <= 0) showObjective = false;
-  } else {
-    showObjective = true;
-  }
+  // Memory recall mechanic removed
+  memoryActive = false;
+  showObjective = true;
 
   // --- SENSORY OVERLOAD [3] ---
   let overloadRate = s.overloadBase;
@@ -3489,7 +3640,7 @@ function drawEmotionMessage() {
   let tw = textWidth(emotionMsg) + 95;
   rect(CANVAS_W / 2, msgY, tw, 28, 8);
   rectMode(CORNER);
-  fill(255, 220, 200, alpha * 1.5);
+  fill(40, 25, 15, alpha * 1.5);
   textSize(13);
   textStyle(ITALIC);
   text(emotionMsg, CANVAS_W / 2, msgY);
@@ -3569,7 +3720,7 @@ function drawHUD() {
   // Calm Ability
   textSize(10.5);
   fill(180, 200, 255);
-  text("Calm (J): " + calmAbilityCharges, 20, 66);
+  text("Calm (K): " + calmAbilityCharges, 20, 66);
 
   // Center HUD (objective)
   textAlign(CENTER, CENTER);
@@ -3689,7 +3840,13 @@ function returnToTitleScreen() {
 function keyPressed() {
   initAudio();
 
-  // How to play toggle
+  // Map toggle (M)
+  if (gameState === STATE_PLAY && (key === "m" || key === "M")) {
+    miniMapExpanded = !miniMapExpanded;
+    return;
+  }
+
+  // How to play toggle (H on title screen)
   if (gameState === STATE_START && keyCode === 72) {
     showHowToPlay = !showHowToPlay;
     return;
@@ -3701,14 +3858,14 @@ function keyPressed() {
     return;
   }
 
-  // Return to title
-  if (keyCode === 82 && gameState !== STATE_START) {
+  // Return to title (R)
+  if ((key === "r" || key === "R") && gameState !== STATE_START) {
     returnToTitleScreen();
     return;
   }
 
   // Low sensory mode (L)
-  if (keyCode === 76) {
+  if (key === "l" || key === "L") {
     lowSensoryMode = !lowSensoryMode;
 
     if (gameState === STATE_START) return;
@@ -3736,31 +3893,35 @@ function keyPressed() {
       }
       startAmbient();
       initZoneSounds();
+      return;
     } else if (gameState === STATE_STAGE_TRANSITION) {
       advanceStage();
+      return;
     }
   }
 
-  // Memory recall (M)
-  if (gameState === STATE_PLAY && keyCode === 77 && memoryActive) {
-    showObjective = true;
-    memoryTimer = currentStageData.memoryRecall;
-    playRecallSound();
-  }
-
-  // Calm Ability (J)
-  if (gameState === STATE_PLAY && (key === "j" || key === "J")) {
+  // Calm Ability (K)
+  if (gameState === STATE_PLAY && (key === "k" || key === "K")) {
     if (calmAbilityCharges > 0 && calmAbilityCooldown <= 0) {
       calmAbilityCharges--;
       calmAbilityTimer = 90;
       calmAbilityCooldown = 120;
       playTone(330, 0.2, "triangle", 0.05);
     }
+    return;
   }
 }
 
 function mousePressed() {
   initAudio();
+
+  if (gameState === STATE_PLAY) {
+    if (miniMapExpanded) {
+      miniMapExpanded = false;
+      return;
+    }
+    return;
+  }
 
   if (gameState !== STATE_START) return;
 
@@ -3809,4 +3970,248 @@ function mousePressed() {
   ) {
     showHowToPlay = true;
   }
+}
+
+// ===================== PLAYER VISION - FOG SYSTEM =====================
+function initVisionGraphics() {
+  visionGraphics = createGraphics(CANVAS_W, CANVAS_H);
+  visionGraphics.noStroke();
+}
+
+function getCurrentVisionRadius() {
+  if (lowSensoryMode) return visionRadiusBase;
+  return map(overload, 0, overloadMax, visionRadiusBase, visionRadiusMin);
+}
+
+function drawFog() {
+  if (!visionGraphics) return;
+
+  let g = visionGraphics;
+  let r = getCurrentVisionRadius();
+  let softness = visionSoftness;
+  let fogAlpha = lowSensoryMode ? 180 : 235;
+
+  g.clear();
+
+  g.background(10, 8, 20, fogAlpha);
+
+  g.blendMode(REMOVE);
+
+  let steps = 24;
+  for (let i = 0; i < steps; i++) {
+    let t = i / (steps - 1);
+    let ringR = r + softness - t * softness;
+    let alphaRemove = map(t, 0, 1, 20, fogAlpha);
+    g.fill(0, 0, 0, alphaRemove);
+    g.ellipse(playerX, playerY, ringR * 2, ringR * 2);
+  }
+
+  g.fill(0, 0, 0, 255);
+  g.ellipse(playerX, playerY, r * 2, r * 2);
+
+  g.blendMode(BLEND);
+
+  blendMode(BLEND);
+  image(g, 0, 0);
+}
+
+// ===================== MINI MAP =====================
+function drawMinimap() {
+  if (gameState !== STATE_PLAY) return;
+
+  let mapX = CANVAS_W - 200;
+  let mapY = HUD_TOP + mapPad;
+
+  mapBounds = { x: mapX, y: mapY, w: mapW, h: mapH };
+
+  noStroke();
+  fill(8, 10, 25, 210);
+  rectMode(CORNER);
+  rect(mapX, mapY, mapW, mapH, mapBorder);
+
+  noFill();
+  stroke(80, 90, 130, 180);
+  strokeWeight(1);
+  rect(mapX, mapY, mapW, mapH, mapBorder);
+  noStroke();
+
+  function wx(x) {
+    return mapX + x * (mapW / CANVAS_W);
+  }
+
+  function wy(y) {
+    return mapY + y * (mapH / CANVAS_H);
+  }
+
+  function ws(s) {
+    return max(1, s * (mapW / CANVAS_W));
+  }
+
+  for (let cz of calmZones) {
+    fill(50, 185, 120, 120);
+    rect(wx(cz.x), wy(cz.y), ws(cz.w), max(1, cz.h * (mapH / CANVAS_H)));
+  }
+
+  for (let w of walls) {
+    fill(90, 85, 115, 200);
+    rect(wx(w.x), wy(w.y), max(1, ws(w.w)), max(1, w.h * (mapH / CANVAS_H)));
+  }
+
+  for (let s of stars) {
+    fill(255, 210, 50);
+    ellipse(wx(s.x), wy(s.y), 4, 4);
+  }
+
+  let pulse = lowSensoryMode ? 0 : sin(frameCount * 0.12) * 1.5;
+  fill(230, 115, 70, 80);
+  ellipse(wx(playerX), wy(playerY), 10 + pulse, 10 + pulse);
+  fill(255, 160, 80);
+  ellipse(wx(playerX), wy(playerY), 5 + pulse * 0.5, 5 + pulse * 0.5);
+
+  textAlign(LEFT, TOP);
+  fill(160, 165, 200, 160);
+  textSize(8);
+  noStroke();
+  text("MAP", mapX + 5, mapY + 3);
+
+  textAlign(RIGHT, TOP);
+  textSize(8);
+  text("Press M to Expand", mapX + mapW - 5, mapY + 3);
+
+  textAlign(CENTER, CENTER);
+}
+
+function drawExpandedMap() {
+  if (!miniMapExpanded) return;
+
+  noStroke();
+  fill(0, 0, 0, 175);
+  rectMode(CORNER);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  let mW = CANVAS_W * 0.72;
+  let mH = CANVAS_H * 0.72;
+  let mX = (CANVAS_W - mW) / 2;
+  let mY = (CANVAS_H - mH) / 2;
+
+  fill(8, 10, 28, 245);
+  rect(mX, mY, mW, mH, 10);
+
+  noFill();
+  stroke(90, 100, 150, 200);
+  strokeWeight(1.5);
+  rect(mX, mY, mW, mH, 10);
+  noStroke();
+
+  function ex(x) {
+    return mX + x * (mW / CANVAS_W);
+  }
+  function ey(y) {
+    return mY + y * (mH / CANVAS_H);
+  }
+  function es(s) {
+    return max(1, s * (mW / CANVAS_W));
+  }
+  function esH(h) {
+    return max(1, h * (mH / CANVAS_H));
+  }
+
+  fill(20, 22, 42, 180);
+  rect(ex(0), ey(HUD_TOP), mW, mH - ey(HUD_TOP) + mY);
+
+  for (let cz of calmZones) {
+    fill(50, 185, 120, 130);
+    rect(ex(cz.x), ey(cz.y), es(cz.w), esH(cz.h), 2);
+    // Label
+    fill(120, 255, 180, 180);
+    textSize(8);
+    textAlign(CENTER, CENTER);
+    text("calm", ex(cz.x) + es(cz.w) / 2, ey(cz.y) + esH(cz.h) / 2);
+  }
+
+  for (let sz of stimulusZones) {
+    fill(220, 60, 50, 100);
+    rect(ex(sz.x), ey(sz.y), es(sz.w), esH(sz.h), 2);
+  }
+
+  for (let w of walls) {
+    fill(100, 95, 130, 220);
+    rect(ex(w.x), ey(w.y), es(w.w), esH(w.h), 2);
+  }
+
+  for (let i = 0; i < checkpoints.length; i++) {
+    let cp = checkpoints[i];
+    let isActive = i === checkpointIndex;
+    fill(
+      isActive ? 180 : 100,
+      isActive ? 220 : 140,
+      isActive ? 255 : 180,
+      isActive ? 200 : 90,
+    );
+    ellipse(ex(cp.x), ey(cp.y), isActive ? 8 : 5, isActive ? 8 : 5);
+    if (isActive) {
+      fill(200, 230, 255, 200);
+      textSize(7);
+      textAlign(CENTER, CENTER);
+      text("CP", ex(cp.x), ey(cp.y) - 7);
+    }
+  }
+
+  for (let s of stars) {
+    fill(255, 210, 50, 220);
+    ellipse(ex(s.x), ey(s.y), 9, 9);
+    fill(255, 240, 150, 200);
+    textSize(8);
+    textAlign(CENTER, CENTER);
+    text(s.label || "★", ex(s.x), ey(s.y) - 9);
+  }
+
+  let pulse = sin(frameCount * 0.14) * 2;
+  fill(230, 115, 70, 90);
+  ellipse(ex(playerX), ey(playerY), 18 + pulse, 18 + pulse);
+  fill(255, 160, 80);
+  ellipse(ex(playerX), ey(playerY), 9, 9);
+  fill(255, 220, 180);
+  ellipse(ex(playerX), ey(playerY), 4, 4);
+
+  textAlign(CENTER, TOP);
+  fill(255, 210, 75);
+  textSize(13);
+  textStyle(BOLD);
+  text("MAP  —  " + currentStageName(), CANVAS_W / 2, mY + 10);
+  textStyle(NORMAL);
+
+  // ---- LEGEND ----
+  let legY = mY + mH - 18;
+  let legX = mX + 14;
+  textSize(8);
+  textAlign(LEFT, CENTER);
+
+  fill(230, 115, 70);
+  ellipse(legX + 4, legY, 7, 7);
+  fill(200, 200, 220);
+  text("You", legX + 10, legY);
+
+  fill(255, 210, 50);
+  ellipse(legX + 46, legY, 7, 7);
+  fill(200, 200, 220);
+  text("Task", legX + 52, legY);
+
+  fill(50, 185, 120, 160);
+  rect(legX + 82, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Calm", legX + 94, legY);
+
+  fill(220, 60, 50, 140);
+  rect(legX + 126, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Stimulus", legX + 138, legY);
+
+  textAlign(RIGHT, TOP);
+  fill(140, 145, 180, 180);
+  textSize(12);
+  text("Press M to close", mX + mW - 10, mY + 10);
+
+  textAlign(CENTER, CENTER);
+  noStroke();
 }

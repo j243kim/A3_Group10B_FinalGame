@@ -197,7 +197,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 ---
 
-### Conversation Log
+#### Conversation Log
 
 **User (Jimin):**
 
@@ -279,7 +279,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 > Refactored into two rendering passes: added `drawCalmZoneGlow()` called before the scene draws its images, which renders three expanding semi-transparent green rectangles (bloom layers) behind the object. The post-scene `drawCalmZone()` pass now only displays "Recovering..." text above the zone when the player is inside. This gives a soft pulsing glow radiating outward from the image with no box drawn over it.
 
-### Conversation Log (continued)
+#### Conversation Log (continued)
 
 **User (Jimin):**
 

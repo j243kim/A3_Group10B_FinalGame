@@ -811,29 +811,53 @@ function drawStageThreeScene() {
 
   // Calm zone 1 = sofa
   if (sofaImg) {
-    image(sofaImg, 405, 105, 143, 91);
+    image(
+      sofaImg,
+      currentStageData.calmZones[0].x,
+      currentStageData.calmZones[0].y,
+      currentStageData.calmZones[0].w,
+      currentStageData.calmZones[0].h,
+    );
   }
 
   // Calm zone 2 = coffee
   if (coffeeImg) {
-    image(coffeeImg, 535, 375, 50, 50);
+    image(
+      coffeeImg,
+      currentStageData.calmZones[1].x,
+      currentStageData.calmZones[1].y,
+      currentStageData.calmZones[1].w,
+      currentStageData.calmZones[1].h,
+    );
   }
 
   // Red zone 1 = computer
   if (computerImg) {
-    image(computerImg, 165, 315, 143, 97);
+    image(
+      computerImg,
+      currentStageData.stimulusZones[0].x,
+      currentStageData.stimulusZones[0].y,
+      currentStageData.stimulusZones[0].w,
+      currentStageData.stimulusZones[0].h,
+    );
   }
 
   // Red zone 2 = printer
   if (printerImg) {
-    image(printerImg, 740, 285, 104, 84);
+    image(
+      printerImg,
+      currentStageData.stimulusZones[1].x,
+      currentStageData.stimulusZones[1].y,
+      currentStageData.stimulusZones[1].w,
+      currentStageData.stimulusZones[1].h,
+    );
   }
 
   // NPC for Communicate (red zone)
-if (npcImg) {
-  imageMode(CENTER);
-  image(npcImg, 520, 250, 32, 32);
-}
+  if (npcImg) {
+    imageMode(CENTER);
+    image(npcImg, 520, 250, 32, 32);
+  }
 }
 
 function drawStageTwoScene() {
@@ -1166,42 +1190,68 @@ function createStages() {
         // Final stretch barrier
         { x: 900, y: 230, w: 12, h: 200 },
       ],
-     stimulusZones: [
-  { x: 180, y: 330, w: 110, h: 75 }, // computer
-  { x: 760, y: 300, w: 80, h: 65 },  // printer
-],
+      stimulusZones: [
+        {
+          x: 40,
+          y: 430,
+          w: 110,
+          h: 75,
+          label: "screen glare",
+          moveType: "vertical",
+          amplitude: 15,
+          speed: 0.02,
+          baseX: 40,
+          baseY: 430,
+          baseW: 110,
+          baseH: 75,
+        }, // computer
+        {
+          x: 690,
+          y: 300,
+          w: 80,
+          h: 65,
+          label: "printer noise",
+          moveType: "horizontal",
+          amplitude: 20,
+          speed: 0.025,
+          baseX: 690,
+          baseY: 300,
+          baseW: 80,
+          baseH: 65,
+        }, // printer
+      ],
       calmZones: [
-        { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg }, // sofa
-        { x: 535, y: 375, w: 50, h: 50, img: () => coffeeImg }, // coffee
+        { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg, label: "Sofa" }, // sofa
+        { x: 450, y: 480, w: 50, h: 50, img: () => coffeeImg, label: "Coffee" }, // coffee
       ],
       decorations: [
-  // Office desk 1 (solid)
-  { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
+        // Office desk 1 (solid)
+        { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
 
-  // Office desk 2 (solid)
-  { x: 170, y: 320, w: 50, h: 30, col: [95, 88, 78], solid: true },
+        // Office desk 2 (solid)
+        { x: 170, y: 320, w: 50, h: 30, col: [95, 88, 78], solid: true },
 
-  // Filing cabinet (solid)
-  { x: 350, y: 130, w: 30, h: 40, col: [80, 80, 95], solid: true },
+        // Filing cabinet (solid)
+        { x: 350, y: 130, w: 30, h: 40, col: [80, 80, 95], solid: true },
 
-  // NPC bottom left (blocking)
-{ x: 110, y: 520, w: 30, h: 30, col: [0,0,0], solid: true },
+        // NPC bottom left (blocking)
+        { x: 110, y: 520, w: 30, h: 30, col: [0, 0, 0], solid: true },
 
-// NPC top right (blocking)
-{ x: 850, y: 150, w: 30, h: 30, col: [0,0,0], solid: true },
+        // NPC top right (blocking)
+        { x: 850, y: 150, w: 30, h: 30, col: [0, 0, 0], solid: true },
 
-// Books left
-{ x: 120, y: 240, w: 30, h: 24, col: [0,0,0], solid: true },
+        // Books left
+        { x: 120, y: 240, w: 30, h: 24, col: [0, 0, 0], solid: true },
 
-// Books right
-{ x: 820, y: 120, w: 30, h: 24, col: [0,0,0], solid: true },
+        // Books right
+        { x: 820, y: 120, w: 30, h: 24, col: [0, 0, 0], solid: true },
 
-  // Printer (solid, near noise zone)
-  { x: 58, y: 260, w: 40, h: 28, col: [110, 105, 115], solid: true },
+        // Printer (solid, near noise zone)
+        { x: 58, y: 260, w: 40, h: 28, col: [110, 105, 115], solid: true },
 
-  // Water cooler (solid) 
-  { x: 560, y: 430, w: 22, h: 26, col: [85, 110, 130], solid: true },
-],
+        // Water cooler (solid)
+        { x: 560, y: 430, w: 22, h: 26, col: [85, 110, 130], solid: true },
+      ],
       checkpoints: [
         { x: 80, y: 350, label: "Office", starsReq: 0 },
         { x: 500, y: 176, label: "Break Room", starsReq: 1 },
@@ -1281,9 +1331,11 @@ function preload() {
   officeWallImg = loadImage("assets/images/officewall.jpg");
 
   watercoolerImg = loadImage("assets/images/Watercooler.png");
-officedeskImg = loadImage("assets/images/officedesk.png");
-recyclebinImg = loadImage("assets/images/recyclebin.png");
-cabinetImg = loadImage("assets/images/cabinet.png");
+  officedeskImg = loadImage("assets/images/officedesk.png");
+  recyclebinImg = loadImage("assets/images/recyclebin.png");
+  cabinetImg = loadImage("assets/images/cabinet.png");
+  npcImg = loadImage("assets/images/npc.png");
+  booksImg = loadImage("assets/images/books.png");
 }
 
 // ===================== p5.js SETUP =====================
@@ -1452,21 +1504,21 @@ function drawStartScreen() {
     rect(heroX, heroY, heroW, heroH, 16);
   }
 
-textAlign(CENTER, CENTER);
-textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  textStyle(BOLD);
 
-let titlePulse = map(sin(frameCount * 0.06), -1, 1, 52, 58);
-let titleBright = map(sin(frameCount * 0.06), -1, 1, 210, 255);
+  let titlePulse = map(sin(frameCount * 0.06), -1, 1, 52, 58);
+  let titleBright = map(sin(frameCount * 0.06), -1, 1, 210, 255);
 
-// soft glow behind title
-textSize(titlePulse + 8);
-fill(255, 210, 75, 35);
-text("Fragmented", heroCX, titleY);
+  // soft glow behind title
+  textSize(titlePulse + 8);
+  fill(255, 210, 75, 35);
+  text("Fragmented", heroCX, titleY);
 
-// main title
-textSize(titlePulse);
-fill(255, titleBright, 75);
-text("Fragmented", heroCX, titleY);
+  // main title
+  textSize(titlePulse);
+  fill(255, titleBright, 75);
+  text("Fragmented", heroCX, titleY);
 
   textStyle(NORMAL);
   textSize(13);
@@ -2271,6 +2323,10 @@ function updateStimulusZoneMovement() {
       // Obstacle drifts left/right along its axis
       let offset = sin(t * sz.speed) * sz.amplitude;
       sz.x = sz.baseX + offset;
+    } else if (sz.moveType === "vertical") {
+      // Obstacle drifts up/down along its axis
+      let offset = sin(t * sz.speed) * sz.amplitude;
+      sz.y = sz.baseY + offset;
     } else if (sz.moveType === "pulse") {
       // Zone expands and contracts — TV flicker / noise radiating outward
       let expand = sin(t * sz.speed) * sz.amplitude;
@@ -2591,7 +2647,7 @@ function drawStage() {
     // Draw descriptive label above the stimulus zone so players
     // understand what real-world sensory trigger this represents [3][5]
     let szLabel = sz.label || "noise";
-    let labelY = sz.y - 14;
+    let labelY = sz.y - 18; // Adjusted for better spacing
 
     textSize(10);
     textStyle(BOLD);
@@ -2621,6 +2677,36 @@ function drawStage() {
   // Calm Zones [3]
   for (let cz of calmZones) {
     drawCalmZone(cz);
+
+    if (currentStage === 2) {
+      // Draw label for calm zones
+      let czLabel = cz.label || "Calm Area";
+      let labelY = cz.y + cz.h + 10; // Position label below the image
+
+      if (cz.label === "Sofa") {
+        labelY = cz.y - 10; // Located in the middle between the sofa image and the recovering message
+      } else if (cz.label === "Coffee") {
+        labelY = cz.y + cz.h + 30; // Placed directly below the "Calm Area" label
+      }
+
+      textSize(10);
+      textStyle(BOLD);
+      let tw = textWidth(czLabel);
+
+      fill(10, 30, 20, 220);
+      rectMode(CENTER);
+      rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
+
+      noFill();
+      strokeWeight(1);
+      stroke(150, 255, 180, 150);
+      rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
+      noStroke();
+      fill(150, 255, 180);
+      text(czLabel, cz.x + cz.w / 2, labelY);
+      textStyle(NORMAL);
+      rectMode(CORNER);
+    }
   }
 
   // Walls / barriers
@@ -2714,217 +2800,217 @@ function drawStage() {
         drawH = 120;
       }
 
-// Fridge
-else if (d.x === 560 && d.y === 95) {
-  decoImg = fridgeImg;
-  drawX = d.x - 10;
-  drawY = d.y - 12;
-  drawW = d.w + 32;
-  drawH = d.h + 40;
-}
-    // Kitchen table
-   else if (d.x === 560 && d.y === 280) {
-  decoImg = kitchentableImg;
-  drawX = 540;
-  drawY = 260;
-  drawW = 120;
-  drawH = 90;
-}
-  // Shoe rack
-else if (d.x === 870 && d.y === 460) {
-  decoImg = shoerackImg;
-  drawX = 850;
-  drawY = 445;
-  drawW = 92;
-  drawH = 60;
-}
-   // Bookshelf
-else if (d.x === 30 && d.y === 310) {
-  decoImg = bookshelfImg;
-  drawX = 22;
-  drawY = 300;
-  drawW = 52;
-  drawH = 108;
-}
-  }else if (currentStage === 1) {
-  // Fire hydrant
-  if (d.x === 130 && d.y === 112) {
-    decoImg = firehydrantImg;
-    drawX = 122;
-    drawY = 104;
-    drawW = 30;
-    drawH = 42;
-  }
-  // Hedge / bush row
-  else if (d.x === 30 && d.y === 420) {
-    decoImg = bushImg;
-    drawX = 20;
-    drawY = 410;
-    drawW = 100;
-    drawH = 50;
-  }
-  // Newspaper box
-  else if (d.x === 275 && d.y === 300) {
-    decoImg = newspaperImg;
-    drawX = 265;
-    drawY = 292;
-    drawW = 40;
-    drawH = 36;
-  }
-  // Bench seat placed just below the calm zone
-  else if (d.x === 244 && d.y === 544) {
-    decoImg = benchImg;
-    drawX = 228;
-    drawY = 530;
-    drawW = 92;
-    drawH = 36;
-  }
-  // Store shelf end-cap left
-  else if (d.x === 430 && d.y === 140) {
-    decoImg = storeImg;
-    drawX = 420;
-    drawY = 130;
-    drawW = 58;
-    drawH = 70;
-  }
-  // Store display island
-  else if (d.x === 560 && d.y === 390) {
-    decoImg = storeImg;
-    drawX = 548;
-    drawY = 380;
-    drawW = 74;
-    drawH = 58;
-  }
-  // Store shelf end-cap right
-  else if (d.x === 745 && d.y === 250) {
-    decoImg = storeImg;
-    drawX = 734;
-    drawY = 240;
-    drawW = 60;
-    drawH = 70;
-  }
-  // Shopping cart
-  else if (d.x === 460 && d.y === 300) {
-    decoImg = shoppingcartImg;
-    drawX = 450;
-    drawY = 292;
-    drawW = 42;
-    drawH = 34;
-  }
-  // Pharmacy counter
-  else if (d.x === 875 && d.y === 400) {
-    decoImg = storeImg;
-    drawX = 860;
-    drawY = 392;
-    drawW = 100;
-    drawH = 42;
-  }
-  // Trash can outside
-  else if (d.x === 320 && d.y === 150) {
-    decoImg = transhcanImg;
-    drawX = 312;
-    drawY = 144;
-    drawW = 32;
-    drawH = 36;
-  }
-}else if (currentStage === 2) {
-  // Office desk 1
-  if (d.x === 40 && d.y === 130) {
-    decoImg = officedeskImg;
-    drawX = 26;
-    drawY = 118;
-    drawW = 96;
-    drawH = 52;
-  }
-  // Office desk 2
-  else if (d.x === 170 && d.y === 320) {
-    decoImg = officedeskImg;
-    drawX = 156;
-    drawY = 308;
-    drawW = 88;
-    drawH = 50;
-  }
-  // Filing cabinet
-  else if (d.x === 350 && d.y === 130) {
-    decoImg = cabinetImg;
-    drawX = 346;
-    drawY = 126;
-    drawW = 30;
-    drawH = 42;
-  }
-  // Printer (left side office)
-  else if (d.x === 58 && d.y === 260) {
-    decoImg = printerImg;
-    drawX = 52;
-    drawY = 254;
-    drawW = 42;
-    drawH = 30;
-  }
-  // Break room sofa — 先保留色块，不放图
-  else if (d.x === 460 && d.y === 320) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Break room plant — 先保留色块
-  else if (d.x === 434 && d.y === 110) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Water cooler
-  else if (d.x === 540 && d.y === 380) {
-    decoImg = watercoolerImg;
-    drawX = 534;
-    drawY = 372;
-    drawW = 34;
-    drawH = 48;
-  }
-  // Transit bench — 先保留色块
-  else if (d.x === 650 && d.y === 440) {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
-    continue;
-  }
-  // Vending machine -> 用 cabinet 先代替
-  else if (d.x === 460 && d.y === 200) {
-    decoImg = cabinetImg;
-    drawX = 456;
-    drawY = 196;
-    drawW = 34;
-    drawH = 50;
-  }
-  // Trash bin transit
-  else if (d.x === 760 && d.y === 320) {
-    decoImg = recyclebinImg;
-    drawX = 758;
-    drawY = 318;
-    drawW = 24;
-    drawH = 28;
-  }
-  // Home stretch mailbox -> 先用 cabinet 代替
-  else if (d.x === 915 && d.y === 350) {
-    decoImg = cabinetImg;
-    drawX = 912;
-    drawY = 346;
-    drawW = 28;
-    drawH = 36;
-  }
-}
+      // Fridge
+      else if (d.x === 560 && d.y === 95) {
+        decoImg = fridgeImg;
+        drawX = d.x - 10;
+        drawY = d.y - 12;
+        drawW = d.w + 32;
+        drawH = d.h + 40;
+      }
+      // Kitchen table
+      else if (d.x === 560 && d.y === 280) {
+        decoImg = kitchentableImg;
+        drawX = 540;
+        drawY = 260;
+        drawW = 120;
+        drawH = 90;
+      }
+      // Shoe rack
+      else if (d.x === 870 && d.y === 460) {
+        decoImg = shoerackImg;
+        drawX = 850;
+        drawY = 445;
+        drawW = 92;
+        drawH = 60;
+      }
+      // Bookshelf
+      else if (d.x === 30 && d.y === 310) {
+        decoImg = bookshelfImg;
+        drawX = 22;
+        drawY = 300;
+        drawW = 52;
+        drawH = 108;
+      }
+    } else if (currentStage === 1) {
+      // Fire hydrant
+      if (d.x === 130 && d.y === 112) {
+        decoImg = firehydrantImg;
+        drawX = 122;
+        drawY = 104;
+        drawW = 30;
+        drawH = 42;
+      }
+      // Hedge / bush row
+      else if (d.x === 30 && d.y === 420) {
+        decoImg = bushImg;
+        drawX = 20;
+        drawY = 410;
+        drawW = 100;
+        drawH = 50;
+      }
+      // Newspaper box
+      else if (d.x === 275 && d.y === 300) {
+        decoImg = newspaperImg;
+        drawX = 265;
+        drawY = 292;
+        drawW = 40;
+        drawH = 36;
+      }
+      // Bench seat placed just below the calm zone
+      else if (d.x === 244 && d.y === 544) {
+        decoImg = benchImg;
+        drawX = 228;
+        drawY = 530;
+        drawW = 92;
+        drawH = 36;
+      }
+      // Store shelf end-cap left
+      else if (d.x === 430 && d.y === 140) {
+        decoImg = storeImg;
+        drawX = 420;
+        drawY = 130;
+        drawW = 58;
+        drawH = 70;
+      }
+      // Store display island
+      else if (d.x === 560 && d.y === 390) {
+        decoImg = storeImg;
+        drawX = 548;
+        drawY = 380;
+        drawW = 74;
+        drawH = 58;
+      }
+      // Store shelf end-cap right
+      else if (d.x === 745 && d.y === 250) {
+        decoImg = storeImg;
+        drawX = 734;
+        drawY = 240;
+        drawW = 60;
+        drawH = 70;
+      }
+      // Shopping cart
+      else if (d.x === 460 && d.y === 300) {
+        decoImg = shoppingcartImg;
+        drawX = 450;
+        drawY = 292;
+        drawW = 42;
+        drawH = 34;
+      }
+      // Pharmacy counter
+      else if (d.x === 875 && d.y === 400) {
+        decoImg = storeImg;
+        drawX = 860;
+        drawY = 392;
+        drawW = 100;
+        drawH = 42;
+      }
+      // Trash can outside
+      else if (d.x === 320 && d.y === 150) {
+        decoImg = transhcanImg;
+        drawX = 312;
+        drawY = 144;
+        drawW = 32;
+        drawH = 36;
+      }
+    } else if (currentStage === 2) {
+      // Office desk 1
+      if (d.x === 40 && d.y === 130) {
+        decoImg = officedeskImg;
+        drawX = 26;
+        drawY = 118;
+        drawW = 96;
+        drawH = 52;
+      }
+      // Office desk 2
+      else if (d.x === 170 && d.y === 320) {
+        decoImg = officedeskImg;
+        drawX = 156;
+        drawY = 308;
+        drawW = 88;
+        drawH = 50;
+      }
+      // Filing cabinet
+      else if (d.x === 350 && d.y === 130) {
+        decoImg = cabinetImg;
+        drawX = 346;
+        drawY = 126;
+        drawW = 30;
+        drawH = 42;
+      }
+      // Printer (left side office)
+      else if (d.x === 58 && d.y === 260) {
+        decoImg = printerImg;
+        drawX = 52;
+        drawY = 254;
+        drawW = 42;
+        drawH = 30;
+      }
+      // Break room sofa — 先保留色块，不放图
+      else if (d.x === 460 && d.y === 320) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Break room plant — 先保留色块
+      else if (d.x === 434 && d.y === 110) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Water cooler
+      else if (d.x === 540 && d.y === 380) {
+        decoImg = watercoolerImg;
+        drawX = 534;
+        drawY = 372;
+        drawW = 34;
+        drawH = 48;
+      }
+      // Transit bench — 先保留色块
+      else if (d.x === 650 && d.y === 440) {
+        fill(d.col[0], d.col[1], d.col[2]);
+        rect(d.x, d.y, d.w, d.h, 3);
+        continue;
+      }
+      // Vending machine -> 用 cabinet 先代替
+      else if (d.x === 460 && d.y === 200) {
+        decoImg = cabinetImg;
+        drawX = 456;
+        drawY = 196;
+        drawW = 34;
+        drawH = 50;
+      }
+      // Trash bin transit
+      else if (d.x === 760 && d.y === 320) {
+        decoImg = recyclebinImg;
+        drawX = 758;
+        drawY = 318;
+        drawW = 24;
+        drawH = 28;
+      }
+      // Home stretch mailbox -> 先用 cabinet 代替
+      else if (d.x === 915 && d.y === 350) {
+        decoImg = cabinetImg;
+        drawX = 912;
+        drawY = 346;
+        drawW = 28;
+        drawH = 36;
+      }
+    }
 
-  if (decoImg) {
-    image(decoImg, drawX, drawY, drawW, drawH);
-  } else {
-    fill(d.col[0], d.col[1], d.col[2]);
-    rect(d.x, d.y, d.w, d.h, 3);
+    if (decoImg) {
+      image(decoImg, drawX, drawY, drawW, drawH);
+    } else {
+      fill(d.col[0], d.col[1], d.col[2]);
+      rect(d.x, d.y, d.w, d.h, 3);
+    }
   }
-}
 
   // Checkpoints
-//  for (let i = 0; i < checkpoints.length; i++) {
+  //  for (let i = 0; i < checkpoints.length; i++) {
   //  if (starsCollected() >= checkpoints[i].starsReq) {
-    //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
-    //}
+  //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
+  //}
   //}
 
   // Task markers — with fading awareness [2]
@@ -2944,37 +3030,36 @@ else if (d.x === 30 && d.y === 310) {
     // Stage 1 uses real images instead of stars
     if (currentStage === 0) {
       let taskImg = getStageOneTaskImage(s.label);
-
+      let imgSize = 52; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 48, 48);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-        ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+        ellipse(s.x, s.y, s.size * 1.8, s.size * 1.8); // Increased size
       }
 
       drawTaskLabel(s, starAlpha);
       continue;
     }
-
     // Stage 2 uses real images instead of stars
     if (currentStage === 1) {
       let taskImg = getStageTwoTaskImage(s.label);
-
+      let imgSize = 54; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 50, 50);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -2984,17 +3069,17 @@ else if (d.x === 30 && d.y === 310) {
       drawTaskLabel(s, starAlpha);
       continue;
     }
-
     if (currentStage === 2) {
       let taskImg = getStageThreeTaskImage(s.label);
+      let imgSize = 56; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 52, 52);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -3173,6 +3258,11 @@ function drawCalmZone(cz) {
 
   // Clear label pointing out the restorative zone
   let labelY = cz.y + cz.h / 2;
+
+  if (currentStage === 2 && cz.label === "Coffee") {
+    labelY = cz.y + cz.h + 10; // Replaces the position where the original Coffee label was
+  }
+
   textSize(10);
   textStyle(BOLD);
   let tw = textWidth("Calm Area");
@@ -3195,6 +3285,11 @@ function drawCalmZone(cz) {
 
   if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
     let recY = cz.y - 16;
+
+    if (currentStage === 2 && cz.label === "Sofa") {
+      recY = cz.y - 32; // Move higher so the sofa label fits perfectly in the middle
+    }
+
     textSize(9.5);
     textStyle(BOLD);
     let recTw = textWidth("Recovering...");

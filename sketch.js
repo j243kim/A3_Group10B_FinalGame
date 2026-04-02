@@ -3542,51 +3542,133 @@ function drawCalmZone(cz) {
 function drawPlayer() {
   let px = playerX;
   let py = playerY;
-  noStroke();
-  fill(12, 12, 25, 60);
-  ellipse(px + 2, py + 10, 16, 6);
-  fill(COL_PLAYER[0], COL_PLAYER[1], COL_PLAYER[2]);
-  ellipse(px, py + 2, 18, 22);
-  fill(COL_PLAYER_HEAD[0], COL_PLAYER_HEAD[1], COL_PLAYER_HEAD[2]);
-  ellipse(px, py - 9, 16, 16);
-  fill(50, 50, 70);
-  ellipse(px - 2.5, py - 10, 2.5, 2.5);
-  ellipse(px + 2.5, py - 10, 2.5, 2.5);
 
-  stroke(50, 50, 70);
-  strokeWeight(1.5);
-  noFill();
-  if (overload < 30) {
-    line(px - 3, py - 5, px + 3, py - 5);
-  } else if (overload < 55) {
-    noStroke();
-    fill(50, 50, 70);
-    ellipse(px, py - 4.5, 3.2, 3.2);
-    stroke(50, 50, 70);
-    strokeWeight(1.2);
-    line(px - 5.2, py - 14.2, px - 1.8, py - 15.2);
-    line(px + 1.8, py - 15.2, px + 5.2, py - 14.2);
-  } else if (overload < 80) {
-    stroke(50, 50, 70);
-    strokeWeight(1.6);
-    arc(px, py - 3.8, 6, 4, PI, TWO_PI);
-    strokeWeight(1.4);
-    line(px - 5.5, py - 12.8, px - 1.5, py - 14.2);
-    line(px + 1.5, py - 14.2, px + 5.5, py - 12.8);
-  } else {
-    stroke(50, 50, 70);
-    strokeWeight(1.4);
-    let mouthUp = 2;
-    rectMode(CENTER);
-    rect(px, py - 2.0 - mouthUp, 7.5, 3.2, 1);
-    line(px - 2.5, py - 3.4 - mouthUp, px - 2.5, py - 0.6 - mouthUp);
-    line(px, py - 3.4 - mouthUp, px, py - 0.6 - mouthUp);
-    line(px + 2.5, py - 3.4 - mouthUp, px + 2.5, py - 0.6 - mouthUp);
-    strokeWeight(1.6);
-    line(px - 5.5, py - 12.8, px - 1.5, py - 14.2);
-    line(px + 1.5, py - 14.2, px + 5.5, py - 12.8);
-    rectMode(CORNER);
+  // movement / idle animation
+  let isMoving =
+    keyIsDown(LEFT_ARROW) ||
+    keyIsDown(RIGHT_ARROW) ||
+    keyIsDown(UP_ARROW) ||
+    keyIsDown(DOWN_ARROW) ||
+    keyIsDown(65) ||
+    keyIsDown(68) ||
+    keyIsDown(87) ||
+    keyIsDown(83);
+
+  let walk = isMoving ? sin(frameCount * 0.22) : 0;
+  let bob = isMoving
+    ? sin(frameCount * 0.22) * 1.2
+    : sin(frameCount * 0.06) * 0.35;
+
+  let moveLeft = keyIsDown(LEFT_ARROW) || keyIsDown(65);
+  let moveRight = keyIsDown(RIGHT_ARROW) || keyIsDown(68);
+  let facing = moveLeft ? -1 : 1;
+  if (moveRight) facing = 1;
+
+  // shadow
+  noStroke();
+  fill(10, 10, 20, 70);
+  ellipse(px, py + 12, 20 + abs(walk) * 2, 7);
+
+  // subtle outer glow so the player stands out from the background
+  if (!lowSensoryMode) {
+    fill(COL_PLAYER[0], COL_PLAYER[1], COL_PLAYER[2], 38);
+    ellipse(px, py + bob + 1, 24, 29);
   }
+
+  // legs
+  stroke(55, 50, 70);
+  strokeWeight(2.2);
+  line(px - 4, py + 8 + bob, px - 4 - walk * 1.8, py + 15);
+  line(px + 4, py + 8 + bob, px + 4 + walk * 1.8, py + 15);
+
+  // arms
+  line(px - 7, py + 1 + bob, px - 10 + walk * 1.4, py + 8);
+  line(px + 7, py + 1 + bob, px + 10 - walk * 1.4, py + 8);
+
+  // torso
+  noStroke();
+  fill(205, 96, 58);
+  ellipse(px, py + 2 + bob, 17, 21);
+
+  // shirt highlight
+  fill(240, 145, 95, 85);
+  ellipse(px - 2, py - 1 + bob, 8, 11);
+
+  // backpack/back outline for stronger silhouette
+  fill(92, 78, 110, 210);
+  ellipse(px - facing * 5.5, py + 1 + bob, 7.5, 13);
+
+  // neck
+  fill(210, 176, 150);
+  rectMode(CENTER);
+  rect(px, py - 5 + bob, 5, 5, 2);
+
+  // head
+  fill(COL_PLAYER_HEAD[0], COL_PLAYER_HEAD[1], COL_PLAYER_HEAD[2]);
+  ellipse(px, py - 9 + bob, 16, 16);
+
+  // hair
+  fill(72, 56, 48);
+  arc(px, py - 15 + bob, 13, 5, PI, TWO_PI);
+
+  // face
+  fill(52, 52, 70);
+  ellipse(px - 2.5, py - 10 + bob, 2.2, 2.2);
+  ellipse(px + 2.5, py - 10 + bob, 2.2, 2.2);
+
+  // brows
+  stroke(65, 58, 78);
+  strokeWeight(1.2);
+  line(px - 4.8, py - 13 + bob, px - 1.3, py - 13.6 + bob);
+  line(px + 1.3, py - 13.6 + bob, px + 4.8, py - 13 + bob);
+
+  // mouth / expression changes with overload
+  noFill();
+  stroke(52, 52, 70);
+
+  if (overload < 30) {
+    strokeWeight(1.4);
+    arc(px, py - 5 + bob, 6, 4, 0, PI);
+  } else if (overload < 55) {
+    strokeWeight(1.4);
+    line(px - 2.8, py - 5 + bob, px + 2.8, py - 5 + bob);
+  } else if (overload < 80) {
+    strokeWeight(1.5);
+    arc(px, py - 4.2 + bob, 6, 4, PI, TWO_PI);
+  } else {
+    strokeWeight(1.4);
+    rectMode(CENTER);
+    noFill();
+    rect(px, py - 4.5 + bob, 6.5, 3.2, 1);
+  }
+
+  // chest marker for visibility / direction
+  noStroke();
+  fill(255, 235, 190, 160);
+  ellipse(px + facing * 2.5, py + 1 + bob, 3.2, 3.2);
+
+  // overload feedback ring
+  if (overload > 60 && !lowSensoryMode) {
+    noFill();
+    stroke(255, 210, 90, map(overload, 60, 100, 20, 70));
+    strokeWeight(1.2);
+    ellipse(
+      px,
+      py - 2 + bob,
+      26 + sin(frameCount * 0.16) * 2,
+      31 + sin(frameCount * 0.16) * 2,
+    );
+  }
+
+  // calm ability active glow
+  if (calmAbilityTimer > 0) {
+    noFill();
+    stroke(150, 255, 190, 90);
+    strokeWeight(1.4);
+    ellipse(px, py - 1 + bob, 30, 35);
+  }
+
+  rectMode(CORNER);
   noStroke();
 }
 

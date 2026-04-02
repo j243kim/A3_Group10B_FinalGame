@@ -157,16 +157,44 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 | **How GenAI Was Used**                 | Claude Code was prompted with all three goals. It read the current state of `drawStageOneScene()`, `drawStageTwoScene()`, and the stimulus zone definitions. _(Implementation was in progress when this documentation task was requested.)_                                                                                                                                                                                                          |
 | **What Was Modified After Generation** | _(To be updated once implementation is complete.)_                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-### 3.11 Task: Syncing Obstacle Images with Moving Stimulus Zones, Redesigning Background Audio, and Adding Calm Zone Labels
+### 3.11 Task: Debugging Invisible or Incorrectly Rendered Objects
 
-| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GenAI Tool Used**                    | Claude Code (Claude Sonnet 4.6) via VS Code extension                                                                                                                                                                                                                                                                                                                                                                                                  |
-| **Date**                               | April 1, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| **Task Description**                   | Implemented player vision limit and mini map function to the existing game using genAI.  |
-| **How GenAI Was Used**                 | GenAI was used in coding the new functions according to my prompt, fixing bugs and making iterations for the map and vision limit's UI improvements.                                                                                                                                                                                                       |
-| **What Was Modified After Generation** | No further modifications as suggestions were implemented.                                                                                              
-                                                  |
+| Field                                  | Details                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | ChatGPT (GPT-5.3)                                                                                                                                                                                                                                                                           |
+| **Date**                               | March 31, 2026                                                                                                                                                                                                                                                                              |
+| **Task Description**                   | Troubleshooting issues where newly added assets (e.g., fridge, books, NPCs) did not appear correctly or had incorrect collision sizes.                                                                                                                                                      |
+| **How GenAI Was Used**                 | The model was prompted to identify why visual changes were not reflected in the game. It suggested checking asset file paths, ensuring preload consistency, verifying coordinate matching in decorations, and distinguishing between collision size (w, h) and display size (drawW, drawH). |
+| **What Was Modified After Generation** | The distinction between collision and rendering size was applied more consistently. Several objects (e.g., fridge and table) were adjusted by modifying only the display size while keeping collision unchanged to improve gameplay feel.                                                   |
+
+| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | ChatGPT (GPT-5.3)                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Date**                               | March 31, 2026                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Task Description**                   | Diagnosing why the game failed to load after adding new environment and furniture image assets.                                                                                                                                                                                                                                                                                                                             |
+| **How GenAI Was Used**                 | The model was prompted to identify possible causes for the game not loading after asset changes. It suggested checking for mismatched file names, incorrect file extensions (e.g., .png vs .jpg), and ensuring that all assets referenced in preload() exist in the correct directory. It also recommended verifying that the file paths match the project structure and that no missing assets are causing runtime errors. |
+| **What Was Modified After Generation** | Asset file names and extensions were verified and corrected. Several incorrect paths were fixed, and consistency between the assets/images folder and preload() references was ensured.                                                                                                                                                                                                                                     |
+
+### 3.12 Task: Refining Stage 3 Label Placement and Fixing Placeholder / Moving Blocker Bugs
+
+| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | Codex (GPT-5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Date**                               | April 2, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Task Description**                   | Refining stage 3 calm-zone label placement for the sofa and coffee assets, preventing stage 3 blocking NPC/book decorations from drifting left, and replacing the grey placeholder rectangle near the coffee calm zone with the actual water cooler asset.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **How GenAI Was Used**                 | Codex inspected the stage 3 calm zone and decoration rendering logic in `sketch.js`. It introduced a per-zone `labelLayout` system and shared badge helpers so `"Calm Area"`, object names, and `"Recovering..."` could be positioned independently. It then added play-area clamping plus `anchorInsetTop` / `anchorInsetBottom` offsets to account for transparent padding inside the sofa sprite. Codex also traced the unexpected leftward movement of blocker objects to accidental `d.x--` expressions in two stage 3 book-decoration checks, replaced them with stable equality checks, restored `booksImg` rendering, and matched the water cooler draw rule to the actual blocker coordinates so the asset renders instead of a fallback grey rectangle. |
+| **What Was Modified After Generation** | Follow-up prompts fine-tuned the sofa label offsets so `"Recovering..."` sits just above the visible couch and the `"Calm Area"` / `"Sofa"` labels sit closer to the sprite. The user also asked whether `WatercoolerImg` had to be renamed to `watercoolerImg`; Codex clarified that the current capitalization works as long as all references remain consistent, although lowercase would be stylistically more consistent with the rest of the image variables.                                                                                                                                                                                                                                                                                               |
+
+### 3.13 Task: Perfecting Stage 3 Sofa Label Alignment
+
+| Field                                  | Details                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | Gemini Code Assist                                                                                                                                                                          |
+| **Date**                               | April 2, 2026                                                                                                                                                                               |
+| **Task Description**                   | Fine-tuning the vertical position of the "Sofa" calm-zone label so it sits perfectly between the sofa image and the "Recovering..." message in Stage 3 without overlapping.                 |
+| **How GenAI Was Used**                 | The model was asked to move the "Sofa" label down to the middle of the image and the recovering message. It adjusted the specific `labelY` and `recY` pixel offsets for the sofa calm zone. |
+| **What Was Modified After Generation** | The changes were applied directly to the codebase as requested.                                                                                                                             |
+
 ---
 
 ### Conversation Log
@@ -325,6 +353,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **User (Jimin):**
 
 > Refactor the TBI game experience using TBI-informed sensory design.
+>
 > 1. Proximity audio per stimulus obstacle
 > 2. Stereo panning
 > 3. Stimulus-zone overlay visibility
@@ -356,6 +385,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **User (Jimin):**
 
 > Please also make the following visual adjustments:
+>
 > 1. Make all image label text smaller.
 > 2. Reposition the stimulus-zone labels.
 > 3. Increase the overall obstacle sizes.
@@ -376,6 +406,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **User (Jimin):**
 
 > Please make the following updates:
+>
 > 1. Increase the size of the collect-objective item.
 > 2. For Stage 1 and Stage 2 only, enlarge the calm zone.
 > 3. Increase the size of the other barrier images.
@@ -383,6 +414,88 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **Gemini 3.1 pro:**
 
 > Enlarged the drawing dimensions and adjusted positions for all collect-objective items. Significantly increased the scale of the `bedImg` in Stage 1 and `benchImg` in Stage 2, alongside their corresponding `calmZones` hitboxes. Expanded the sizes of standard non-interactive environmental decorations to match the new visual scaling.
+
+### Conversation Log (continued)
+
+**User (Jimin):**
+
+> In the game screenshot, the `Sofa` and `Calm Area` labels overlap near the sofa calm zone. When the character sits there, `Recovering...` also appears. Because of the image size, the labels do not get placed with proper distance. How should these labels be placed properly?
+
+**Codex:**
+
+> Read `sketch.js`, found hard-coded calm-zone label offsets, and refactored the stage 3 calm zones to use a per-zone `labelLayout` plus shared badge rendering helpers so the sofa and coffee labels could be positioned independently.
+
+**User (Jimin):**
+
+> The `Recovering...` label is partly off the screen. Also, can `Calm Area` be placed above `Sofa` regardless of the sofa image size so the labels look tidier?
+
+**Codex:**
+
+> Added play-area clamping so calm-zone badges cannot drift into the HUD, and changed the sofa layout to a stacked arrangement with `Calm Area` above `Sofa`.
+
+**User (Jimin):**
+
+> Why are they placed so far from the image? Is that because of the size of the image?
+
+**Codex:**
+
+> Explained that the labels were anchored to the full calm-zone rectangle (`cz.y + cz.h + offset`), not the visible bottom of the couch. Because the sofa PNG includes transparent padding, the badges looked farther away than expected even though the math was correct relative to the raw image box.
+
+**User (Jimin):**
+
+> Yes please.
+
+**Codex:**
+
+> Added custom label anchors using `anchorInsetBottom` so the sofa labels are positioned relative to the visible couch instead of the full PNG bounds.
+
+**User (Jimin):**
+
+> Now I need to make the `Recovering..` label for the sofa calm zone a bit lower so that it gets placed right above the sofa image.
+
+**Codex:**
+
+> Adjusted the sofa status badge to use `anchorInsetTop` and a smaller upward offset so `"Recovering..."` sits directly above the visible top of the couch.
+
+**User (Jimin):**
+
+> In stage 3, some of the NPC images and book images move to the left even though they are supposed to stay fixed because they are blockers.
+
+**Codex:**
+
+> Found two decoration checks using `d.x--`, which decremented the X coordinate during drawing. Replaced both with stable equality checks and corrected the two book blockers to render with `booksImg`.
+
+**User (Jimin):**
+
+> Do you see that grey rectangle in the middle of the screen near the coffee calm zone? What is that and how do I remove it?
+
+**Codex:**
+
+> Identified it as the water cooler blocker falling back to its placeholder rounded rectangle because the decoration coordinates did not match the water cooler image-mapping condition in the stage 3 draw logic.
+
+**User (Jimin):**
+
+> I want to keep it there but render the watercooler image that I have in `assets/images`.
+
+**Codex:**
+
+> Updated the stage 3 water cooler draw condition to match the actual blocker coordinates and render `WatercoolerImg` at that location instead of the grey placeholder.
+
+**User (Jimin):**
+
+> Do I have to change the naming of `WatercoolerImg` into `watercoolerImg` in lower case?
+
+**Codex:**
+
+> Clarified that the rename is not required for functionality as long as every reference uses the same capitalization. Also noted that lowercase camel case would be stylistically more consistent with the rest of the image variables.
+
+**User (Jimin):**
+
+> Can you add all the conversation that I had with you here into `Process_and_Decision_Documentation.md`?
+
+**Codex:**
+
+> Added this session to the documentation by creating a new GenAI use entry (3.12), extending the conversation log, and appending a new appendix transcript section.
 
 ---
 
@@ -535,27 +648,131 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 > Read the current state of `drawStageOneScene()`, `drawStageTwoScene()`, and the stimulus zone data definitions. Identified the core issue: the scene drawing functions use hardcoded coordinates for the obstacle images (e.g., `image(tvImg, 348, 292, 112, 70)`, `image(phoneImg, 30, 265, 90, 65)`, `image(carImg, 200, 110, 95, 60)`) which do not reference the dynamically updating `stimulusZones[].x / .y / .w / .h` values set by `updateStimulusZoneMovement()`.
 >
+> **User (Kevin):**
+> I changed the size of some objects, but nothing appears different in the game. What could be the problem?
+
+**ChatGPT:**
+
+> Explained that the game uses separate values for collision (w, h) and rendering (drawW, drawH), and that modifying only collision size would not affect the visual appearance. Suggested adjusting rendering dimensions and verifying that the correct mapping condition is being triggered.
+
+**User (Kevin):**
+
+> I added new assets for the environment and furniture, but the game started failing to load afterward. I wanted to know whether the issue was caused by incorrect file names, file types, or something in preload().
+
+**ChatGPT:**
+
+> Suggested that the issue was likely caused by mismatched file names or incorrect file extensions between the actual assets and the paths used in preload(). Recommended checking whether all referenced files exist in the correct folder, ensuring consistent naming (e.g., .png vs .jpg), and verifying that there are no missing assets causing the sketch to fail during loading.
+
 > _(Implementation was in progress when the user requested this documentation update.)_
 
+---
+
+### A.3 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
+
+**Tool Used:** Codex (GPT-5)
 
 ---
-### A.3 Conversation: Mini Map and player vision limit feature implementation (April 1, 2026)
+
+**User (Jimin):**
+
+> In the game screenshot, do you see the overlapping labels of `sofa` and `calm zone`? When the character sits on the calm zone, `Recovering...` comes up. But because of the size of the image, the labels do not get placed with proper distance like the other calm zone near the bottom. How should I place the labels properly with this context?
+
+**Codex:**
+
+> Read `sketch.js`, traced the calm-zone rendering logic, and found that stage 3 used hard-coded one-off offsets for the sofa and coffee labels. Replaced that approach with a shared badge-rendering helper and a per-zone `labelLayout` configuration so `Calm Area`, object names, and `Recovering...` can each be anchored independently.
+
+**User (Jimin):**
+
+> The `Recovering...` label is kind of off the screen. Also, is it possible to place the `calm zone` label for the sofa above the `sofa` label regardless of the size of the image of sofa? Placing `sofa` and `calm zone` labels like that does not look tidy.
+
+**Codex:**
+
+> Added play-area clamping to keep calm-zone badges inside the playable region and changed the sofa layout into a stacked order with `Calm Area` above `Sofa`, while keeping coffee as a separate stacked case below the mug.
+
+**User (Jimin):**
+
+> Why are they placed so far from the image? Is that because of the size of the image?
+
+**Codex:**
+
+> Explained that the distance came from anchoring the labels to the full calm-zone rectangle (`cz.y + cz.h + offset`) rather than the visible couch. Because the sofa PNG has transparent padding, the badges appeared farther away than intended.
+
+**User (Jimin):**
+
+> Yes please.
+
+**Codex:**
+
+> Added `anchorInsetBottom` support to the calm-zone label helper and used it for the sofa so `Calm Area` and `Sofa` anchor closer to the visible bottom of the couch rather than the raw image bounds.
+
+**User (Jimin):**
+
+> Good. Now I need to make the `Recovering..` label for sofa calm zone a bit lower so that it gets placed right above the sofa image.
+
+**Codex:**
+
+> Adjusted the sofa status label to use `anchorInsetTop` with a smaller upward offset, which moved `"Recovering..."` down so it sits just above the visible top of the sofa.
+
+**User (Jimin):**
+
+> Right now, if you look in `sketch.js`, some objects move back and forth in each stage. But in stage 3, some of the NPC images and book images move to the left, which are not supposed to move since they are there for blocking purpose.
+
+**Codex:**
+
+> Traced the issue to two decoration checks that accidentally used `d.x--`, which mutates the X coordinate during every draw call. Replaced those with `d.x === ...` comparisons and corrected the two book blockers to use `booksImg` instead of `npcImg`.
+
+**User (Jimin):**
+
+> Do you see that grey rectangle in the middle of the screen near the coffee calm zone? What is that and how do I remove it?
+
+**Codex:**
+
+> Identified the grey block as a fallback placeholder rectangle for the stage 3 water cooler decoration. The decoration existed in the stage data, but the draw logic only rendered the image at a different pair of coordinates, so the image path never matched and the rectangle was shown instead.
+
+**User (Jimin):**
+
+> I want to keep it there but render the watercooler image that I have in `assets/images`.
+
+**Codex:**
+
+> Updated the stage 3 decoration draw rule to match the actual blocker coordinates and render `WatercoolerImg` with explicit `drawX`, `drawY`, `drawW`, and `drawH` offsets so the water cooler image appears in place of the grey placeholder.
+
+**User (Jimin):**
+
+> Do I have to change the naming of `WatercoolerImg` into `watercoolerImg` in lower case?
+
+**Codex:**
+
+> Clarified that no rename is required for functionality as long as the declaration, preload assignment, and draw references all use the same capitalization. Also explained that changing it to `watercoolerImg` would only be a style / consistency improvement.
+
+**User (Jimin):**
+
+> Can you add all the conversation that I had with you here into `Process_and_Decision_Documentation.md`?
+
+**Codex:**
+
+> Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
+
+---
+
+### A.4 Conversation: Mini Map and player vision limit feature implementation (April 1, 2026)
 
 **Tool Used:** Claude Code (Claude Sonnet 4.6) via VS Code extension
 
 ---
 
 **User (Annora):**
+
 > For this updated game, help me generate a feature that simulates limited player vision similar to the Among Us game. Here are detailed instructions and include the following behaviour:
-> 
-> * The player should only be able to see a small circular area around their character, while the rest of the screen is darkened or hidden. This visible area should smoothly follow the player as they move, like a spotlight or flashlight effect.
-> * The surrounding area outside the radius should be dimmed or fully black
-> * The transition between visible and hidden areas should be slightly soft (not a harsh edge)
-> * Display a mini map in the corner of the screen showing the full layout of the level
-> * The mini map indicates the player’s position as a coloured dot clearly on the map
-> * Allow the player to open a larger version of the map when the map is clicked.
-> * The system should be optimized for real-time gameplay and work smoothly as the player moves.
-> * Focus on clean visual feedback, intuitive navigation, and maintaining a sense of limited information for gameplay tension.
+>
+> - The player should only be able to see a small circular area around their character, while the rest of the screen is darkened or hidden. This visible area should smoothly follow the player as they move, like a spotlight or flashlight effect.
+> - The surrounding area outside the radius should be dimmed or fully black
+> - The transition between visible and hidden areas should be slightly soft (not a harsh edge)
+> - Display a mini map in the corner of the screen showing the full layout of the level
+> - The mini map indicates the player’s position as a coloured dot clearly on the map
+> - Allow the player to open a larger version of the map when the map is clicked.
+> - The system should be optimized for real-time gameplay and work smoothly as the player moves.
+> - Focus on clean visual feedback, intuitive navigation, and maintaining a sense of limited information for gameplay tension.
 
 ---
 
@@ -572,7 +789,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > Now copy to outputs: Here's a full breakdown of everything added and where:
 
 > **New variables — lines 704–718 (after let calmSoundCooldown)**
-> 
+>
 > Variable / ConstantPurpose
 > VISION_RADIUS_BASE = 160
 > Default spotlight radius at 0% overload
@@ -590,23 +807,23 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > Stores the minimap's screen rect for click detection
 >
 > **setup() — line 1313**
-> 
+>
 > Added initVisionGraphics() — creates the off-screen fog buffer once on load.
 >
 > **drawPlayScreen() — lines 1902–1909**
-> 
-Three new calls inserted after drawVignette() and before / after drawHUD():
-drawFogOfWar() — stamps the fog mask on top of the stage, below the HUD
-drawMinimap() — draws the small corner map, always above fog
-drawExpandedMap() — draws the modal map when open, above everything
-> 
+>
+> Three new calls inserted after drawVignette() and before / after drawHUD():
+> drawFogOfWar() — stamps the fog mask on top of the stage, below the HUD
+> drawMinimap() — draws the small corner map, always above fog
+> drawExpandedMap() — draws the modal map when open, above everything
+>
 > **mousePressed() — lines 3621–3629**
-> 
+>
 > New block at the top of the function (before the start-screen logic):
 > During STATE_PLAY: if the expanded map is open, any click closes it; if the click is inside mmBounds, it opens the expanded map.
 >
->  **New functions appended at end of file**
-> 
+> **New functions appended at end of file**
+>
 > initVisionGraphics() — Creates the p5.Graphics buffer.
 > getCurrentVisionRadius() — Returns the current spotlight radius. Shrinks linearly from 160→70 as overload rises. Locked to 160 in Low Sensory Mode.
 > drawFogOfWar() — Each frame: floods the buffer with near-black fog, then uses blendMode(REMOVE) to erase a soft circular hole around the player using 24 concentric gradient rings. The buffer is then stamped onto the canvas.
@@ -618,50 +835,136 @@ drawExpandedMap() — draws the modal map when open, above everything
 **User (Annora):**
 
 > your modifications work well but here are some feedbacks:
-> 
-> * player cannot exit the expanded map even if i click the screen. fix this bug and allow to exit the map when key 'esc' is pressed.
-> * make the vision radius smaller so that it is more challenging.
+>
+> - player cannot exit the expanded map even if i click the screen. fix this bug and allow to exit the map when key 'esc' is pressed.
+> - make the vision radius smaller so that it is more challenging.
 
 **Claude Code:**
 
 > Three fixes, all in one file:
-> 
+>
 > **Bug: can't close expanded map (click or ESC)**
-> 
+>
 > The click handler in mousePressed was checking/setting minimapExpanded (lowercase m) while the actual variable is miniMapExpanded — so the close logic never fired. Fixed the variable name on all three lines in mousePressed.
 > Added an ESC handler at the top of keyPressed: if (gameState === STATE_PLAY && keyCode === ESCAPE) { miniMapExpanded = false; } — runs before any other key logic so it's always caught.
-> 
+>
 > **Smaller vision radius**
-> 
-> * visionRadiusBase: 160 → 100 (comfortable radius at 0% overload)
-> * visionRadiusMin: 70 → 45 (tightest radius at 100% overload)
-> The range is now noticeably tighter — at full overload the player can see less than half the area they could before.
+>
+> - visionRadiusBase: 160 → 100 (comfortable radius at 0% overload)
+> - visionRadiusMin: 70 → 45 (tightest radius at 100% overload)
+>   The range is now noticeably tighter — at full overload the player can see less than half the area they could before.
 
 ---
 
 **User (Annora):**
 
 > everything looks good but here are some edits i want to make.
-> 
-> * emtional message text color change into darker color.
-> * emotional message should appear above the fog so change the order of the functions so that the message isn't hidden under the fog
+>
+> - emtional message text color change into darker color.
+> - emotional message should appear above the fog so change the order of the functions so that the message isn't hidden under the fog
 
 **Claude Code:**
 
 > Clear picture now. Two changes: move drawEmotionMessage() call to after drawFog() in drawPlayScreen, and darken the text colour from (255, 220, 200) to a dark tone:
-> 
+>
 > **1. Draw order — drawPlayScreen()**
-> 
+>
 > Removed drawEmotionMessage() from inside drawStage() where it was buried under the fog
 > Added it immediately after drawFog(), so it always renders on top of the fog layer
-> 
+>
 > **2. Text colour — drawEmotionMessage()**
-> 
-> Element	Before	After
-> Text	fill(255, 220, 200) — light peach	fill(40, 25, 15) — dark charcoal brown
-> Pill background	fill(255, 255, 255, 0.7) — white	fill(255, 240, 210, 0.92) — warm cream, more opaque
+>
+> Element Before After
+> Text fill(255, 220, 200) — light peach fill(40, 25, 15) — dark charcoal brown
+> Pill background fill(255, 255, 255, 0.7) — white fill(255, 240, 210, 0.92) — warm cream, more opaque
 > The dark text on a warm cream pill now reads clearly against both the fog and the game world.
 
 ---
 
+### A.5 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
 
+**Tool Used:** Codex (GPT-5)
+
+---
+
+**User (Jimin):**
+
+> In the game screenshot, do you see the overlapping labels of `sofa` and `calm zone`? When the character sits on the calm zone, `Recovering...` comes up. But because of the size of the image, the labels do not get placed with proper distance like the other calm zone near the bottom. How should I place the labels properly with this context?
+
+**Codex:**
+
+> Read `sketch.js`, traced the calm-zone rendering logic, and found that stage 3 used hard-coded one-off offsets for the sofa and coffee labels. Replaced that approach with a shared badge-rendering helper and a per-zone `labelLayout` configuration so `Calm Area`, object names, and `Recovering...` can each be anchored independently.
+
+**User (Jimin):**
+
+> The `Recovering...` label is kind of off the screen. Also, is it possible to place the `calm zone` label for the sofa above the `sofa` label regardless of the size of the image of sofa? Placing `sofa` and `calm zone` labels like that does not look tidy.
+
+**Codex:**
+
+> Added play-area clamping to keep calm-zone badges inside the playable region and changed the sofa layout into a stacked order with `Calm Area` above `Sofa`, while keeping coffee as a separate stacked case below the mug.
+
+**User (Jimin):**
+
+> Why are they placed so far from the image? Is that because of the size of the image?
+
+**Codex:**
+
+> Explained that the distance came from anchoring the labels to the full calm-zone rectangle (`cz.y + cz.h + offset`) rather than the visible couch. Because the sofa PNG has transparent padding, the badges appeared farther away than intended.
+
+**User (Jimin):**
+
+> Yes please.
+
+**Codex:**
+
+> Added `anchorInsetBottom` support to the calm-zone label helper and used it for the sofa so `Calm Area` and `Sofa` anchor closer to the visible bottom of the couch rather than the raw image bounds.
+
+**User (Jimin):**
+
+> Good. Now I need to make the `Recovering..` label for sofa calm zone a bit lower so that it gets placed right above the sofa image.
+
+**Codex:**
+
+> Adjusted the sofa status label to use `anchorInsetTop` with a smaller upward offset, which moved `"Recovering..."` down so it sits just above the visible top of the sofa.
+
+**User (Jimin):**
+
+> Right now, if you look in `sketch.js`, some objects move back and forth in each stage. But in stage 3, some of the NPC images and book images move to the left, which are not supposed to move since they are there for blocking purpose.
+
+**Codex:**
+
+> Traced the issue to two decoration checks that accidentally used `d.x--`, which mutates the X coordinate during every draw call. Replaced those with `d.x === ...` comparisons and corrected the two book blockers to use `booksImg` instead of `npcImg`.
+
+**User (Jimin):**
+
+> Do you see that grey rectangle in the middle of the screen near the coffee calm zone? What is that and how do I remove it?
+
+**Codex:**
+
+> Identified the grey block as a fallback placeholder rectangle for the stage 3 water cooler decoration. The decoration existed in the stage data, but the draw logic only rendered the image at a different pair of coordinates, so the image path never matched and the rectangle was shown instead.
+
+**User (Jimin):**
+
+> I want to keep it there but render the watercooler image that I have in `assets/images`.
+
+**Codex:**
+
+> Updated the stage 3 decoration draw rule to match the actual blocker coordinates and render `WatercoolerImg` with explicit `drawX`, `drawY`, `drawW`, and `drawH` offsets so the water cooler image appears in place of the grey placeholder.
+
+**User (Jimin):**
+
+> Do I have to change the naming of `WatercoolerImg` into `watercoolerImg` in lower case?
+
+**Codex:**
+
+> Clarified that no rename is required for functionality as long as the declaration, preload assignment, and draw references all use the same capitalization. Also explained that changing it to `watercoolerImg` would only be a style / consistency improvement.
+
+**User (Jimin):**
+
+> Can you add all the conversation that I had with you here into `Process_and_Decision_Documentation.md`?
+
+**Codex:**
+
+> Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
+
+---

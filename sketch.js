@@ -114,7 +114,7 @@ let firehydrantImg,
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
 let communicateImg, flagImg, worknotesImg;
-let watercoolerImg, officedeskImg, recyclebinImg, cabinetImg;
+let WatercoolerImg, officedeskImg, recyclebinImg, cabinetImg, booksImg, npcImg;
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -708,7 +708,7 @@ const mapH = 100;
 const mapPad = 10;
 const mapBorder = 6;
 let miniMapExpanded = false;
-let mapBounds = {x:0, y:0, w:mapW, h:mapH};
+let mapBounds = { x: 0, y: 0, w: mapW, h: mapH };
 // ===================== HELPERS =====================
 function starsCollected() {
   if (!currentStageData) return 0;
@@ -824,22 +824,52 @@ function drawStageThreeScene() {
 
   // Calm zone 1 = sofa
   if (sofaImg) {
-    image(sofaImg, 405, 105, 143, 91);
+    image(
+      sofaImg,
+      currentStageData.calmZones[0].x,
+      currentStageData.calmZones[0].y,
+      currentStageData.calmZones[0].w,
+      currentStageData.calmZones[0].h,
+    );
   }
 
   // Calm zone 2 = coffee
   if (coffeeImg) {
-    image(coffeeImg, 535, 375, 50, 50);
+    image(
+      coffeeImg,
+      currentStageData.calmZones[1].x,
+      currentStageData.calmZones[1].y,
+      currentStageData.calmZones[1].w,
+      currentStageData.calmZones[1].h,
+    );
   }
 
   // Red zone 1 = computer
   if (computerImg) {
-    image(computerImg, 165, 315, 143, 97);
+    image(
+      computerImg,
+      currentStageData.stimulusZones[0].x,
+      currentStageData.stimulusZones[0].y,
+      currentStageData.stimulusZones[0].w,
+      currentStageData.stimulusZones[0].h,
+    );
   }
 
   // Red zone 2 = printer
   if (printerImg) {
-    image(printerImg, 740, 285, 104, 84);
+    image(
+      printerImg,
+      currentStageData.stimulusZones[1].x,
+      currentStageData.stimulusZones[1].y,
+      currentStageData.stimulusZones[1].w,
+      currentStageData.stimulusZones[1].h,
+    );
+  }
+
+  // NPC for Communicate (red zone)
+  if (npcImg) {
+    imageMode(CENTER);
+    image(npcImg, 520, 250, 32, 32);
   }
 }
 
@@ -1174,40 +1204,89 @@ function createStages() {
         { x: 900, y: 230, w: 12, h: 200 },
       ],
       stimulusZones: [
-        { x: 165, y: 315, w: 143, h: 97, label: "screen glare" },
-        { x: 740, y: 285, w: 104, h: 84, label: "printer noise" },
+        {
+          x: 40,
+          y: 430,
+          w: 110,
+          h: 75,
+          label: "screen glare",
+          moveType: "vertical",
+          amplitude: 15,
+          speed: 0.02,
+          baseX: 40,
+          baseY: 430,
+          baseW: 110,
+          baseH: 75,
+        }, // computer
+        {
+          x: 690,
+          y: 300,
+          w: 80,
+          h: 65,
+          label: "printer noise",
+          moveType: "horizontal",
+          amplitude: 20,
+          speed: 0.025,
+          baseX: 690,
+          baseY: 300,
+          baseW: 80,
+          baseH: 65,
+        }, // printer
       ],
       calmZones: [
-        { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg }, // sofa
-        { x: 535, y: 375, w: 50, h: 50, img: () => coffeeImg }, // coffee
+        {
+          x: 405,
+          y: 105,
+          w: 143,
+          h: 91,
+          img: () => sofaImg,
+          label: "Sofa",
+          labelLayout: {
+            area: { position: "below", offset: 12, anchorInsetBottom: 24 },
+            name: { position: "below", offset: 34, anchorInsetBottom: 24 },
+            status: { position: "above", offset: 8, anchorInsetTop: 15 },
+          },
+        }, // sofa
+        {
+          x: 450,
+          y: 480,
+          w: 50,
+          h: 50,
+          img: () => coffeeImg,
+          label: "Coffee",
+          labelLayout: {
+            area: { position: "below", offset: 12 },
+            name: { position: "below", offset: 36 },
+          },
+        }, // coffee
       ],
       decorations: [
         // Office desk 1 (solid)
         { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
+
         // Office desk 2 (solid)
         { x: 170, y: 320, w: 50, h: 30, col: [95, 88, 78], solid: true },
+
         // Filing cabinet (solid)
         { x: 350, y: 130, w: 30, h: 40, col: [80, 80, 95], solid: true },
+
+        // NPC bottom left (blocking)
+        { x: 110, y: 520, w: 30, h: 30, col: [0, 0, 0], solid: true },
+
+        // NPC top right (blocking)
+        { x: 850, y: 150, w: 30, h: 30, col: [0, 0, 0], solid: true },
+
+        // Books left
+        { x: 120, y: 240, w: 30, h: 24, col: [0, 0, 0], solid: true },
+
+        // Books right
+        { x: 820, y: 120, w: 30, h: 24, col: [0, 0, 0], solid: true },
+
         // Printer (solid, near noise zone)
         { x: 58, y: 260, w: 40, h: 28, col: [110, 105, 115], solid: true },
-        // Break room sofa (solid)
-        { x: 460, y: 320, w: 60, h: 35, col: [68, 108, 78], solid: true },
-        // Break room plant (solid, kept clear of the calm zone)
-        { x: 434, y: 110, w: 24, h: 28, col: [55, 110, 65], solid: true },
+
         // Water cooler (solid)
-        { x: 540, y: 380, w: 22, h: 26, col: [85, 110, 130], solid: true },
-        // Transit bench (solid)
-        { x: 650, y: 440, w: 70, h: 22, col: [100, 90, 75], solid: true },
-        // Vending machine (solid, tall)
-        { x: 460, y: 200, w: 36, h: 46, col: [90, 85, 110], solid: true },
-        // Trash bin transit
-        { x: 760, y: 320, w: 22, h: 24, col: [75, 78, 75], solid: true },
-        // Home stretch mailbox
-        { x: 915, y: 350, w: 24, h: 28, col: [95, 75, 65], solid: true },
-        // Office rug (solid obstacle)
-        { x: 160, y: 350, w: 65, h: 40, col: [48, 42, 55], solid: true },
-        // Transit floor marking (decorative)
-        { x: 650, y: 250, w: 80, h: 6, col: [60, 58, 72], passThrough: true },
+        { x: 560, y: 430, w: 22, h: 26, col: [85, 110, 130], solid: true },
       ],
       checkpoints: [
         { x: 80, y: 350, label: "Office", starsReq: 0 },
@@ -1287,10 +1366,12 @@ function preload() {
   worknotesImg = loadImage("assets/images/worknotes.png");
   officeWallImg = loadImage("assets/images/officewall.jpg");
 
-  watercoolerImg = loadImage("assets/images/Watercooler.png");
+  WatercoolerImg = loadImage("assets/images/Watercooler.png");
   officedeskImg = loadImage("assets/images/officedesk.png");
   recyclebinImg = loadImage("assets/images/recyclebin.png");
   cabinetImg = loadImage("assets/images/cabinet.png");
+  npcImg = loadImage("assets/images/npc.png");
+  booksImg = loadImage("assets/images/books.png");
 }
 
 // ===================== p5.js SETUP =====================
@@ -1449,9 +1530,68 @@ function drawStartScreen() {
     rect(panelX - 10, panelY - 10, panelW + 20, panelH + 20, 24);
   }
 
-  fill(18, 20, 42, 206);
+  let panelFlutter =
+    206 + sin(frameCount * 0.05) * 10 + sin(frameCount * 0.12 + 1.8) * 4;
+  fill(18, 20, 42, panelFlutter);
   rectMode(CORNER);
   rect(panelX, panelY, panelW, panelH, 20);
+
+  if (!lowSensoryMode) {
+    let crackGlow = 14 + sin(frameCount * 0.09) * 8;
+    stroke(110, 135, 190, crackGlow);
+    strokeWeight(1);
+
+    line(panelX + 90, panelY + 24, panelX + 140, panelY + 78);
+    line(panelX + 140, panelY + 78, panelX + 210, panelY + 118);
+
+    line(
+      panelX + panelW - 120,
+      panelY + 42,
+      panelX + panelW - 170,
+      panelY + 96,
+    );
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 230,
+      panelY + 128,
+    );
+
+    line(
+      panelX + 70,
+      panelY + panelH - 70,
+      panelX + 130,
+      panelY + panelH - 120,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 210,
+      panelY + panelH - 155,
+    );
+
+    line(panelX + 140, panelY + 78, panelX + 125, panelY + 104);
+    line(
+      panelX + panelW - 170,
+      panelY + 96,
+      panelX + panelW - 150,
+      panelY + 124,
+    );
+    line(
+      panelX + 130,
+      panelY + panelH - 120,
+      panelX + 108,
+      panelY + panelH - 145,
+    );
+
+    noStroke();
+  }
+
+  if (!lowSensoryMode) {
+    let panelFlash = max(0, sin(frameCount * 0.21) - 0.9) * 60;
+    fill(255, 255, 255, panelFlash);
+    rect(panelX, panelY, panelW, panelH, 18);
+  }
 
   if (!lowSensoryMode) {
     fill(255, 210, 75, 16);
@@ -1461,10 +1601,25 @@ function drawStartScreen() {
   }
 
   textAlign(CENTER, CENTER);
-  fill(255, 210, 75);
   textSize(54);
   textStyle(BOLD);
-  text("Fragmented", heroCX, titleY);
+
+  if (!lowSensoryMode) {
+    let glitchX = sin(frameCount * 0.18) * 2.2;
+    let glitchY = cos(frameCount * 0.14) * 1.1;
+
+    fill(255, 80, 80, 42);
+    text("Fragmented", heroCX - 3 + glitchX, titleY - 1);
+
+    fill(120, 180, 255, 38);
+    text("Fragmented", heroCX + 3 - glitchX, titleY + 1);
+
+    fill(255, 210, 75);
+    text("Fragmented", heroCX + glitchX * 0.4, titleY + glitchY * 0.3);
+  } else {
+    fill(255, 210, 75);
+    text("Fragmented", heroCX, titleY);
+  }
 
   textStyle(NORMAL);
   textSize(13);
@@ -1534,122 +1689,202 @@ function drawStartBackdrop() {
   let cy = CANVAS_H / 2;
   let t = frameCount;
 
-  // --- Layer 1: Faint head silhouette outline (centered behind panel) ---
-  // A simple abstract oval representing the head, with a subtle inner shape
-  // for the brain region — grounding the TBI theme visually.
+  // =========================
+  // 1) Global background flutter
+  // =========================
+  let bgFlutter = 12 + sin(t * 0.045) * 6 + sin(t * 0.11 + 1.4) * 3;
+  fill(22, 24, 42, bgFlutter);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  // very light irregular flicker pulses
+  if (sin(t * 0.23) > 0.92) {
+    fill(90, 100, 150, 8);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+  if (sin(t * 0.31 + 2.1) > 0.95) {
+    fill(255, 210, 75, 5);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  // =========================
+  // 2) Faint head silhouette
+  // =========================
   push();
   translate(cx, cy - 20);
   noFill();
-  // Outer head outline — faint, slightly breathing
+
   let headBreath = sin(t * 0.012) * 3;
-  stroke(60, 65, 95, 18 + sin(t * 0.02) * 4);
+  let headAlpha = 12 + sin(t * 0.04) * 5;
+  stroke(60, 65, 95, headAlpha);
   strokeWeight(1.5);
   ellipse(0, 0, 320 + headBreath, 390 + headBreath);
-  // Inner brain region — smaller oval, even fainter
-  stroke(70, 75, 110, 12);
+
+  stroke(70, 75, 110, 8 + sin(t * 0.028 + 0.8) * 3);
   strokeWeight(1);
   ellipse(0, -30, 220 + headBreath * 0.6, 240 + headBreath * 0.6);
   pop();
 
-  // --- Layer 2: Neural pathway lines ---
-  // Branching lines that flicker, break, and reconnect — representing
-  // damaged neural connections and the effort to maintain cognitive pathways.
-  let neuralSeeds = [
-    { sx: 280, sy: 180, ang: 0.4 },
-    { sx: 720, sy: 180, ang: 2.7 },
-    { sx: 200, sy: 420, ang: 0.9 },
-    { sx: 800, sy: 420, ang: 2.2 },
-    { sx: 500, sy: 130, ang: 1.5 },
-    { sx: 370, sy: 500, ang: 0.2 },
-    { sx: 630, sy: 500, ang: 2.9 },
-    { sx: 150, sy: 300, ang: 0.6 },
-    { sx: 850, sy: 300, ang: 2.5 },
+  // =========================
+  // 3) Neural pathway lines with stronger instability
+  // =========================
+  // --- Layer 2: Fragment shards / broken neural mesh ---
+  let shardSeeds = [
+    { x: 220, y: 170, sides: 5, r: 34 },
+    { x: 760, y: 180, sides: 4, r: 42 },
+    { x: 180, y: 420, sides: 6, r: 30 },
+    { x: 820, y: 420, sides: 5, r: 36 },
+    { x: 500, y: 120, sides: 4, r: 28 },
+    { x: 340, y: 520, sides: 5, r: 24 },
+    { x: 650, y: 520, sides: 6, r: 26 },
+    { x: 120, y: 300, sides: 4, r: 22 },
+    { x: 890, y: 290, sides: 5, r: 24 },
   ];
-  for (let n = 0; n < neuralSeeds.length; n++) {
-    let seed = neuralSeeds[n];
-    let px = seed.sx;
-    let py = seed.sy;
-    let ang = seed.ang + sin(t * 0.005 + n * 1.3) * 0.3;
-    let segLen = 18;
-    let segments = 6 + (n % 3);
-    // Each pathway flickers in and out on its own cycle
-    let flickerPhase = sin(t * 0.018 + n * 2.1);
-    let pathAlpha = map(flickerPhase, -1, 1, 4, 22);
 
-    stroke(90, 100, 150, pathAlpha);
-    strokeWeight(1);
-    for (let s = 0; s < segments; s++) {
-      let nx = px + cos(ang) * segLen;
-      let ny = py + sin(ang) * segLen;
-      // Broken connections — skip drawing some segments to show damage
-      let broken = sin(t * 0.025 + n * 3.7 + s * 1.9) > 0.4;
-      if (!broken) {
-        line(px, py, nx, ny);
+  for (let i = 0; i < shardSeeds.length; i++) {
+    let s = shardSeeds[i];
+    let crackAlpha = map(sin(t * 0.02 + i * 1.7), -1, 1, 6, 24);
+
+    if (sin(t * 0.18 + i * 2.9) > 0.82) {
+      crackAlpha *= 0.25;
+    }
+
+    push();
+    translate(s.x, s.y);
+    rotate(sin(t * 0.006 + i) * 0.18);
+
+    stroke(95, 110, 165, crackAlpha);
+    strokeWeight(1.1);
+    fill(50, 60, 95, crackAlpha * 0.12);
+
+    beginShape();
+    for (let a = 0; a < TWO_PI; a += TWO_PI / s.sides) {
+      let rr = s.r + sin(t * 0.01 + a * 3 + i) * 6;
+      let vx = cos(a) * rr;
+      let vy = sin(a) * rr;
+      vertex(vx, vy);
+    }
+    endShape(CLOSE);
+
+    for (let k = 0; k < s.sides; k++) {
+      let ang = (TWO_PI / s.sides) * k;
+      let ex = cos(ang) * (s.r * 0.85);
+      let ey = sin(ang) * (s.r * 0.85);
+      line(0, 0, ex, ey);
+    }
+
+    for (let k = 0; k < 3; k++) {
+      let a1 = i * 0.9 + k * 1.7;
+      let len = s.r + 14 + k * 10;
+      let x1 = cos(a1) * 8;
+      let y1 = sin(a1) * 8;
+      let x2 = cos(a1) * len;
+      let y2 = sin(a1) * len;
+      if (sin(t * 0.04 + i * 3 + k) > -0.2) {
+        line(x1, y1, x2, y2);
       }
-      // Small synapse node at each joint
-      if (s < segments - 1) {
-        noStroke();
-        fill(100, 120, 170, broken ? 5 : pathAlpha * 0.8);
-        ellipse(nx, ny, 3, 3);
-        stroke(90, 100, 150, pathAlpha);
-        strokeWeight(1);
-      }
-      px = nx;
-      py = ny;
-      // Branch direction drifts
-      ang += sin(t * 0.008 + s * 0.9 + n) * 0.5;
+    }
+
+    pop();
+  }
+
+  let links = [
+    [0, 4],
+    [4, 1],
+    [0, 2],
+    [1, 3],
+    [2, 5],
+    [3, 6],
+    [5, 6],
+    [7, 0],
+    [1, 8],
+  ];
+
+  strokeWeight(1);
+  for (let i = 0; i < links.length; i++) {
+    let a = shardSeeds[links[i][0]];
+    let b = shardSeeds[links[i][1]];
+    let linkAlpha = map(sin(t * 0.016 + i * 2.4), -1, 1, 3, 18);
+    stroke(80, 95, 145, linkAlpha);
+
+    let mx = (a.x + b.x) / 2 + sin(t * 0.01 + i) * 18;
+    let my = (a.y + b.y) / 2 + cos(t * 0.012 + i) * 12;
+
+    if (sin(t * 0.09 + i * 1.8) > 0.15) {
+      line(a.x, a.y, mx, my);
+    }
+    if (sin(t * 0.09 + i * 1.8 + 0.8) > 0.28) {
+      line(mx, my, b.x, b.y);
     }
   }
+
   noStroke();
 
-  // --- Layer 3: Drifting thought fragments ---
-  // Small text-like shapes that float and fade, representing scattered
-  // thoughts, memory fragments, and the difficulty holding onto ideas.
+  // =========================
+  // 4) Small static clusters
+  // =========================
+  let staticClusters = [
+    { x: 118, y: 128, w: 52, h: 28 },
+    { x: 820, y: 148, w: 58, h: 30 },
+    { x: 145, y: 485, w: 64, h: 30 },
+    { x: 760, y: 500, w: 70, h: 34 },
+    { x: 415, y: 555, w: 58, h: 24 },
+    { x: 612, y: 108, w: 56, h: 24 },
+    { x: 88, y: 298, w: 50, h: 26 },
+    { x: 874, y: 288, w: 52, h: 24 },
+  ];
+
+  for (let i = 0; i < staticClusters.length; i++) {
+    let c = staticClusters[i];
+    let clusterAlpha = 8 + sin(t * 0.06 + i * 1.9) * 5;
+
+    for (let j = 0; j < 16; j++) {
+      let px = c.x + ((j * 13 + i * 7) % c.w);
+      let py = c.y + ((j * 9 + i * 11) % c.h);
+      let sz = 1 + ((j + i) % 2);
+
+      if (sin(t * 0.14 + i * 2.4 + j * 0.7) > -0.15) {
+        fill(170, 180, 215, clusterAlpha);
+      } else {
+        fill(255, 210, 75, clusterAlpha * 0.45);
+      }
+      rect(px, py, sz, sz);
+    }
+  }
+
+  // =========================
+  // 5) Drifting thought fragments
+  // =========================
   let fragments = [
     { x: 120, y: 150, w: 40, h: 4 },
     { x: 870, y: 170, w: 35, h: 4 },
     { x: 180, y: 480, w: 45, h: 4 },
     { x: 760, y: 510, w: 38, h: 4 },
     { x: 400, y: 560, w: 32, h: 4 },
-    { x: 620, y: 100, w: 36, h: 4 },
-    { x: 90, y: 340, w: 28, h: 4 },
-    { x: 910, y: 360, w: 34, h: 4 },
-    { x: 310, y: 80, w: 42, h: 4 },
-    { x: 700, y: 580, w: 30, h: 4 },
+    { x: 620, y: 110, w: 48, h: 4 },
+    { x: 90, y: 300, w: 42, h: 4 },
+    { x: 900, y: 290, w: 36, h: 4 },
   ];
+
   for (let i = 0; i < fragments.length; i++) {
     let f = fragments[i];
-    // Each fragment drifts slowly and fades in/out
-    let drift = sin(t * 0.01 + i * 1.7) * 15;
-    let driftY = cos(t * 0.008 + i * 2.3) * 8;
-    let fadeAlpha = map(sin(t * 0.015 + i * 2.9), -1, 1, 3, 18);
-    fill(160, 165, 200, fadeAlpha);
-    rectMode(CORNER);
-    rect(f.x + drift, f.y + driftY, f.w, f.h, 2);
-    // Some fragments have a second shorter "word" next to them
-    if (i % 3 === 0) {
-      rect(f.x + drift + f.w + 6, f.y + driftY, f.w * 0.5, f.h, 2);
-    }
+    let driftX = sin(t * 0.01 + i * 1.7) * 6;
+    let driftY = cos(t * 0.013 + i * 1.2) * 4;
+    let a = 8 + sin(t * 0.02 + i * 2.5) * 5;
+
+    fill(170, 180, 215, a);
+    rect(f.x + driftX, f.y + driftY, f.w, f.h, 3);
+
+    // ghost double-vision copy
+    fill(255, 210, 75, a * 0.18);
+    rect(f.x + driftX + 4, f.y + driftY + 1, f.w * 0.85, f.h, 3);
   }
 
-  // --- Layer 4: Fading awareness particles ---
-  // Tiny dots that pulse gently, representing moments of clarity
-  // flickering in and out — the struggle to stay present.
-  for (let i = 0; i < 50; i++) {
-    let px = (i * 173 + 47) % CANVAS_W;
-    let py = (i * 113 + 31) % CANVAS_H;
-    let pulse = sin(t * 0.03 + i * 0.8);
-    let a = map(pulse, -1, 1, 0, 10);
-    let sz = map(pulse, -1, 1, 1, 2.5);
-    fill(140, 150, 200, a);
-    ellipse(px, py, sz, sz);
-  }
-
-  // --- Layer 5: Subtle pressure halo around center ---
-  // A soft warm glow behind the title area, representing the persistent
-  // low-grade discomfort — always there, hard to ignore.
+  // =========================
+  // 6) Pressure halo around center
+  // =========================
   fill(255, 200, 80, 8 + sin(t * 0.015) * 3);
   ellipse(cx, cy - 50, 350, 200);
+
   fill(80, 60, 120, 6 + sin(t * 0.02 + 1) * 2);
   ellipse(cx, cy + 80, 400, 180);
 
@@ -1763,75 +1998,59 @@ function drawHowToPlayOverlay() {
     howToPlayCloseBounds.h,
   );
 
-  fill(closeHovered ? 48 : 32, 36, 58, 255);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noFill();
-  stroke(255, 210, 75, closeHovered ? 130 : 70);
-  strokeWeight(1.2);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noStroke();
-  fill(255, 210, 75);
+  fill(closeHovered ? 255 : 210, closeHovered ? 220 : 210, 75);
   textAlign(CENTER, CENTER);
+  textSize(18);
   textStyle(BOLD);
-  textSize(14);
   text(
-    "X",
+    "×",
     howToPlayCloseBounds.x + howToPlayCloseBounds.w / 2,
-    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2 + 1,
+    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2,
   );
 
   fill(255, 210, 75);
   textSize(24);
   text("How to Play", cx, panelY + 46);
+
   textStyle(NORMAL);
   textSize(11.5);
   fill(180, 184, 200);
   text(
-    "Complete the day while managing overload, fatigue, and fading memory.",
+    "Complete the day while managing overload and fatigue.",
     cx,
     panelY + 76,
   );
 
-  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys", "Move");
-  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Recall objective");
-  drawHowToPlayRow(panelX + 54, panelY + 208, "L", "Toggle Low Sensory Mode");
-  drawHowToPlayRow(panelX + 54, panelY + 252, "R", "Return to title");
+  drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
+  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
+  drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
+  drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");
+  drawHowToPlayRow(panelX + 54, panelY + 296, "R", "Return to title");
 
   fill(255, 210, 75);
   textSize(12);
   textStyle(BOLD);
   textAlign(LEFT, CENTER);
-  text("Gameplay Guidance", panelX + 62, panelY + 300);
+  text("Gameplay Guidance", panelX + 62, panelY + 348);
 
   fill(214, 218, 230);
   textStyle(NORMAL);
   textSize(12);
-  text("Green zones help reduce overload.", panelX + 62, panelY + 326);
-  text("Red noise zones increase overload.", panelX + 62, panelY + 350);
+  text("Green zones help reduce overload.", panelX + 62, panelY + 374);
+  text("Red noise zones increase overload.", panelX + 62, panelY + 398);
   text(
-    "Manage memory, fatigue, and overload while completing the day.",
+    "Use calm ability and safe routing to finish each stage.",
     panelX + 62,
-    panelY + 373,
+    panelY + 422,
   );
 
-  textAlign(CENTER, CENTER);
+  textAlign(LEFT, TOP);
   fill(144, 150, 168);
   textSize(10.5);
-  text("Press H or ESC to close", cx, panelY + panelH - 26);
+  text("Press H or ESC to close", panelX + 20, panelY + 20);
 
   rectMode(CORNER);
+  textStyle(NORMAL);
 }
 
 function drawHowToPlayRow(x, y, keyLabel, label) {
@@ -1857,8 +2076,7 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 
 // ===================== PLAY SCREEN =====================
 function drawPlayScreen() {
-
-if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
+  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
 
   if (bedImg) {
     let bedX = 200;
@@ -1868,8 +2086,6 @@ if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
     image(bedImg, bedX, bedY, bedW, bedH);
   }
 
-
-  
   background(40, 40, 80);
 
   // --- UPDATE GAME LOGIC HERE ---
@@ -2285,6 +2501,10 @@ function updateStimulusZoneMovement() {
       // Obstacle drifts left/right along its axis
       let offset = sin(t * sz.speed) * sz.amplitude;
       sz.x = sz.baseX + offset;
+    } else if (sz.moveType === "vertical") {
+      // Obstacle drifts up/down along its axis
+      let offset = sin(t * sz.speed) * sz.amplitude;
+      sz.y = sz.baseY + offset;
     } else if (sz.moveType === "pulse") {
       // Zone expands and contracts — TV flicker / noise radiating outward
       let expand = sin(t * sz.speed) * sz.amplitude;
@@ -2308,10 +2528,16 @@ function updateGame() {
 
   let newX = playerX;
   let newY = playerY;
-  if (keyIsDown(LEFT_ARROW)) newX -= speed;
-  if (keyIsDown(RIGHT_ARROW)) newX += speed;
-  if (keyIsDown(UP_ARROW)) newY -= speed;
-  if (keyIsDown(DOWN_ARROW)) newY += speed;
+
+  let moveLeft = keyIsDown(LEFT_ARROW) || keyIsDown(65); // A
+  let moveRight = keyIsDown(RIGHT_ARROW) || keyIsDown(68); // D
+  let moveUp = keyIsDown(UP_ARROW) || keyIsDown(87); // W
+  let moveDown = keyIsDown(DOWN_ARROW) || keyIsDown(83); // S
+
+  if (moveLeft) newX -= speed;
+  if (moveRight) newX += speed;
+  if (moveUp) newY -= speed;
+  if (moveDown) newY += speed;
 
   // Attention drift [2]
   if (s.driftOn && overload > s.driftThreshold) {
@@ -2330,19 +2556,9 @@ function updateGame() {
   if (!hitsWall(newX, playerY)) playerX = newX;
   if (!hitsWall(playerX, newY)) playerY = newY;
 
-  // --- MEMORY FADE ACTIVATION [1][2] ---
-  if (!memoryActive && starsCollected() >= s.memoryFadeAfter) {
-    memoryActive = true;
-    showObjective = true;
-    memoryTimer = s.memoryTimer;
-  }
-
-  if (memoryActive) {
-    memoryTimer -= 1;
-    if (memoryTimer <= 0) showObjective = false;
-  } else {
-    showObjective = true;
-  }
+  // Memory recall mechanic removed
+  memoryActive = false;
+  showObjective = true;
 
   // --- SENSORY OVERLOAD [3] ---
   let overloadRate = s.overloadBase;
@@ -2605,7 +2821,7 @@ function drawStage() {
     // Draw descriptive label above the stimulus zone so players
     // understand what real-world sensory trigger this represents [3][5]
     let szLabel = sz.label || "noise";
-    let labelY = sz.y - 14;
+    let labelY = sz.y - 18; // Adjusted for better spacing
 
     textSize(10);
     textStyle(BOLD);
@@ -2635,6 +2851,16 @@ function drawStage() {
   // Calm Zones [3]
   for (let cz of calmZones) {
     drawCalmZone(cz);
+
+    if (currentStage === 2 && cz.label) {
+      let namePos = getCalmZoneLabelPoint(cz, "name");
+      drawZoneBadge(cz.label, namePos.x, namePos.y, {
+        clampToPlayArea: true,
+        fill: [10, 30, 20, 220],
+        stroke: [150, 255, 180, 150],
+        text: [150, 255, 180],
+      });
+    }
   }
 
   // Walls / barriers
@@ -2731,148 +2957,148 @@ function drawStage() {
       // Fridge
       else if (d.x === 560 && d.y === 95) {
         decoImg = fridgeImg;
-        drawX = d.x - 18;
-        drawY = d.y - 20;
-        drawW = d.w + 48;
-        drawH = d.h + 60;
+        drawX = d.x - 10;
+        drawY = d.y - 12;
+        drawW = d.w + 32;
+        drawH = d.h + 40;
       }
       // Kitchen table
       else if (d.x === 560 && d.y === 280) {
         decoImg = kitchentableImg;
-        drawX = 520;
-        drawY = 245;
-        drawW = 160;
-        drawH = 120;
+        drawX = 540;
+        drawY = 260;
+        drawW = 120;
+        drawH = 90;
       }
       // Shoe rack
       else if (d.x === 870 && d.y === 460) {
         decoImg = shoerackImg;
-        drawX = 835;
-        drawY = 435;
-        drawW = 125;
-        drawH = 80;
+        drawX = 850;
+        drawY = 445;
+        drawW = 92;
+        drawH = 60;
       }
       // Bookshelf
       else if (d.x === 30 && d.y === 310) {
         decoImg = bookshelfImg;
-        drawX = 12;
-        drawY = 285;
-        drawW = 70;
-        drawH = 145;
+        drawX = 22;
+        drawY = 300;
+        drawW = 52;
+        drawH = 108;
       }
     } else if (currentStage === 1) {
       // Fire hydrant
       if (d.x === 130 && d.y === 112) {
         decoImg = firehydrantImg;
-        drawX = 115;
-        drawY = 95;
-        drawW = 42;
-        drawH = 58;
+        drawX = 122;
+        drawY = 104;
+        drawW = 30;
+        drawH = 42;
       }
       // Hedge / bush row
       else if (d.x === 30 && d.y === 420) {
         decoImg = bushImg;
-        drawX = 5;
-        drawY = 395;
-        drawW = 135;
-        drawH = 68;
+        drawX = 20;
+        drawY = 410;
+        drawW = 100;
+        drawH = 50;
       }
       // Newspaper box
       else if (d.x === 275 && d.y === 300) {
         decoImg = newspaperImg;
-        drawX = 258;
-        drawY = 284;
-        drawW = 54;
-        drawH = 48;
+        drawX = 265;
+        drawY = 292;
+        drawW = 40;
+        drawH = 36;
       }
       // Bench seat placed just below the calm zone
       else if (d.x === 244 && d.y === 544) {
         decoImg = benchImg;
-        drawX = 212;
-        drawY = 520;
-        drawW = 125;
-        drawH = 50;
+        drawX = 228;
+        drawY = 530;
+        drawW = 92;
+        drawH = 36;
       }
       // Store shelf end-cap left
       else if (d.x === 430 && d.y === 140) {
         decoImg = storeImg;
-        drawX = 410;
-        drawY = 115;
-        drawW = 78;
-        drawH = 95;
+        drawX = 420;
+        drawY = 130;
+        drawW = 58;
+        drawH = 70;
       }
       // Store display island
       else if (d.x === 560 && d.y === 390) {
         decoImg = storeImg;
-        drawX = 535;
-        drawY = 370;
-        drawW = 100;
-        drawH = 78;
+        drawX = 548;
+        drawY = 380;
+        drawW = 74;
+        drawH = 58;
       }
       // Store shelf end-cap right
       else if (d.x === 745 && d.y === 250) {
         decoImg = storeImg;
-        drawX = 720;
-        drawY = 225;
-        drawW = 82;
-        drawH = 95;
+        drawX = 734;
+        drawY = 240;
+        drawW = 60;
+        drawH = 70;
       }
       // Shopping cart
       else if (d.x === 460 && d.y === 300) {
         decoImg = shoppingcartImg;
-        drawX = 440;
-        drawY = 284;
-        drawW = 56;
-        drawH = 46;
+        drawX = 450;
+        drawY = 292;
+        drawW = 42;
+        drawH = 34;
       }
       // Pharmacy counter
       else if (d.x === 875 && d.y === 400) {
         decoImg = storeImg;
-        drawX = 845;
-        drawY = 382;
-        drawW = 135;
-        drawH = 56;
+        drawX = 860;
+        drawY = 392;
+        drawW = 100;
+        drawH = 42;
       }
       // Trash can outside
       else if (d.x === 320 && d.y === 150) {
         decoImg = transhcanImg;
-        drawX = 304;
-        drawY = 136;
-        drawW = 44;
-        drawH = 50;
+        drawX = 312;
+        drawY = 144;
+        drawW = 32;
+        drawH = 36;
       }
     } else if (currentStage === 2) {
       // Office desk 1
       if (d.x === 40 && d.y === 130) {
         decoImg = officedeskImg;
-        drawX = 12;
-        drawY = 105;
-        drawW = 130;
-        drawH = 70;
+        drawX = 26;
+        drawY = 118;
+        drawW = 96;
+        drawH = 52;
       }
       // Office desk 2
       else if (d.x === 170 && d.y === 320) {
         decoImg = officedeskImg;
-        drawX = 140;
-        drawY = 295;
-        drawW = 120;
-        drawH = 68;
+        drawX = 156;
+        drawY = 308;
+        drawW = 88;
+        drawH = 50;
       }
       // Filing cabinet
       else if (d.x === 350 && d.y === 130) {
         decoImg = cabinetImg;
-        drawX = 340;
-        drawY = 115;
-        drawW = 42;
-        drawH = 58;
+        drawX = 346;
+        drawY = 126;
+        drawW = 30;
+        drawH = 42;
       }
       // Printer (left side office)
       else if (d.x === 58 && d.y === 260) {
         decoImg = printerImg;
-        drawX = 42;
-        drawY = 245;
-        drawW = 58;
-        drawH = 42;
+        drawX = 52;
+        drawY = 254;
+        drawW = 42;
+        drawH = 30;
       }
       // Break room sofa — 先保留色块，不放图
       else if (d.x === 460 && d.y === 320) {
@@ -2887,12 +3113,12 @@ function drawStage() {
         continue;
       }
       // Water cooler
-      else if (d.x === 540 && d.y === 380) {
-        decoImg = watercoolerImg;
-        drawX = 526;
-        drawY = 360;
-        drawW = 48;
-        drawH = 66;
+      else if (d.x === 560 && d.y === 430) {
+        decoImg = WatercoolerImg;
+        drawX = d.x - 6;
+        drawY = d.y - 8;
+        drawW = 34;
+        drawH = 48;
       }
       // Transit bench — 先保留色块
       else if (d.x === 650 && d.y === 440) {
@@ -2903,26 +3129,60 @@ function drawStage() {
       // Vending machine -> 用 cabinet 先代替
       else if (d.x === 460 && d.y === 200) {
         decoImg = cabinetImg;
-        drawX = 448;
-        drawY = 186;
-        drawW = 48;
-        drawH = 70;
+        drawX = 456;
+        drawY = 196;
+        drawW = 34;
+        drawH = 50;
       }
       // Trash bin transit
       else if (d.x === 760 && d.y === 320) {
         decoImg = recyclebinImg;
-        drawX = 750;
-        drawY = 310;
-        drawW = 34;
-        drawH = 40;
+        drawX = 758;
+        drawY = 318;
+        drawW = 24;
+        drawH = 28;
       }
       // Home stretch mailbox -> 先用 cabinet 代替
       else if (d.x === 915 && d.y === 350) {
         decoImg = cabinetImg;
-        drawX = 906;
-        drawY = 336;
-        drawW = 40;
-        drawH = 50;
+        drawX = 912;
+        drawY = 346;
+        drawW = 28;
+        drawH = 36;
+      }
+
+      // NPC bottom left (blocking)
+      else if (d.x === 110 && d.y === 520) {
+        decoImg = npcImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 32;
+        drawH = 32;
+      }
+
+      // NPC top right (blocking)
+      else if (d.x === 850 && d.y === 150) {
+        decoImg = npcImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 32;
+        drawH = 32;
+      }
+      // books left
+      else if (d.x === 120 && d.y === 240) {
+        decoImg = booksImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 34;
+        drawH = 26;
+      }
+      // books right
+      else if (d.x === 820 && d.y === 120) {
+        decoImg = booksImg;
+        drawX = d.x - 2;
+        drawY = d.y - 2;
+        drawW = 34;
+        drawH = 26;
       }
     }
 
@@ -2958,37 +3218,36 @@ function drawStage() {
     // Stage 1 uses real images instead of stars
     if (currentStage === 0) {
       let taskImg = getStageOneTaskImage(s.label);
-
+      let imgSize = 52; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 48, 48);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
-        ellipse(s.x, s.y, s.size * 1.6, s.size * 1.6);
+        ellipse(s.x, s.y, s.size * 1.8, s.size * 1.8); // Increased size
       }
 
       drawTaskLabel(s, starAlpha);
       continue;
     }
-
     // Stage 2 uses real images instead of stars
     if (currentStage === 1) {
       let taskImg = getStageTwoTaskImage(s.label);
-
+      let imgSize = 54; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 50, 50);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -2998,17 +3257,17 @@ function drawStage() {
       drawTaskLabel(s, starAlpha);
       continue;
     }
-
     if (currentStage === 2) {
       let taskImg = getStageThreeTaskImage(s.label);
+      let imgSize = 56; // Increased size
       if (taskImg) {
         if (!lowSensoryMode) {
           tint(255, starAlpha);
         } else {
           tint(255, 220);
         }
-        imageMode(CENTER);
-        image(taskImg, s.x, s.y, 52, 52);
+        imageMode(CENTER); // Ensure image is centered on s.x, s.y
+        image(taskImg, s.x, s.y, imgSize, imgSize);
         noTint();
       } else {
         fill(COL_STAR[0], COL_STAR[1], COL_STAR[2], starAlpha);
@@ -3148,6 +3407,80 @@ function drawTaskLabel(task, alpha) {
   rectMode(CORNER);
 }
 
+function getCalmZoneLabelPoint(cz, kind) {
+  let layout = (cz.labelLayout && cz.labelLayout[kind]) || {};
+  let position = layout.position || (kind === "area" ? "center" : "above");
+
+  if (kind === "name" && !layout.position) {
+    position = "below";
+  }
+
+  let offset =
+    layout.offset !== undefined
+      ? layout.offset
+      : kind === "status"
+        ? 16
+        : kind === "name"
+          ? 14
+          : position === "center"
+            ? 0
+            : 10;
+
+  let x = cz.x + cz.w / 2 + (layout.xOffset || 0);
+  let y = cz.y + cz.h / 2;
+  let anchorTop = cz.y + (layout.anchorInsetTop || 0);
+  let anchorBottom = cz.y + cz.h - (layout.anchorInsetBottom || 0);
+
+  if (position === "above") {
+    y = anchorTop - offset;
+  } else if (position === "below") {
+    y = anchorBottom + offset;
+  } else {
+    y += offset;
+  }
+
+  return { x, y };
+}
+
+function drawZoneBadge(label, x, y, style = {}) {
+  let textSizeValue = style.textSize || 10;
+  let height = style.height || 18;
+  let paddingX = style.paddingX || 12;
+  let radius = style.radius || 4;
+  let playAreaPadding = style.playAreaPadding || 6;
+  let fillCol = style.fill || [10, 30, 20, 220];
+  let strokeCol = style.stroke || [150, 255, 180, 150];
+  let textCol = style.text || [150, 255, 180];
+
+  if (style.clampToPlayArea) {
+    let minY = PLAY_TOP + height / 2 + playAreaPadding;
+    let maxY = PLAY_BOTTOM - height / 2 - playAreaPadding;
+    y = constrain(y, minY, maxY);
+  }
+
+  textSize(textSizeValue);
+  textStyle(BOLD);
+  let tw = textWidth(label);
+
+  fill(...fillCol);
+  rectMode(CENTER);
+  rect(x, y, tw + paddingX, height, radius);
+
+  if (strokeCol) {
+    noFill();
+    strokeWeight(1);
+    stroke(...strokeCol);
+    rect(x, y, tw + paddingX, height, radius);
+  }
+
+  noStroke();
+  fill(...textCol);
+  textAlign(CENTER, CENTER);
+  text(label, x, y);
+  textStyle(NORMAL);
+  rectMode(CORNER);
+}
+
 function drawCalmZoneGlow(cz) {
   // Drawn before scene images so the glow appears behind the object
   let pulse = lowSensoryMode ? 0 : sin(frameCount * 0.07) * 10;
@@ -3185,49 +3518,24 @@ function drawCalmZone(cz) {
     rect(cz.x, cz.y, cz.w, cz.h, 10);
   }
 
-  // Clear label pointing out the restorative zone
-  let labelY = cz.y + cz.h / 2;
-  textSize(10);
-  textStyle(BOLD);
-  let tw = textWidth("Calm Area");
-
-  fill(10, 30, 20, 220);
-  rectMode(CENTER);
-  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-
-  noFill();
-  strokeWeight(1);
-  stroke(150, 255, 180, 150);
-  rect(cz.x + cz.w / 2, labelY, tw + 12, 18, 4);
-
-  noStroke();
-  fill(150, 255, 180);
-  textAlign(CENTER, CENTER);
-  text("Calm Area", cz.x + cz.w / 2, labelY);
-  textStyle(NORMAL);
-  rectMode(CORNER);
+  let areaPos = getCalmZoneLabelPoint(cz, "area");
+  drawZoneBadge("Calm Area", areaPos.x, areaPos.y, {
+    clampToPlayArea: true,
+    fill: [10, 30, 20, 220],
+    stroke: [150, 255, 180, 150],
+    text: [150, 255, 180],
+  });
 
   if (inRect(playerX, playerY, cz.x, cz.y, cz.w, cz.h)) {
-    let recY = cz.y - 16;
-    textSize(9.5);
-    textStyle(BOLD);
-    let recTw = textWidth("Recovering...");
-
-    fill(10, 30, 20, 220);
-    rectMode(CENTER);
-    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
-
-    noFill();
-    strokeWeight(1);
-    stroke(180, 255, 210, 150);
-    rect(cz.x + cz.w / 2, recY, recTw + 12, 16, 4);
-
-    noStroke();
-    fill(180, 255, 210);
-    textAlign(CENTER, CENTER);
-    text("Recovering...", cz.x + cz.w / 2, recY);
-    textStyle(NORMAL);
-    rectMode(CORNER);
+    let statusPos = getCalmZoneLabelPoint(cz, "status");
+    drawZoneBadge("Recovering...", statusPos.x, statusPos.y, {
+      clampToPlayArea: true,
+      textSize: 9.5,
+      height: 16,
+      fill: [10, 30, 20, 220],
+      stroke: [180, 255, 210, 150],
+      text: [180, 255, 210],
+    });
   }
 }
 
@@ -3412,7 +3720,7 @@ function drawHUD() {
   // Calm Ability
   textSize(10.5);
   fill(180, 200, 255);
-  text("Calm (J): " + calmAbilityCharges, 20, 66);
+  text("Calm (K): " + calmAbilityCharges, 20, 66);
 
   // Center HUD (objective)
   textAlign(CENTER, CENTER);
@@ -3532,13 +3840,13 @@ function returnToTitleScreen() {
 function keyPressed() {
   initAudio();
 
-  // Toggle to expand and close map 
-  if (gameState === STATE_PLAY && keyCode === 78) {
-    miniMapExpanded = !miniMapExpanded
+  // Map toggle (M)
+  if (gameState === STATE_PLAY && (key === "m" || key === "M")) {
+    miniMapExpanded = !miniMapExpanded;
     return;
   }
 
-  // How to play toggle
+  // How to play toggle (H on title screen)
   if (gameState === STATE_START && keyCode === 72) {
     showHowToPlay = !showHowToPlay;
     return;
@@ -3550,14 +3858,14 @@ function keyPressed() {
     return;
   }
 
-  // Return to title
-  if (keyCode === 82 && gameState !== STATE_START) {
+  // Return to title (R)
+  if ((key === "r" || key === "R") && gameState !== STATE_START) {
     returnToTitleScreen();
     return;
   }
 
   // Low sensory mode (L)
-  if (keyCode === 76) {
+  if (key === "l" || key === "L") {
     lowSensoryMode = !lowSensoryMode;
 
     if (gameState === STATE_START) return;
@@ -3585,26 +3893,22 @@ function keyPressed() {
       }
       startAmbient();
       initZoneSounds();
+      return;
     } else if (gameState === STATE_STAGE_TRANSITION) {
       advanceStage();
+      return;
     }
   }
 
-  // Memory recall (M)
-  if (gameState === STATE_PLAY && keyCode === 77 && memoryActive) {
-    showObjective = true;
-    memoryTimer = currentStageData.memoryRecall;
-    playRecallSound();
-  }
-
-  // Calm Ability (J)
-  if (gameState === STATE_PLAY && (key === "j" || key === "J")) {
+  // Calm Ability (K)
+  if (gameState === STATE_PLAY && (key === "k" || key === "K")) {
     if (calmAbilityCharges > 0 && calmAbilityCooldown <= 0) {
       calmAbilityCharges--;
       calmAbilityTimer = 90;
       calmAbilityCooldown = 120;
       playTone(330, 0.2, "triangle", 0.05);
     }
+    return;
   }
 }
 
@@ -3696,7 +4000,7 @@ function drawFog() {
   let steps = 24;
   for (let i = 0; i < steps; i++) {
     let t = i / (steps - 1);
-    let ringR = (r + softness) - t * softness;
+    let ringR = r + softness - t * softness;
     let alphaRemove = map(t, 0, 1, 20, fogAlpha);
     g.fill(0, 0, 0, alphaRemove);
     g.ellipse(playerX, playerY, ringR * 2, ringR * 2);
@@ -3718,10 +4022,10 @@ function drawMinimap() {
   let mapX = CANVAS_W - 200;
   let mapY = HUD_TOP + mapPad;
 
-  mapBounds = {x:mapX, y:mapY, w:mapW, h: mapH};
+  mapBounds = { x: mapX, y: mapY, w: mapW, h: mapH };
 
   noStroke();
-  fill (8, 10, 25, 210);
+  fill(8, 10, 25, 210);
   rectMode(CORNER);
   rect(mapX, mapY, mapW, mapH, mapBorder);
 
@@ -3772,7 +4076,7 @@ function drawMinimap() {
 
   textAlign(RIGHT, TOP);
   textSize(8);
-  text("Press N to Expand", mapX + mapW - 5, mapY + 3);
+  text("Press M to Expand", mapX + mapW - 5, mapY + 3);
 
   textAlign(CENTER, CENTER);
 }
@@ -3799,10 +4103,18 @@ function drawExpandedMap() {
   rect(mX, mY, mW, mH, 10);
   noStroke();
 
-  function ex(x) { return mX + x * (mW / CANVAS_W); }
-  function ey(y) { return mY + y * (mH / CANVAS_H); }
-  function es(s) { return max(1, s * (mW / CANVAS_W)); }
-  function esH(h) { return max(1, h * (mH / CANVAS_H)); }
+  function ex(x) {
+    return mX + x * (mW / CANVAS_W);
+  }
+  function ey(y) {
+    return mY + y * (mH / CANVAS_H);
+  }
+  function es(s) {
+    return max(1, s * (mW / CANVAS_W));
+  }
+  function esH(h) {
+    return max(1, h * (mH / CANVAS_H));
+  }
 
   fill(20, 22, 42, 180);
   rect(ex(0), ey(HUD_TOP), mW, mH - ey(HUD_TOP) + mY);
@@ -3814,7 +4126,7 @@ function drawExpandedMap() {
     fill(120, 255, 180, 180);
     textSize(8);
     textAlign(CENTER, CENTER);
-    text("calm", ex(cz.x) + es(cz.w)/2, ey(cz.y) + esH(cz.h)/2);
+    text("calm", ex(cz.x) + es(cz.w) / 2, ey(cz.y) + esH(cz.h) / 2);
   }
 
   for (let sz of stimulusZones) {
@@ -3826,11 +4138,16 @@ function drawExpandedMap() {
     fill(100, 95, 130, 220);
     rect(ex(w.x), ey(w.y), es(w.w), esH(w.h), 2);
   }
- 
-    for (let i = 0; i < checkpoints.length; i++) {
+
+  for (let i = 0; i < checkpoints.length; i++) {
     let cp = checkpoints[i];
-    let isActive = (i === checkpointIndex);
-    fill(isActive ? 180 : 100, isActive ? 220 : 140, isActive ? 255 : 180, isActive ? 200 : 90);
+    let isActive = i === checkpointIndex;
+    fill(
+      isActive ? 180 : 100,
+      isActive ? 220 : 140,
+      isActive ? 255 : 180,
+      isActive ? 200 : 90,
+    );
     ellipse(ex(cp.x), ey(cp.y), isActive ? 8 : 5, isActive ? 8 : 5);
     if (isActive) {
       fill(200, 230, 255, 200);
@@ -3869,23 +4186,31 @@ function drawExpandedMap() {
   let legX = mX + 14;
   textSize(8);
   textAlign(LEFT, CENTER);
- 
-  fill(230, 115, 70);  ellipse(legX + 4, legY, 7, 7);
-  fill(200, 200, 220); text("You", legX + 10, legY);
- 
-  fill(255, 210, 50);  ellipse(legX + 46, legY, 7, 7);
-  fill(200, 200, 220); text("Task", legX + 52, legY);
- 
-  fill(50, 185, 120, 160); rect(legX + 82, legY - 4, 8, 8, 2);
-  fill(200, 200, 220); text("Calm", legX + 94, legY);
- 
-  fill(220, 60, 50, 140);  rect(legX + 126, legY - 4, 8, 8, 2);
-  fill(200, 200, 220); text("Stimulus", legX + 138, legY);
- 
+
+  fill(230, 115, 70);
+  ellipse(legX + 4, legY, 7, 7);
+  fill(200, 200, 220);
+  text("You", legX + 10, legY);
+
+  fill(255, 210, 50);
+  ellipse(legX + 46, legY, 7, 7);
+  fill(200, 200, 220);
+  text("Task", legX + 52, legY);
+
+  fill(50, 185, 120, 160);
+  rect(legX + 82, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Calm", legX + 94, legY);
+
+  fill(220, 60, 50, 140);
+  rect(legX + 126, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Stimulus", legX + 138, legY);
+
   textAlign(RIGHT, TOP);
   fill(140, 145, 180, 180);
   textSize(12);
-  text("Press N to close", mX + mW - 10, mY + 10);
+  text("Press M to close", mX + mW - 10, mY + 10);
 
   textAlign(CENTER, CENTER);
   noStroke();

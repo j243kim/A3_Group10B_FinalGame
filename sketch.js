@@ -708,7 +708,7 @@ const mapH = 100;
 const mapPad = 10;
 const mapBorder = 6;
 let miniMapExpanded = false;
-let mapBounds = {x:0, y:0, w:mapW, h:mapH};
+let mapBounds = { x: 0, y: 0, w: mapW, h: mapH };
 // ===================== HELPERS =====================
 function starsCollected() {
   if (!currentStageData) return 0;
@@ -1763,67 +1763,50 @@ function drawHowToPlayOverlay() {
     howToPlayCloseBounds.h,
   );
 
-  fill(closeHovered ? 48 : 32, 36, 58, 255);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noFill();
-  stroke(255, 210, 75, closeHovered ? 130 : 70);
-  strokeWeight(1.2);
-  rect(
-    howToPlayCloseBounds.x,
-    howToPlayCloseBounds.y,
-    howToPlayCloseBounds.w,
-    howToPlayCloseBounds.h,
-    9,
-  );
-  noStroke();
-  fill(255, 210, 75);
+  fill(closeHovered ? 255 : 210, closeHovered ? 220 : 210, 75);
   textAlign(CENTER, CENTER);
+  textSize(18);
   textStyle(BOLD);
-  textSize(14);
   text(
-    "X",
+    "×",
     howToPlayCloseBounds.x + howToPlayCloseBounds.w / 2,
-    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2 + 1,
+    howToPlayCloseBounds.y + howToPlayCloseBounds.h / 2,
   );
 
   fill(255, 210, 75);
   textSize(24);
   text("How to Play", cx, panelY + 46);
+
   textStyle(NORMAL);
   textSize(11.5);
   fill(180, 184, 200);
   text(
-    "Complete the day while managing overload, fatigue, and fading memory.",
+    "Complete the day while managing overload and fatigue.",
     cx,
     panelY + 76,
   );
 
-  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys", "Move");
-  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Recall objective");
-  drawHowToPlayRow(panelX + 54, panelY + 208, "L", "Toggle Low Sensory Mode");
-  drawHowToPlayRow(panelX + 54, panelY + 252, "R", "Return to title");
+  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys / WASD", "Move");
+  drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
+  drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
+  drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");
+  drawHowToPlayRow(panelX + 54, panelY + 296, "R", "Return to title");
 
   fill(255, 210, 75);
   textSize(12);
   textStyle(BOLD);
   textAlign(LEFT, CENTER);
-  text("Gameplay Guidance", panelX + 62, panelY + 300);
+  text("Gameplay Guidance", panelX + 62, panelY + 348);
 
   fill(214, 218, 230);
   textStyle(NORMAL);
   textSize(12);
-  text("Green zones help reduce overload.", panelX + 62, panelY + 326);
-  text("Red noise zones increase overload.", panelX + 62, panelY + 350);
+  text("Green zones help reduce overload.", panelX + 62, panelY + 374);
+  text("Red noise zones increase overload.", panelX + 62, panelY + 398);
   text(
-    "Manage memory, fatigue, and overload while completing the day.",
+    "Use calm ability and safe routing to finish each stage.",
     panelX + 62,
-    panelY + 373,
+    panelY + 422,
   );
 
   textAlign(CENTER, CENTER);
@@ -1832,6 +1815,7 @@ function drawHowToPlayOverlay() {
   text("Press H or ESC to close", cx, panelY + panelH - 26);
 
   rectMode(CORNER);
+  textStyle(NORMAL);
 }
 
 function drawHowToPlayRow(x, y, keyLabel, label) {
@@ -1857,8 +1841,7 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
 
 // ===================== PLAY SCREEN =====================
 function drawPlayScreen() {
-
-if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
+  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
 
   if (bedImg) {
     let bedX = 200;
@@ -1868,8 +1851,6 @@ if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
     image(bedImg, bedX, bedY, bedW, bedH);
   }
 
-
-  
   background(40, 40, 80);
 
   // --- UPDATE GAME LOGIC HERE ---
@@ -2308,10 +2289,16 @@ function updateGame() {
 
   let newX = playerX;
   let newY = playerY;
-  if (keyIsDown(LEFT_ARROW)) newX -= speed;
-  if (keyIsDown(RIGHT_ARROW)) newX += speed;
-  if (keyIsDown(UP_ARROW)) newY -= speed;
-  if (keyIsDown(DOWN_ARROW)) newY += speed;
+
+  let moveLeft = keyIsDown(LEFT_ARROW) || keyIsDown(65); // A
+  let moveRight = keyIsDown(RIGHT_ARROW) || keyIsDown(68); // D
+  let moveUp = keyIsDown(UP_ARROW) || keyIsDown(87); // W
+  let moveDown = keyIsDown(DOWN_ARROW) || keyIsDown(83); // S
+
+  if (moveLeft) newX -= speed;
+  if (moveRight) newX += speed;
+  if (moveUp) newY -= speed;
+  if (moveDown) newY += speed;
 
   // Attention drift [2]
   if (s.driftOn && overload > s.driftThreshold) {
@@ -2330,19 +2317,9 @@ function updateGame() {
   if (!hitsWall(newX, playerY)) playerX = newX;
   if (!hitsWall(playerX, newY)) playerY = newY;
 
-  // --- MEMORY FADE ACTIVATION [1][2] ---
-  if (!memoryActive && starsCollected() >= s.memoryFadeAfter) {
-    memoryActive = true;
-    showObjective = true;
-    memoryTimer = s.memoryTimer;
-  }
-
-  if (memoryActive) {
-    memoryTimer -= 1;
-    if (memoryTimer <= 0) showObjective = false;
-  } else {
-    showObjective = true;
-  }
+  // Memory recall mechanic removed
+  memoryActive = false;
+  showObjective = true;
 
   // --- SENSORY OVERLOAD [3] ---
   let overloadRate = s.overloadBase;
@@ -3412,7 +3389,7 @@ function drawHUD() {
   // Calm Ability
   textSize(10.5);
   fill(180, 200, 255);
-  text("Calm (J): " + calmAbilityCharges, 20, 66);
+  text("Calm (K): " + calmAbilityCharges, 20, 66);
 
   // Center HUD (objective)
   textAlign(CENTER, CENTER);
@@ -3532,13 +3509,13 @@ function returnToTitleScreen() {
 function keyPressed() {
   initAudio();
 
-  // Toggle to expand and close map 
-  if (gameState === STATE_PLAY && keyCode === 78) {
-    miniMapExpanded = !miniMapExpanded
+  // Map toggle (M)
+  if (gameState === STATE_PLAY && (key === "m" || key === "M")) {
+    miniMapExpanded = !miniMapExpanded;
     return;
   }
 
-  // How to play toggle
+  // How to play toggle (H on title screen)
   if (gameState === STATE_START && keyCode === 72) {
     showHowToPlay = !showHowToPlay;
     return;
@@ -3550,14 +3527,14 @@ function keyPressed() {
     return;
   }
 
-  // Return to title
-  if (keyCode === 82 && gameState !== STATE_START) {
+  // Return to title (R)
+  if ((key === "r" || key === "R") && gameState !== STATE_START) {
     returnToTitleScreen();
     return;
   }
 
   // Low sensory mode (L)
-  if (keyCode === 76) {
+  if (key === "l" || key === "L") {
     lowSensoryMode = !lowSensoryMode;
 
     if (gameState === STATE_START) return;
@@ -3585,26 +3562,22 @@ function keyPressed() {
       }
       startAmbient();
       initZoneSounds();
+      return;
     } else if (gameState === STATE_STAGE_TRANSITION) {
       advanceStage();
+      return;
     }
   }
 
-  // Memory recall (M)
-  if (gameState === STATE_PLAY && keyCode === 77 && memoryActive) {
-    showObjective = true;
-    memoryTimer = currentStageData.memoryRecall;
-    playRecallSound();
-  }
-
-  // Calm Ability (J)
-  if (gameState === STATE_PLAY && (key === "j" || key === "J")) {
+  // Calm Ability (K)
+  if (gameState === STATE_PLAY && (key === "k" || key === "K")) {
     if (calmAbilityCharges > 0 && calmAbilityCooldown <= 0) {
       calmAbilityCharges--;
       calmAbilityTimer = 90;
       calmAbilityCooldown = 120;
       playTone(330, 0.2, "triangle", 0.05);
     }
+    return;
   }
 }
 
@@ -3696,7 +3669,7 @@ function drawFog() {
   let steps = 24;
   for (let i = 0; i < steps; i++) {
     let t = i / (steps - 1);
-    let ringR = (r + softness) - t * softness;
+    let ringR = r + softness - t * softness;
     let alphaRemove = map(t, 0, 1, 20, fogAlpha);
     g.fill(0, 0, 0, alphaRemove);
     g.ellipse(playerX, playerY, ringR * 2, ringR * 2);
@@ -3718,10 +3691,10 @@ function drawMinimap() {
   let mapX = CANVAS_W - 200;
   let mapY = HUD_TOP + mapPad;
 
-  mapBounds = {x:mapX, y:mapY, w:mapW, h: mapH};
+  mapBounds = { x: mapX, y: mapY, w: mapW, h: mapH };
 
   noStroke();
-  fill (8, 10, 25, 210);
+  fill(8, 10, 25, 210);
   rectMode(CORNER);
   rect(mapX, mapY, mapW, mapH, mapBorder);
 
@@ -3799,10 +3772,18 @@ function drawExpandedMap() {
   rect(mX, mY, mW, mH, 10);
   noStroke();
 
-  function ex(x) { return mX + x * (mW / CANVAS_W); }
-  function ey(y) { return mY + y * (mH / CANVAS_H); }
-  function es(s) { return max(1, s * (mW / CANVAS_W)); }
-  function esH(h) { return max(1, h * (mH / CANVAS_H)); }
+  function ex(x) {
+    return mX + x * (mW / CANVAS_W);
+  }
+  function ey(y) {
+    return mY + y * (mH / CANVAS_H);
+  }
+  function es(s) {
+    return max(1, s * (mW / CANVAS_W));
+  }
+  function esH(h) {
+    return max(1, h * (mH / CANVAS_H));
+  }
 
   fill(20, 22, 42, 180);
   rect(ex(0), ey(HUD_TOP), mW, mH - ey(HUD_TOP) + mY);
@@ -3814,7 +3795,7 @@ function drawExpandedMap() {
     fill(120, 255, 180, 180);
     textSize(8);
     textAlign(CENTER, CENTER);
-    text("calm", ex(cz.x) + es(cz.w)/2, ey(cz.y) + esH(cz.h)/2);
+    text("calm", ex(cz.x) + es(cz.w) / 2, ey(cz.y) + esH(cz.h) / 2);
   }
 
   for (let sz of stimulusZones) {
@@ -3826,11 +3807,16 @@ function drawExpandedMap() {
     fill(100, 95, 130, 220);
     rect(ex(w.x), ey(w.y), es(w.w), esH(w.h), 2);
   }
- 
-    for (let i = 0; i < checkpoints.length; i++) {
+
+  for (let i = 0; i < checkpoints.length; i++) {
     let cp = checkpoints[i];
-    let isActive = (i === checkpointIndex);
-    fill(isActive ? 180 : 100, isActive ? 220 : 140, isActive ? 255 : 180, isActive ? 200 : 90);
+    let isActive = i === checkpointIndex;
+    fill(
+      isActive ? 180 : 100,
+      isActive ? 220 : 140,
+      isActive ? 255 : 180,
+      isActive ? 200 : 90,
+    );
     ellipse(ex(cp.x), ey(cp.y), isActive ? 8 : 5, isActive ? 8 : 5);
     if (isActive) {
       fill(200, 230, 255, 200);
@@ -3869,19 +3855,27 @@ function drawExpandedMap() {
   let legX = mX + 14;
   textSize(8);
   textAlign(LEFT, CENTER);
- 
-  fill(230, 115, 70);  ellipse(legX + 4, legY, 7, 7);
-  fill(200, 200, 220); text("You", legX + 10, legY);
- 
-  fill(255, 210, 50);  ellipse(legX + 46, legY, 7, 7);
-  fill(200, 200, 220); text("Task", legX + 52, legY);
- 
-  fill(50, 185, 120, 160); rect(legX + 82, legY - 4, 8, 8, 2);
-  fill(200, 200, 220); text("Calm", legX + 94, legY);
- 
-  fill(220, 60, 50, 140);  rect(legX + 126, legY - 4, 8, 8, 2);
-  fill(200, 200, 220); text("Stimulus", legX + 138, legY);
- 
+
+  fill(230, 115, 70);
+  ellipse(legX + 4, legY, 7, 7);
+  fill(200, 200, 220);
+  text("You", legX + 10, legY);
+
+  fill(255, 210, 50);
+  ellipse(legX + 46, legY, 7, 7);
+  fill(200, 200, 220);
+  text("Task", legX + 52, legY);
+
+  fill(50, 185, 120, 160);
+  rect(legX + 82, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Calm", legX + 94, legY);
+
+  fill(220, 60, 50, 140);
+  rect(legX + 126, legY - 4, 8, 8, 2);
+  fill(200, 200, 220);
+  text("Stimulus", legX + 138, legY);
+
   textAlign(RIGHT, TOP);
   fill(140, 145, 180, 180);
   textSize(12);

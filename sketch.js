@@ -1809,10 +1809,10 @@ function drawHowToPlayOverlay() {
     panelY + 422,
   );
 
-  textAlign(CENTER, CENTER);
+  textAlign(LEFT, TOP);
   fill(144, 150, 168);
   textSize(10.5);
-  text("Press H or ESC to close", cx, panelY + panelH - 26);
+  text("Press H or ESC to close", panelX + 20, panelY + 20);
 
   rectMode(CORNER);
   textStyle(NORMAL);

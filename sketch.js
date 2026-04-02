@@ -1786,7 +1786,7 @@ function drawHowToPlayOverlay() {
     panelY + 76,
   );
 
-  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys / WASD", "Move");
+  drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
   drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
   drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
   drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");

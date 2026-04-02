@@ -197,7 +197,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 ---
 
-#### Conversation Log
+### Conversation Log
 
 **User (Jimin):**
 
@@ -667,95 +667,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 ---
 
-### A.3 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
-
-**Tool Used:** Codex (GPT-5)
-
----
-
-**User (Jimin):**
-
-> In the game screenshot, do you see the overlapping labels of `sofa` and `calm zone`? When the character sits on the calm zone, `Recovering...` comes up. But because of the size of the image, the labels do not get placed with proper distance like the other calm zone near the bottom. How should I place the labels properly with this context?
-
-**Codex:**
-
-> Read `sketch.js`, traced the calm-zone rendering logic, and found that stage 3 used hard-coded one-off offsets for the sofa and coffee labels. Replaced that approach with a shared badge-rendering helper and a per-zone `labelLayout` configuration so `Calm Area`, object names, and `Recovering...` can each be anchored independently.
-
-**User (Jimin):**
-
-> The `Recovering...` label is kind of off the screen. Also, is it possible to place the `calm zone` label for the sofa above the `sofa` label regardless of the size of the image of sofa? Placing `sofa` and `calm zone` labels like that does not look tidy.
-
-**Codex:**
-
-> Added play-area clamping to keep calm-zone badges inside the playable region and changed the sofa layout into a stacked order with `Calm Area` above `Sofa`, while keeping coffee as a separate stacked case below the mug.
-
-**User (Jimin):**
-
-> Why are they placed so far from the image? Is that because of the size of the image?
-
-**Codex:**
-
-> Explained that the distance came from anchoring the labels to the full calm-zone rectangle (`cz.y + cz.h + offset`) rather than the visible couch. Because the sofa PNG has transparent padding, the badges appeared farther away than intended.
-
-**User (Jimin):**
-
-> Yes please.
-
-**Codex:**
-
-> Added `anchorInsetBottom` support to the calm-zone label helper and used it for the sofa so `Calm Area` and `Sofa` anchor closer to the visible bottom of the couch rather than the raw image bounds.
-
-**User (Jimin):**
-
-> Good. Now I need to make the `Recovering..` label for sofa calm zone a bit lower so that it gets placed right above the sofa image.
-
-**Codex:**
-
-> Adjusted the sofa status label to use `anchorInsetTop` with a smaller upward offset, which moved `"Recovering..."` down so it sits just above the visible top of the sofa.
-
-**User (Jimin):**
-
-> Right now, if you look in `sketch.js`, some objects move back and forth in each stage. But in stage 3, some of the NPC images and book images move to the left, which are not supposed to move since they are there for blocking purpose.
-
-**Codex:**
-
-> Traced the issue to two decoration checks that accidentally used `d.x--`, which mutates the X coordinate during every draw call. Replaced those with `d.x === ...` comparisons and corrected the two book blockers to use `booksImg` instead of `npcImg`.
-
-**User (Jimin):**
-
-> Do you see that grey rectangle in the middle of the screen near the coffee calm zone? What is that and how do I remove it?
-
-**Codex:**
-
-> Identified the grey block as a fallback placeholder rectangle for the stage 3 water cooler decoration. The decoration existed in the stage data, but the draw logic only rendered the image at a different pair of coordinates, so the image path never matched and the rectangle was shown instead.
-
-**User (Jimin):**
-
-> I want to keep it there but render the watercooler image that I have in `assets/images`.
-
-**Codex:**
-
-> Updated the stage 3 decoration draw rule to match the actual blocker coordinates and render `WatercoolerImg` with explicit `drawX`, `drawY`, `drawW`, and `drawH` offsets so the water cooler image appears in place of the grey placeholder.
-
-**User (Jimin):**
-
-> Do I have to change the naming of `WatercoolerImg` into `watercoolerImg` in lower case?
-
-**Codex:**
-
-> Clarified that no rename is required for functionality as long as the declaration, preload assignment, and draw references all use the same capitalization. Also explained that changing it to `watercoolerImg` would only be a style / consistency improvement.
-
-**User (Jimin):**
-
-> Can you add all the conversation that I had with you here into `Process_and_Decision_Documentation.md`?
-
-**Codex:**
-
-> Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
-
----
-
-### A.4 Conversation: Mini Map and player vision limit feature implementation (April 1, 2026)
+### A.3 Conversation: Mini Map and player vision limit feature implementation (April 1, 2026)
 
 **Tool Used:** Claude Code (Claude Sonnet 4.6) via VS Code extension
 
@@ -880,7 +792,93 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > The dark text on a warm cream pill now reads clearly against both the fog and the game world.
 
 ---
+### A.4 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
 
+**Tool Used:** Codex (GPT-5)
+
+---
+
+**User (Jimin):**
+
+> In the game screenshot, do you see the overlapping labels of `sofa` and `calm zone`? When the character sits on the calm zone, `Recovering...` comes up. But because of the size of the image, the labels do not get placed with proper distance like the other calm zone near the bottom. How should I place the labels properly with this context?
+
+**Codex:**
+
+> Read `sketch.js`, traced the calm-zone rendering logic, and found that stage 3 used hard-coded one-off offsets for the sofa and coffee labels. Replaced that approach with a shared badge-rendering helper and a per-zone `labelLayout` configuration so `Calm Area`, object names, and `Recovering...` can each be anchored independently.
+
+**User (Jimin):**
+
+> The `Recovering...` label is kind of off the screen. Also, is it possible to place the `calm zone` label for the sofa above the `sofa` label regardless of the size of the image of sofa? Placing `sofa` and `calm zone` labels like that does not look tidy.
+
+**Codex:**
+
+> Added play-area clamping to keep calm-zone badges inside the playable region and changed the sofa layout into a stacked order with `Calm Area` above `Sofa`, while keeping coffee as a separate stacked case below the mug.
+
+**User (Jimin):**
+
+> Why are they placed so far from the image? Is that because of the size of the image?
+
+**Codex:**
+
+> Explained that the distance came from anchoring the labels to the full calm-zone rectangle (`cz.y + cz.h + offset`) rather than the visible couch. Because the sofa PNG has transparent padding, the badges appeared farther away than intended.
+
+**User (Jimin):**
+
+> Yes please.
+
+**Codex:**
+
+> Added `anchorInsetBottom` support to the calm-zone label helper and used it for the sofa so `Calm Area` and `Sofa` anchor closer to the visible bottom of the couch rather than the raw image bounds.
+
+**User (Jimin):**
+
+> Good. Now I need to make the `Recovering..` label for sofa calm zone a bit lower so that it gets placed right above the sofa image.
+
+**Codex:**
+
+> Adjusted the sofa status label to use `anchorInsetTop` with a smaller upward offset, which moved `"Recovering..."` down so it sits just above the visible top of the sofa.
+
+**User (Jimin):**
+
+> Right now, if you look in `sketch.js`, some objects move back and forth in each stage. But in stage 3, some of the NPC images and book images move to the left, which are not supposed to move since they are there for blocking purpose.
+
+**Codex:**
+
+> Traced the issue to two decoration checks that accidentally used `d.x--`, which mutates the X coordinate during every draw call. Replaced those with `d.x === ...` comparisons and corrected the two book blockers to use `booksImg` instead of `npcImg`.
+
+**User (Jimin):**
+
+> Do you see that grey rectangle in the middle of the screen near the coffee calm zone? What is that and how do I remove it?
+
+**Codex:**
+
+> Identified the grey block as a fallback placeholder rectangle for the stage 3 water cooler decoration. The decoration existed in the stage data, but the draw logic only rendered the image at a different pair of coordinates, so the image path never matched and the rectangle was shown instead.
+
+**User (Jimin):**
+
+> I want to keep it there but render the watercooler image that I have in `assets/images`.
+
+**Codex:**
+
+> Updated the stage 3 decoration draw rule to match the actual blocker coordinates and render `WatercoolerImg` with explicit `drawX`, `drawY`, `drawW`, and `drawH` offsets so the water cooler image appears in place of the grey placeholder.
+
+**User (Jimin):**
+
+> Do I have to change the naming of `WatercoolerImg` into `watercoolerImg` in lower case?
+
+**Codex:**
+
+> Clarified that no rename is required for functionality as long as the declaration, preload assignment, and draw references all use the same capitalization. Also explained that changing it to `watercoolerImg` would only be a style / consistency improvement.
+
+**User (Jimin):**
+
+> Can you add all the conversation that I had with you here into `Process_and_Decision_Documentation.md`?
+
+**Codex:**
+
+> Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
+
+---
 ### A.5 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
 
 **Tool Used:** Codex (GPT-5)

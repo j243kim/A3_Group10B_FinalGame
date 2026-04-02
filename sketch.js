@@ -114,7 +114,7 @@ let firehydrantImg,
 //stage 3
 let computerImg, printerImg, sofaImg, coffeeImg, background3Img;
 let communicateImg, flagImg, worknotesImg;
-let watercoolerImg, officedeskImg, recyclebinImg, cabinetImg;
+let watercoolerImg, officedeskImg, recyclebinImg, cabinetImg, booksImg, npcImg;
 // ===================== AUDIO (Web Audio API) =====================
 let audioCtx = null;
 let audioReady = false;
@@ -828,6 +828,12 @@ function drawStageThreeScene() {
   if (printerImg) {
     image(printerImg, 740, 285, 104, 84);
   }
+
+  // NPC for Communicate (red zone)
+if (npcImg) {
+  imageMode(CENTER);
+  image(npcImg, 520, 250, 32, 32);
+}
 }
 
 function drawStageTwoScene() {
@@ -1160,42 +1166,42 @@ function createStages() {
         // Final stretch barrier
         { x: 900, y: 230, w: 12, h: 200 },
       ],
-      stimulusZones: [
-        { x: 165, y: 315, w: 143, h: 97, label: "screen glare" },
-        { x: 740, y: 285, w: 104, h: 84, label: "printer noise" },
-      ],
+     stimulusZones: [
+  { x: 180, y: 330, w: 110, h: 75 }, // computer
+  { x: 760, y: 300, w: 80, h: 65 },  // printer
+],
       calmZones: [
         { x: 405, y: 105, w: 143, h: 91, img: () => sofaImg }, // sofa
         { x: 535, y: 375, w: 50, h: 50, img: () => coffeeImg }, // coffee
       ],
       decorations: [
-        // Office desk 1 (solid)
-        { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
-        // Office desk 2 (solid)
-        { x: 170, y: 320, w: 50, h: 30, col: [95, 88, 78], solid: true },
-        // Filing cabinet (solid)
-        { x: 350, y: 130, w: 30, h: 40, col: [80, 80, 95], solid: true },
-        // Printer (solid, near noise zone)
-        { x: 58, y: 260, w: 40, h: 28, col: [110, 105, 115], solid: true },
-        // Break room sofa (solid)
-        { x: 460, y: 320, w: 60, h: 35, col: [68, 108, 78], solid: true },
-        // Break room plant (solid, kept clear of the calm zone)
-        { x: 434, y: 110, w: 24, h: 28, col: [55, 110, 65], solid: true },
-        // Water cooler (solid)
-        { x: 540, y: 380, w: 22, h: 26, col: [85, 110, 130], solid: true },
-        // Transit bench (solid)
-        { x: 650, y: 440, w: 70, h: 22, col: [100, 90, 75], solid: true },
-        // Vending machine (solid, tall)
-        { x: 460, y: 200, w: 36, h: 46, col: [90, 85, 110], solid: true },
-        // Trash bin transit
-        { x: 760, y: 320, w: 22, h: 24, col: [75, 78, 75], solid: true },
-        // Home stretch mailbox
-        { x: 915, y: 350, w: 24, h: 28, col: [95, 75, 65], solid: true },
-        // Office rug (solid obstacle)
-        { x: 160, y: 350, w: 65, h: 40, col: [48, 42, 55], solid: true },
-        // Transit floor marking (decorative)
-        { x: 650, y: 250, w: 80, h: 6, col: [60, 58, 72], passThrough: true },
-      ],
+  // Office desk 1 (solid)
+  { x: 40, y: 130, w: 70, h: 30, col: [95, 88, 78], solid: true },
+
+  // Office desk 2 (solid)
+  { x: 170, y: 320, w: 50, h: 30, col: [95, 88, 78], solid: true },
+
+  // Filing cabinet (solid)
+  { x: 350, y: 130, w: 30, h: 40, col: [80, 80, 95], solid: true },
+
+  // NPC bottom left (blocking)
+{ x: 110, y: 520, w: 30, h: 30, col: [0,0,0], solid: true },
+
+// NPC top right (blocking)
+{ x: 850, y: 150, w: 30, h: 30, col: [0,0,0], solid: true },
+
+// Books left
+{ x: 120, y: 240, w: 30, h: 24, col: [0,0,0], solid: true },
+
+// Books right
+{ x: 820, y: 120, w: 30, h: 24, col: [0,0,0], solid: true },
+
+  // Printer (solid, near noise zone)
+  { x: 58, y: 260, w: 40, h: 28, col: [110, 105, 115], solid: true },
+
+  // Water cooler (solid) 
+  { x: 560, y: 430, w: 22, h: 26, col: [85, 110, 130], solid: true },
+],
       checkpoints: [
         { x: 80, y: 350, label: "Office", starsReq: 0 },
         { x: 500, y: 176, label: "Break Room", starsReq: 1 },
@@ -1275,9 +1281,9 @@ function preload() {
   officeWallImg = loadImage("assets/images/officewall.jpg");
 
   watercoolerImg = loadImage("assets/images/Watercooler.png");
-  officedeskImg = loadImage("assets/images/officedesk.png");
-  recyclebinImg = loadImage("assets/images/recyclebin.png");
-  cabinetImg = loadImage("assets/images/cabinet.png");
+officedeskImg = loadImage("assets/images/officedesk.png");
+recyclebinImg = loadImage("assets/images/recyclebin.png");
+cabinetImg = loadImage("assets/images/cabinet.png");
 }
 
 // ===================== p5.js SETUP =====================
@@ -1446,11 +1452,21 @@ function drawStartScreen() {
     rect(heroX, heroY, heroW, heroH, 16);
   }
 
-  textAlign(CENTER, CENTER);
-  fill(255, 210, 75);
-  textSize(54);
-  textStyle(BOLD);
-  text("Fragmented", heroCX, titleY);
+textAlign(CENTER, CENTER);
+textStyle(BOLD);
+
+let titlePulse = map(sin(frameCount * 0.06), -1, 1, 52, 58);
+let titleBright = map(sin(frameCount * 0.06), -1, 1, 210, 255);
+
+// soft glow behind title
+textSize(titlePulse + 8);
+fill(255, 210, 75, 35);
+text("Fragmented", heroCX, titleY);
+
+// main title
+textSize(titlePulse);
+fill(255, titleBright, 75);
+text("Fragmented", heroCX, titleY);
 
   textStyle(NORMAL);
   textSize(13);
@@ -2698,217 +2714,217 @@ function drawStage() {
         drawH = 120;
       }
 
-      // Fridge
-      else if (d.x === 560 && d.y === 95) {
-        decoImg = fridgeImg;
-        drawX = d.x - 18;
-        drawY = d.y - 20;
-        drawW = d.w + 48;
-        drawH = d.h + 60;
-      }
-      // Kitchen table
-      else if (d.x === 560 && d.y === 280) {
-        decoImg = kitchentableImg;
-        drawX = 520;
-        drawY = 245;
-        drawW = 160;
-        drawH = 120;
-      }
-      // Shoe rack
-      else if (d.x === 870 && d.y === 460) {
-        decoImg = shoerackImg;
-        drawX = 835;
-        drawY = 435;
-        drawW = 125;
-        drawH = 80;
-      }
-      // Bookshelf
-      else if (d.x === 30 && d.y === 310) {
-        decoImg = bookshelfImg;
-        drawX = 12;
-        drawY = 285;
-        drawW = 70;
-        drawH = 145;
-      }
-    } else if (currentStage === 1) {
-      // Fire hydrant
-      if (d.x === 130 && d.y === 112) {
-        decoImg = firehydrantImg;
-        drawX = 115;
-        drawY = 95;
-        drawW = 42;
-        drawH = 58;
-      }
-      // Hedge / bush row
-      else if (d.x === 30 && d.y === 420) {
-        decoImg = bushImg;
-        drawX = 5;
-        drawY = 395;
-        drawW = 135;
-        drawH = 68;
-      }
-      // Newspaper box
-      else if (d.x === 275 && d.y === 300) {
-        decoImg = newspaperImg;
-        drawX = 258;
-        drawY = 284;
-        drawW = 54;
-        drawH = 48;
-      }
-      // Bench seat placed just below the calm zone
-      else if (d.x === 244 && d.y === 544) {
-        decoImg = benchImg;
-        drawX = 212;
-        drawY = 520;
-        drawW = 125;
-        drawH = 50;
-      }
-      // Store shelf end-cap left
-      else if (d.x === 430 && d.y === 140) {
-        decoImg = storeImg;
-        drawX = 410;
-        drawY = 115;
-        drawW = 78;
-        drawH = 95;
-      }
-      // Store display island
-      else if (d.x === 560 && d.y === 390) {
-        decoImg = storeImg;
-        drawX = 535;
-        drawY = 370;
-        drawW = 100;
-        drawH = 78;
-      }
-      // Store shelf end-cap right
-      else if (d.x === 745 && d.y === 250) {
-        decoImg = storeImg;
-        drawX = 720;
-        drawY = 225;
-        drawW = 82;
-        drawH = 95;
-      }
-      // Shopping cart
-      else if (d.x === 460 && d.y === 300) {
-        decoImg = shoppingcartImg;
-        drawX = 440;
-        drawY = 284;
-        drawW = 56;
-        drawH = 46;
-      }
-      // Pharmacy counter
-      else if (d.x === 875 && d.y === 400) {
-        decoImg = storeImg;
-        drawX = 845;
-        drawY = 382;
-        drawW = 135;
-        drawH = 56;
-      }
-      // Trash can outside
-      else if (d.x === 320 && d.y === 150) {
-        decoImg = transhcanImg;
-        drawX = 304;
-        drawY = 136;
-        drawW = 44;
-        drawH = 50;
-      }
-    } else if (currentStage === 2) {
-      // Office desk 1
-      if (d.x === 40 && d.y === 130) {
-        decoImg = officedeskImg;
-        drawX = 12;
-        drawY = 105;
-        drawW = 130;
-        drawH = 70;
-      }
-      // Office desk 2
-      else if (d.x === 170 && d.y === 320) {
-        decoImg = officedeskImg;
-        drawX = 140;
-        drawY = 295;
-        drawW = 120;
-        drawH = 68;
-      }
-      // Filing cabinet
-      else if (d.x === 350 && d.y === 130) {
-        decoImg = cabinetImg;
-        drawX = 340;
-        drawY = 115;
-        drawW = 42;
-        drawH = 58;
-      }
-      // Printer (left side office)
-      else if (d.x === 58 && d.y === 260) {
-        decoImg = printerImg;
-        drawX = 42;
-        drawY = 245;
-        drawW = 58;
-        drawH = 42;
-      }
-      // Break room sofa — 先保留色块，不放图
-      else if (d.x === 460 && d.y === 320) {
-        fill(d.col[0], d.col[1], d.col[2]);
-        rect(d.x, d.y, d.w, d.h, 3);
-        continue;
-      }
-      // Break room plant — 先保留色块
-      else if (d.x === 434 && d.y === 110) {
-        fill(d.col[0], d.col[1], d.col[2]);
-        rect(d.x, d.y, d.w, d.h, 3);
-        continue;
-      }
-      // Water cooler
-      else if (d.x === 540 && d.y === 380) {
-        decoImg = watercoolerImg;
-        drawX = 526;
-        drawY = 360;
-        drawW = 48;
-        drawH = 66;
-      }
-      // Transit bench — 先保留色块
-      else if (d.x === 650 && d.y === 440) {
-        fill(d.col[0], d.col[1], d.col[2]);
-        rect(d.x, d.y, d.w, d.h, 3);
-        continue;
-      }
-      // Vending machine -> 用 cabinet 先代替
-      else if (d.x === 460 && d.y === 200) {
-        decoImg = cabinetImg;
-        drawX = 448;
-        drawY = 186;
-        drawW = 48;
-        drawH = 70;
-      }
-      // Trash bin transit
-      else if (d.x === 760 && d.y === 320) {
-        decoImg = recyclebinImg;
-        drawX = 750;
-        drawY = 310;
-        drawW = 34;
-        drawH = 40;
-      }
-      // Home stretch mailbox -> 先用 cabinet 代替
-      else if (d.x === 915 && d.y === 350) {
-        decoImg = cabinetImg;
-        drawX = 906;
-        drawY = 336;
-        drawW = 40;
-        drawH = 50;
-      }
-    }
-
-    if (decoImg) {
-      image(decoImg, drawX, drawY, drawW, drawH);
-    } else {
-      fill(d.col[0], d.col[1], d.col[2]);
-      rect(d.x, d.y, d.w, d.h, 3);
-    }
+// Fridge
+else if (d.x === 560 && d.y === 95) {
+  decoImg = fridgeImg;
+  drawX = d.x - 10;
+  drawY = d.y - 12;
+  drawW = d.w + 32;
+  drawH = d.h + 40;
+}
+    // Kitchen table
+   else if (d.x === 560 && d.y === 280) {
+  decoImg = kitchentableImg;
+  drawX = 540;
+  drawY = 260;
+  drawW = 120;
+  drawH = 90;
+}
+  // Shoe rack
+else if (d.x === 870 && d.y === 460) {
+  decoImg = shoerackImg;
+  drawX = 850;
+  drawY = 445;
+  drawW = 92;
+  drawH = 60;
+}
+   // Bookshelf
+else if (d.x === 30 && d.y === 310) {
+  decoImg = bookshelfImg;
+  drawX = 22;
+  drawY = 300;
+  drawW = 52;
+  drawH = 108;
+}
+  }else if (currentStage === 1) {
+  // Fire hydrant
+  if (d.x === 130 && d.y === 112) {
+    decoImg = firehydrantImg;
+    drawX = 122;
+    drawY = 104;
+    drawW = 30;
+    drawH = 42;
   }
+  // Hedge / bush row
+  else if (d.x === 30 && d.y === 420) {
+    decoImg = bushImg;
+    drawX = 20;
+    drawY = 410;
+    drawW = 100;
+    drawH = 50;
+  }
+  // Newspaper box
+  else if (d.x === 275 && d.y === 300) {
+    decoImg = newspaperImg;
+    drawX = 265;
+    drawY = 292;
+    drawW = 40;
+    drawH = 36;
+  }
+  // Bench seat placed just below the calm zone
+  else if (d.x === 244 && d.y === 544) {
+    decoImg = benchImg;
+    drawX = 228;
+    drawY = 530;
+    drawW = 92;
+    drawH = 36;
+  }
+  // Store shelf end-cap left
+  else if (d.x === 430 && d.y === 140) {
+    decoImg = storeImg;
+    drawX = 420;
+    drawY = 130;
+    drawW = 58;
+    drawH = 70;
+  }
+  // Store display island
+  else if (d.x === 560 && d.y === 390) {
+    decoImg = storeImg;
+    drawX = 548;
+    drawY = 380;
+    drawW = 74;
+    drawH = 58;
+  }
+  // Store shelf end-cap right
+  else if (d.x === 745 && d.y === 250) {
+    decoImg = storeImg;
+    drawX = 734;
+    drawY = 240;
+    drawW = 60;
+    drawH = 70;
+  }
+  // Shopping cart
+  else if (d.x === 460 && d.y === 300) {
+    decoImg = shoppingcartImg;
+    drawX = 450;
+    drawY = 292;
+    drawW = 42;
+    drawH = 34;
+  }
+  // Pharmacy counter
+  else if (d.x === 875 && d.y === 400) {
+    decoImg = storeImg;
+    drawX = 860;
+    drawY = 392;
+    drawW = 100;
+    drawH = 42;
+  }
+  // Trash can outside
+  else if (d.x === 320 && d.y === 150) {
+    decoImg = transhcanImg;
+    drawX = 312;
+    drawY = 144;
+    drawW = 32;
+    drawH = 36;
+  }
+}else if (currentStage === 2) {
+  // Office desk 1
+  if (d.x === 40 && d.y === 130) {
+    decoImg = officedeskImg;
+    drawX = 26;
+    drawY = 118;
+    drawW = 96;
+    drawH = 52;
+  }
+  // Office desk 2
+  else if (d.x === 170 && d.y === 320) {
+    decoImg = officedeskImg;
+    drawX = 156;
+    drawY = 308;
+    drawW = 88;
+    drawH = 50;
+  }
+  // Filing cabinet
+  else if (d.x === 350 && d.y === 130) {
+    decoImg = cabinetImg;
+    drawX = 346;
+    drawY = 126;
+    drawW = 30;
+    drawH = 42;
+  }
+  // Printer (left side office)
+  else if (d.x === 58 && d.y === 260) {
+    decoImg = printerImg;
+    drawX = 52;
+    drawY = 254;
+    drawW = 42;
+    drawH = 30;
+  }
+  // Break room sofa — 先保留色块，不放图
+  else if (d.x === 460 && d.y === 320) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
+  // Break room plant — 先保留色块
+  else if (d.x === 434 && d.y === 110) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
+  // Water cooler
+  else if (d.x === 540 && d.y === 380) {
+    decoImg = watercoolerImg;
+    drawX = 534;
+    drawY = 372;
+    drawW = 34;
+    drawH = 48;
+  }
+  // Transit bench — 先保留色块
+  else if (d.x === 650 && d.y === 440) {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+    continue;
+  }
+  // Vending machine -> 用 cabinet 先代替
+  else if (d.x === 460 && d.y === 200) {
+    decoImg = cabinetImg;
+    drawX = 456;
+    drawY = 196;
+    drawW = 34;
+    drawH = 50;
+  }
+  // Trash bin transit
+  else if (d.x === 760 && d.y === 320) {
+    decoImg = recyclebinImg;
+    drawX = 758;
+    drawY = 318;
+    drawW = 24;
+    drawH = 28;
+  }
+  // Home stretch mailbox -> 先用 cabinet 代替
+  else if (d.x === 915 && d.y === 350) {
+    decoImg = cabinetImg;
+    drawX = 912;
+    drawY = 346;
+    drawW = 28;
+    drawH = 36;
+  }
+}
+
+  if (decoImg) {
+    image(decoImg, drawX, drawY, drawW, drawH);
+  } else {
+    fill(d.col[0], d.col[1], d.col[2]);
+    rect(d.x, d.y, d.w, d.h, 3);
+  }
+}
 
   // Checkpoints
-  //  for (let i = 0; i < checkpoints.length; i++) {
+//  for (let i = 0; i < checkpoints.length; i++) {
   //  if (starsCollected() >= checkpoints[i].starsReq) {
-  //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
-  //}
+    //  drawCheckpoint(checkpoints[i], i === checkpointIndex);
+    //}
   //}
 
   // Task markers — with fading awareness [2]

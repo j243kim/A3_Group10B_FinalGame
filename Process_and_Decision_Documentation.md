@@ -157,6 +157,25 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 | **How GenAI Was Used**                 | Claude Code was prompted with all three goals. It read the current state of `drawStageOneScene()`, `drawStageTwoScene()`, and the stimulus zone definitions. _(Implementation was in progress when this documentation task was requested.)_                                                                                                                                                                                                          |
 | **What Was Modified After Generation** | _(To be updated once implementation is complete.)_                                                                                                                                                                                                                                                                                                                                                                                                   |
 
+
+### 3.11 Task: Debugging Invisible or Incorrectly Rendered Objects
+
+| Field | Details |
+|-------|---------|
+| **GenAI Tool Used** |ChatGPT (GPT-5.3) |
+| **Date** | March 31, 2026 |
+| **Task Description** |Troubleshooting issues where newly added assets (e.g., fridge, books, NPCs) did not appear correctly or had incorrect collision sizes. |
+| **How GenAI Was Used** | The model was prompted to identify why visual changes were not reflected in the game. It suggested checking asset file paths, ensuring preload consistency, verifying coordinate matching in decorations, and distinguishing between collision size (w, h) and display size (drawW, drawH). |
+| **What Was Modified After Generation** | The distinction between collision and rendering size was applied more consistently. Several objects (e.g., fridge and table) were adjusted by modifying only the display size while keeping collision unchanged to improve gameplay feel. |
+
+| Field | Details |
+|-------|---------|
+| **GenAI Tool Used** |ChatGPT (GPT-5.3) |
+| **Date** | March 31, 2026 |
+| **Task Description** |Diagnosing why the game failed to load after adding new environment and furniture image assets. |
+| **How GenAI Was Used** | The model was prompted to identify possible causes for the game not loading after asset changes. It suggested checking for mismatched file names, incorrect file extensions (e.g., .png vs .jpg), and ensuring that all assets referenced in preload() exist in the correct directory. It also recommended verifying that the file paths match the project structure and that no missing assets are causing runtime errors. |
+| **What Was Modified After Generation** | Asset file names and extensions were verified and corrected. Several incorrect paths were fixed, and consistency between the assets/images folder and preload() references was ensured. |
+
 ---
 
 ### Conversation Log
@@ -525,6 +544,18 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 > Read the current state of `drawStageOneScene()`, `drawStageTwoScene()`, and the stimulus zone data definitions. Identified the core issue: the scene drawing functions use hardcoded coordinates for the obstacle images (e.g., `image(tvImg, 348, 292, 112, 70)`, `image(phoneImg, 30, 265, 90, 65)`, `image(carImg, 200, 110, 95, 60)`) which do not reference the dynamically updating `stimulusZones[].x / .y / .w / .h` values set by `updateStimulusZoneMovement()`.
 >
+**User (Kevin):**
+> I changed the size of some objects, but nothing appears different in the game. What could be the problem?
+
+**ChatGPT:**
+> Explained that the game uses separate values for collision (w, h) and rendering (drawW, drawH), and that modifying only collision size would not affect the visual appearance. Suggested adjusting rendering dimensions and verifying that the correct mapping condition is being triggered.
+
+**User (Kevin):**
+> I added new assets for the environment and furniture, but the game started failing to load afterward. I wanted to know whether the issue was caused by incorrect file names, file types, or something in preload().
+
+**ChatGPT:**
+> Suggested that the issue was likely caused by mismatched file names or incorrect file extensions between the actual assets and the paths used in preload(). Recommended checking whether all referenced files exist in the correct folder, ensuring consistent naming (e.g., .png vs .jpg), and verifying that there are no missing assets causing the sketch to fail during loading.
+
 > _(Implementation was in progress when the user requested this documentation update.)_
 
 

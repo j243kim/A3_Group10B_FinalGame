@@ -1449,9 +1449,17 @@ function drawStartScreen() {
     rect(panelX - 10, panelY - 10, panelW + 20, panelH + 20, 24);
   }
 
-  fill(18, 20, 42, 206);
+  let panelFlutter =
+    206 + sin(frameCount * 0.05) * 10 + sin(frameCount * 0.12 + 1.8) * 4;
+  fill(18, 20, 42, panelFlutter);
   rectMode(CORNER);
   rect(panelX, panelY, panelW, panelH, 20);
+
+  if (!lowSensoryMode) {
+    let panelFlash = max(0, sin(frameCount * 0.21) - 0.9) * 60;
+    fill(255, 255, 255, panelFlash);
+    rect(panelX, panelY, panelW, panelH, 18);
+  }
 
   if (!lowSensoryMode) {
     fill(255, 210, 75, 16);
@@ -1461,6 +1469,7 @@ function drawStartScreen() {
   }
 
   textAlign(CENTER, CENTER);
+
   fill(255, 210, 75);
   textSize(54);
   textStyle(BOLD);
@@ -1534,26 +1543,44 @@ function drawStartBackdrop() {
   let cy = CANVAS_H / 2;
   let t = frameCount;
 
-  // --- Layer 1: Faint head silhouette outline (centered behind panel) ---
-  // A simple abstract oval representing the head, with a subtle inner shape
-  // for the brain region — grounding the TBI theme visually.
+  // =========================
+  // 1) Global background flutter
+  // =========================
+  let bgFlutter = 12 + sin(t * 0.045) * 6 + sin(t * 0.11 + 1.4) * 3;
+  fill(22, 24, 42, bgFlutter);
+  rect(0, 0, CANVAS_W, CANVAS_H);
+
+  // very light irregular flicker pulses
+  if (sin(t * 0.23) > 0.92) {
+    fill(90, 100, 150, 8);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+  if (sin(t * 0.31 + 2.1) > 0.95) {
+    fill(255, 210, 75, 5);
+    rect(0, 0, CANVAS_W, CANVAS_H);
+  }
+
+  // =========================
+  // 2) Faint head silhouette
+  // =========================
   push();
   translate(cx, cy - 20);
   noFill();
-  // Outer head outline — faint, slightly breathing
+
   let headBreath = sin(t * 0.012) * 3;
-  stroke(60, 65, 95, 18 + sin(t * 0.02) * 4);
+  let headAlpha = 12 + sin(t * 0.04) * 5;
+  stroke(60, 65, 95, headAlpha);
   strokeWeight(1.5);
   ellipse(0, 0, 320 + headBreath, 390 + headBreath);
-  // Inner brain region — smaller oval, even fainter
-  stroke(70, 75, 110, 12);
+
+  stroke(70, 75, 110, 8 + sin(t * 0.028 + 0.8) * 3);
   strokeWeight(1);
   ellipse(0, -30, 220 + headBreath * 0.6, 240 + headBreath * 0.6);
   pop();
 
-  // --- Layer 2: Neural pathway lines ---
-  // Branching lines that flicker, break, and reconnect — representing
-  // damaged neural connections and the effort to maintain cognitive pathways.
+  // =========================
+  // 3) Neural pathway lines with stronger instability
+  // =========================
   let neuralSeeds = [
     { sx: 280, sy: 180, ang: 0.4 },
     { sx: 720, sy: 180, ang: 2.7 },
@@ -1565,6 +1592,7 @@ function drawStartBackdrop() {
     { sx: 150, sy: 300, ang: 0.6 },
     { sx: 850, sy: 300, ang: 2.5 },
   ];
+
   for (let n = 0; n < neuralSeeds.length; n++) {
     let seed = neuralSeeds[n];
     let px = seed.sx;
@@ -1572,84 +1600,111 @@ function drawStartBackdrop() {
     let ang = seed.ang + sin(t * 0.005 + n * 1.3) * 0.3;
     let segLen = 18;
     let segments = 6 + (n % 3);
-    // Each pathway flickers in and out on its own cycle
+
+    // opacity flutter
     let flickerPhase = sin(t * 0.018 + n * 2.1);
-    let pathAlpha = map(flickerPhase, -1, 1, 4, 22);
+    let pathAlpha = map(flickerPhase, -1, 1, 2, 20);
+
+    // occasional hard flicker drops
+    if (sin(t * 0.16 + n * 3.7) > 0.86) {
+      pathAlpha *= 0.22;
+    }
 
     stroke(90, 100, 150, pathAlpha);
     strokeWeight(1);
+
     for (let s = 0; s < segments; s++) {
       let nx = px + cos(ang) * segLen;
       let ny = py + sin(ang) * segLen;
-      // Broken connections — skip drawing some segments to show damage
-      let broken = sin(t * 0.025 + n * 3.7 + s * 1.9) > 0.4;
+
+      // more unstable break pattern
+      let broken = sin(t * 0.025 + n * 3.7 + s * 1.9) > 0.35;
+
       if (!broken) {
         line(px, py, nx, ny);
       }
-      // Small synapse node at each joint
+
       if (s < segments - 1) {
         noStroke();
-        fill(100, 120, 170, broken ? 5 : pathAlpha * 0.8);
+        fill(100, 120, 170, broken ? 3 : pathAlpha * 0.8);
         ellipse(nx, ny, 3, 3);
         stroke(90, 100, 150, pathAlpha);
         strokeWeight(1);
       }
+
       px = nx;
       py = ny;
-      // Branch direction drifts
       ang += sin(t * 0.008 + s * 0.9 + n) * 0.5;
     }
   }
   noStroke();
 
-  // --- Layer 3: Drifting thought fragments ---
-  // Small text-like shapes that float and fade, representing scattered
-  // thoughts, memory fragments, and the difficulty holding onto ideas.
+  // =========================
+  // 4) Small static clusters
+  // =========================
+  let staticClusters = [
+    { x: 118, y: 128, w: 52, h: 28 },
+    { x: 820, y: 148, w: 58, h: 30 },
+    { x: 145, y: 485, w: 64, h: 30 },
+    { x: 760, y: 500, w: 70, h: 34 },
+    { x: 415, y: 555, w: 58, h: 24 },
+    { x: 612, y: 108, w: 56, h: 24 },
+    { x: 88, y: 298, w: 50, h: 26 },
+    { x: 874, y: 288, w: 52, h: 24 },
+  ];
+
+  for (let i = 0; i < staticClusters.length; i++) {
+    let c = staticClusters[i];
+    let clusterAlpha = 8 + sin(t * 0.06 + i * 1.9) * 5;
+
+    for (let j = 0; j < 16; j++) {
+      let px = c.x + ((j * 13 + i * 7) % c.w);
+      let py = c.y + ((j * 9 + i * 11) % c.h);
+      let sz = 1 + ((j + i) % 2);
+
+      if (sin(t * 0.14 + i * 2.4 + j * 0.7) > -0.15) {
+        fill(170, 180, 215, clusterAlpha);
+      } else {
+        fill(255, 210, 75, clusterAlpha * 0.45);
+      }
+      rect(px, py, sz, sz);
+    }
+  }
+
+  // =========================
+  // 5) Drifting thought fragments
+  // =========================
   let fragments = [
     { x: 120, y: 150, w: 40, h: 4 },
     { x: 870, y: 170, w: 35, h: 4 },
     { x: 180, y: 480, w: 45, h: 4 },
     { x: 760, y: 510, w: 38, h: 4 },
     { x: 400, y: 560, w: 32, h: 4 },
-    { x: 620, y: 100, w: 36, h: 4 },
-    { x: 90, y: 340, w: 28, h: 4 },
-    { x: 910, y: 360, w: 34, h: 4 },
-    { x: 310, y: 80, w: 42, h: 4 },
-    { x: 700, y: 580, w: 30, h: 4 },
+    { x: 620, y: 110, w: 48, h: 4 },
+    { x: 90, y: 300, w: 42, h: 4 },
+    { x: 900, y: 290, w: 36, h: 4 },
   ];
+
   for (let i = 0; i < fragments.length; i++) {
     let f = fragments[i];
-    // Each fragment drifts slowly and fades in/out
-    let drift = sin(t * 0.01 + i * 1.7) * 15;
-    let driftY = cos(t * 0.008 + i * 2.3) * 8;
-    let fadeAlpha = map(sin(t * 0.015 + i * 2.9), -1, 1, 3, 18);
-    fill(160, 165, 200, fadeAlpha);
-    rectMode(CORNER);
-    rect(f.x + drift, f.y + driftY, f.w, f.h, 2);
-    // Some fragments have a second shorter "word" next to them
-    if (i % 3 === 0) {
-      rect(f.x + drift + f.w + 6, f.y + driftY, f.w * 0.5, f.h, 2);
-    }
+    let driftX = sin(t * 0.01 + i * 1.7) * 6;
+    let driftY = cos(t * 0.013 + i * 1.2) * 4;
+    let a = 8 + sin(t * 0.02 + i * 2.5) * 5;
+
+    fill(170, 180, 215, a);
+    rect(f.x + driftX, f.y + driftY, f.w, f.h, 3);
+
+    // ghost double-vision copy
+    fill(255, 210, 75, a * 0.18);
+    rect(f.x + driftX + 4, f.y + driftY + 1, f.w * 0.85, f.h, 3);
   }
 
-  // --- Layer 4: Fading awareness particles ---
-  // Tiny dots that pulse gently, representing moments of clarity
-  // flickering in and out — the struggle to stay present.
-  for (let i = 0; i < 50; i++) {
-    let px = (i * 173 + 47) % CANVAS_W;
-    let py = (i * 113 + 31) % CANVAS_H;
-    let pulse = sin(t * 0.03 + i * 0.8);
-    let a = map(pulse, -1, 1, 0, 10);
-    let sz = map(pulse, -1, 1, 1, 2.5);
-    fill(140, 150, 200, a);
-    ellipse(px, py, sz, sz);
-  }
-
-  // --- Layer 5: Subtle pressure halo around center ---
-  // A soft warm glow behind the title area, representing the persistent
-  // low-grade discomfort — always there, hard to ignore.
+  // =========================
+  // 6) Pressure halo around center
+  // =========================
   fill(255, 200, 80, 8 + sin(t * 0.015) * 3);
   ellipse(cx, cy - 50, 350, 200);
+
   fill(80, 60, 120, 6 + sin(t * 0.02 + 1) * 2);
   ellipse(cx, cy + 80, 400, 180);
 

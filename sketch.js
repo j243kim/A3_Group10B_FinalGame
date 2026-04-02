@@ -708,21 +708,6 @@ const mapH = 100;
 const mapPad = 10;
 const mapBorder = 6;
 let miniMapExpanded = false;
-// ===================== START SCREEN FX =====================
-let startPanelAlpha = 206;
-let startHeroAlpha = 12;
-let startTitleAlpha = 255;
-let startSubtitleAlpha = 228;
-let startPrimaryBtnAlpha = 255;
-let startPrimaryBtnGlowAlpha = 26;
-
-let startFlickerDrop = 0;
-let startFlickerTimer = 0;
-let startFlickerCooldown = 0;
-
-let startBtnFlickerDrop = 0;
-let startBtnFlickerTimer = 0;
-let startBtnFlickerCooldown = 0;
 let mapBounds = { x: 0, y: 0, w: mapW, h: mapH };
 // ===================== HELPERS =====================
 function starsCollected() {
@@ -1429,61 +1414,6 @@ function drawStartScreen() {
     stopAmbient();
   }
 
-  function updateStartScreenFX() {
-    let t = frameCount;
-
-    // Background neural / panel base drift
-    startPanelAlpha = lowSensoryMode ? 224 : 206;
-    startHeroAlpha = lowSensoryMode ? 0 : map(sin(t * 0.018), -1, 1, 10, 26);
-
-    // Subtle unstable flicker for the main panel
-    if (startFlickerCooldown > 0) {
-      startFlickerCooldown--;
-    } else if (random() < 0.007) {
-      startFlickerTimer = floor(random(2, 5));
-      startFlickerDrop = random(20, 42);
-      startFlickerCooldown = floor(random(90, 220));
-    }
-
-    if (startFlickerTimer > 0) {
-      startFlickerTimer--;
-    } else {
-      startFlickerDrop = lerp(startFlickerDrop, 0, 0.25);
-    }
-
-    // Separate unstable flicker for the main ENTER button
-    if (startBtnFlickerCooldown > 0) {
-      startBtnFlickerCooldown--;
-    } else if (random() < 0.009) {
-      startBtnFlickerTimer = floor(random(1, 4));
-      startBtnFlickerDrop = random(25, 55);
-      startBtnFlickerCooldown = floor(random(70, 180));
-    }
-
-    if (startBtnFlickerTimer > 0) {
-      startBtnFlickerTimer--;
-    } else {
-      startBtnFlickerDrop = lerp(startBtnFlickerDrop, 0, 0.28);
-    }
-
-    startTitleAlpha = constrain(255 - startFlickerDrop * 0.35, 210, 255);
-    startSubtitleAlpha = constrain(228 - startFlickerDrop * 0.45, 170, 228);
-    startPrimaryBtnAlpha = constrain(255 - startBtnFlickerDrop, 170, 255);
-    startPrimaryBtnGlowAlpha = constrain(
-      26 - startBtnFlickerDrop * 0.25,
-      6,
-      26,
-    );
-  }
-
-  function getNeuralFlutterAlpha(seedOffset) {
-    // 20%~60% opacity drift target
-    // Current visual system uses low absolute alpha values, so this maps to a soft visible range.
-    let n = noise(seedOffset, frameCount * 0.008);
-    return map(n, 0, 1, 12, 38);
-  }
-
-  updateStartScreenFX();
   drawStartBackdrop();
 
   let panelX = 222;
@@ -1514,41 +1444,31 @@ function drawStartScreen() {
 
   noStroke();
   if (!lowSensoryMode) {
-    fill(40, 38, 65, 30 - startFlickerDrop * 0.15);
+    fill(40, 38, 65, 30);
     rectMode(CORNER);
     rect(panelX - 10, panelY - 10, panelW + 20, panelH + 20, 24);
   }
 
-  fill(18, 20, 42, startPanelAlpha - startFlickerDrop);
+  fill(18, 20, 42, 206);
   rectMode(CORNER);
   rect(panelX, panelY, panelW, panelH, 20);
 
   if (!lowSensoryMode) {
-    fill(255, 210, 75, max(6, 16 - startFlickerDrop * 0.12));
+    fill(255, 210, 75, 16);
     rect(panelX + 58, panelY, panelW - 116, 2, 1);
-
-    fill(78, 104, 152, startHeroAlpha);
+    fill(78, 104, 152, 12);
     rect(heroX, heroY, heroW, heroH, 16);
   }
 
   textAlign(CENTER, CENTER);
-
-  // Ghosted duplicate title for double-vision effect
-  if (!lowSensoryMode) {
-    fill(255, 210, 75, 26);
-    textSize(54);
-    textStyle(BOLD);
-    text("Fragmented", heroCX + 3, titleY + 2);
-  }
-
-  fill(255, 210, 75, startTitleAlpha);
+  fill(255, 210, 75);
   textSize(54);
   textStyle(BOLD);
   text("Fragmented", heroCX, titleY);
 
   textStyle(NORMAL);
   textSize(13);
-  fill(214, 216, 228, startSubtitleAlpha);
+  fill(214, 216, 228);
   text("Experience daily life under cognitive strain", heroCX, subtitleY);
 
   // stroke(255, 255, 255, 15);
@@ -1652,8 +1572,9 @@ function drawStartBackdrop() {
     let ang = seed.ang + sin(t * 0.005 + n * 1.3) * 0.3;
     let segLen = 18;
     let segments = 6 + (n % 3);
-    // Slow opacity flutter for a fading-thought effect
-    let pathAlpha = getNeuralFlutterAlpha(n * 0.37);
+    // Each pathway flickers in and out on its own cycle
+    let flickerPhase = sin(t * 0.018 + n * 2.1);
+    let pathAlpha = map(flickerPhase, -1, 1, 4, 22);
 
     stroke(90, 100, 150, pathAlpha);
     strokeWeight(1);
@@ -1865,7 +1786,7 @@ function drawHowToPlayOverlay() {
     panelY + 76,
   );
 
-  drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
+  drawHowToPlayRow(panelX + 54, panelY + 120, "Arrow Keys / WASD", "Move");
   drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
   drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
   drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");

@@ -157,6 +157,16 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 | **How GenAI Was Used**                 | Claude Code was prompted with all three goals. It read the current state of `drawStageOneScene()`, `drawStageTwoScene()`, and the stimulus zone definitions. _(Implementation was in progress when this documentation task was requested.)_                                                                                                                                                                                                          |
 | **What Was Modified After Generation** | _(To be updated once implementation is complete.)_                                                                                                                                                                                                                                                                                                                                                                                                   |
 
+### 3.11 Task: Syncing Obstacle Images with Moving Stimulus Zones, Redesigning Background Audio, and Adding Calm Zone Labels
+
+| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | Claude Code (Claude Sonnet 4.6) via VS Code extension                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Date**                               | April 1, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **Task Description**                   | Implemented player vision limit and mini map function to the existing game using genAI.  |
+| **How GenAI Was Used**                 | GenAI was used in coding the new functions according to my prompt, fixing bugs and making iterations for the map and vision limit's UI improvements.                                                                                                                                                                                                       |
+| **What Was Modified After Generation** | No further modifications as suggestions were implemented.                                                                                              
+                                                  |
 ---
 
 ### Conversation Log
@@ -529,3 +539,129 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 
 ---
+### A.3 Conversation: Mini Map and player vision limit feature implementation (April 1, 2026)
+
+**Tool Used:** Claude Code (Claude Sonnet 4.6) via VS Code extension
+
+---
+
+**User (Annora):**
+> For this updated game, help me generate a feature that simulates limited player vision similar to the Among Us game. Here are detailed instructions and include the following behaviour:
+> 
+> * The player should only be able to see a small circular area around their character, while the rest of the screen is darkened or hidden. This visible area should smoothly follow the player as they move, like a spotlight or flashlight effect.
+> * The surrounding area outside the radius should be dimmed or fully black
+> * The transition between visible and hidden areas should be slightly soft (not a harsh edge)
+> * Display a mini map in the corner of the screen showing the full layout of the level
+> * The mini map indicates the player’s position as a coloured dot clearly on the map
+> * Allow the player to open a larger version of the map when the map is clicked.
+> * The system should be optimized for real-time gameplay and work smoothly as the player moves.
+> * Focus on clean visual feedback, intuitive navigation, and maintaining a sense of limited information for gameplay tension.
+
+---
+
+**Claude Code:**
+
+> Now I have a thorough understanding of the codebase.
+> Let me now plan and implement the vision/fog-of-war system and minimap.
+> I'll add new code at the end of the file and hook it into drawPlayScreen.
+> Now I'll add the vision system variables near the top, then add all new functions before the final closing, and hook them into drawPlayScreen:
+> Now hook the new systems into setup(), drawPlayScreen(), and mousePressed():
+> Now update mousePressed() to handle both minimap expand/close and the existing start-screen logic:
+> Now verify all the key hooks are in place and check for any issues: All connections are in place.
+> Now check that REMOVE blend mode (used for fog) is valid in p5.js — it should be REMOVE for p5.Graphics: REMOVE is a p5.js constant that works on p5.Graphics objects — it's the correct way to erase pixels from a graphics buffer. However, let me double-check the fog approach is robust by also verifying the VISION_SOFTNESS constant was declared:Everything looks correct.
+> Now copy to outputs: Here's a full breakdown of everything added and where:
+
+> **New variables — lines 704–718 (after let calmSoundCooldown)**
+> 
+> Variable / ConstantPurpose
+> VISION_RADIUS_BASE = 160
+> Default spotlight radius at 0% overload
+> VISION_RADIUS_MIN = 70
+> Tightest radius at 100% overload
+> VISION_SOFTNESS = 60
+> Width in px of the gradient fade
+> ringvisionGraphics = nullOff-screen
+> p5.Graphics buffer for the fog mask
+> MM_W, MM_H, MM_PAD, MM_BORDER_R
+> Minimap panel dimensions and padding
+> minimapExpanded = false
+> Tracks whether the large map modal is open
+> mmBounds
+> Stores the minimap's screen rect for click detection
+>
+> **setup() — line 1313**
+> 
+> Added initVisionGraphics() — creates the off-screen fog buffer once on load.
+>
+> **drawPlayScreen() — lines 1902–1909**
+> 
+Three new calls inserted after drawVignette() and before / after drawHUD():
+drawFogOfWar() — stamps the fog mask on top of the stage, below the HUD
+drawMinimap() — draws the small corner map, always above fog
+drawExpandedMap() — draws the modal map when open, above everything
+> 
+> **mousePressed() — lines 3621–3629**
+> 
+> New block at the top of the function (before the start-screen logic):
+> During STATE_PLAY: if the expanded map is open, any click closes it; if the click is inside mmBounds, it opens the expanded map.
+>
+>  **New functions appended at end of file**
+> 
+> initVisionGraphics() — Creates the p5.Graphics buffer.
+> getCurrentVisionRadius() — Returns the current spotlight radius. Shrinks linearly from 160→70 as overload rises. Locked to 160 in Low Sensory Mode.
+> drawFogOfWar() — Each frame: floods the buffer with near-black fog, then uses blendMode(REMOVE) to erase a soft circular hole around the player using 24 concentric gradient rings. The buffer is then stamped onto the canvas.
+> drawMinimap() — Draws the 160×100 panel in the bottom-right corner with walls, zones, stars, and a pulsing player dot. Updates mmBounds each frame.
+> drawExpandedMap() — Draws a 72%×72% modal map centred on screen with labels, a legend, checkpoint markers, and a "click anywhere to close" hint.
+
+---
+
+**User (Annora):**
+
+> your modifications work well but here are some feedbacks:
+> 
+> * player cannot exit the expanded map even if i click the screen. fix this bug and allow to exit the map when key 'esc' is pressed.
+> * make the vision radius smaller so that it is more challenging.
+
+**Claude Code:**
+
+> Three fixes, all in one file:
+> 
+> **Bug: can't close expanded map (click or ESC)**
+> 
+> The click handler in mousePressed was checking/setting minimapExpanded (lowercase m) while the actual variable is miniMapExpanded — so the close logic never fired. Fixed the variable name on all three lines in mousePressed.
+> Added an ESC handler at the top of keyPressed: if (gameState === STATE_PLAY && keyCode === ESCAPE) { miniMapExpanded = false; } — runs before any other key logic so it's always caught.
+> 
+> **Smaller vision radius**
+> 
+> * visionRadiusBase: 160 → 100 (comfortable radius at 0% overload)
+> * visionRadiusMin: 70 → 45 (tightest radius at 100% overload)
+> The range is now noticeably tighter — at full overload the player can see less than half the area they could before.
+
+---
+
+**User (Annora):**
+
+> everything looks good but here are some edits i want to make.
+> 
+> * emtional message text color change into darker color.
+> * emotional message should appear above the fog so change the order of the functions so that the message isn't hidden under the fog
+
+**Claude Code:**
+
+> Clear picture now. Two changes: move drawEmotionMessage() call to after drawFog() in drawPlayScreen, and darken the text colour from (255, 220, 200) to a dark tone:
+> 
+> **1. Draw order — drawPlayScreen()**
+> 
+> Removed drawEmotionMessage() from inside drawStage() where it was buried under the fog
+> Added it immediately after drawFog(), so it always renders on top of the fog layer
+> 
+> **2. Text colour — drawEmotionMessage()**
+> 
+> Element	Before	After
+> Text	fill(255, 220, 200) — light peach	fill(40, 25, 15) — dark charcoal brown
+> Pill background	fill(255, 255, 255, 0.7) — white	fill(255, 240, 210, 0.92) — warm cream, more opaque
+> The dark text on a warm cream pill now reads clearly against both the fog and the game world.
+
+---
+
+

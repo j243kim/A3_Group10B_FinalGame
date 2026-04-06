@@ -1,7 +1,7 @@
 # Process and Decision Documentation
 
 **Group:** 10B
-**Assignment:** A2 — Mid-Term Game
+**Assignment:** A3 — Final Game
 **Disability Topic:** Traumatic Brain Injury (TBI)
 **Date:** March 3, 2026
 
@@ -194,6 +194,16 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 | **Task Description**                   | Fine-tuning the vertical position of the "Sofa" calm-zone label so it sits perfectly between the sofa image and the "Recovering..." message in Stage 3 without overlapping.                 |
 | **How GenAI Was Used**                 | The model was asked to move the "Sofa" label down to the middle of the image and the recovering message. It adjusted the specific `labelY` and `recY` pixel offsets for the sofa calm zone. |
 | **What Was Modified After Generation** | The changes were applied directly to the codebase as requested.                                                                                                                             |
+
+### 3.14 Task: Replacing High-Pitch Background Sounds with White Noise Based on Playtest Feedback
+
+| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | Claude Code (Claude Opus 4.6) via VS Code extension                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **Date**                               | April 5, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Task Description**                   | After playtesting, feedback indicated the high-pitch background sounds were too distracting and piercing. The task was to replace all high-frequency sine oscillators used for tinnitus/ringing effects with bandpass-filtered white noise across the title screen, gameplay ambient layers, and the Stage 3 screen/glare proximity zone — while keeping all other audio (drone, pressure, sound effects, other zone sounds) unchanged.                                                                                                                                                                                                                                                                                                                                                                                        |
+| **How GenAI Was Used**                 | Claude Code read the full audio implementation in `sketch.js`, identified the three high-pitch sine oscillators (title tinnitus at 3800 Hz, gameplay ring at 4200 Hz, screen/glare zone at 8000 Hz), and replaced each with a `createWhiteNoiseSource()` utility that generates a looping `AudioBufferSourceNode` filled with random samples, routed through a `BiquadFilter` set to bandpass mode (centre frequencies 800–1200 Hz, Q 0.5). Updated all lifecycle functions (`startTitleAmbient`, `stopTitleAmbient`, `startAmbient`, `stopAmbient`, `updateAmbient`, `initZoneSounds`) and the ducking system to reference the new node types. Variable names were updated from oscillator-style (`titleTinnitusOsc`, `ringOsc`) to source-style (`titleTinnitusNode`, `ringNode`) with added filter references. |
+| **What Was Modified After Generation** | No further modifications — the changes were applied directly as requested and verified with `node -c sketch.js`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ---
 
@@ -496,6 +506,18 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **Codex:**
 
 > Added this session to the documentation by creating a new GenAI use entry (3.12), extending the conversation log, and appending a new appendix transcript section.
+
+### Conversation Log (continued — Playtest Feedback, April 5, 2026)
+
+**User (Jimin):**
+
+> Read these current code files and we got the feedback below after playtesting so please change apply this change (background sound only) in this game from start part to stage 1 to 3, except this keep it as same:
+>
+> Balancing out the background noise (think of another noise that won't be too distracting) (take out the high pitch noise -> add white noises) (or change the frequency?)
+
+**Claude Code:**
+
+> Read the full audio implementation in `sketch.js` and identified three high-pitch sine oscillators responsible for the piercing tinnitus/ringing effect: the title-screen tinnitus layer (3800 Hz sine), the gameplay ambient ring layer (4200 Hz sine), and the Stage 3 screen/glare proximity zone sound (8000 Hz sine). Created a `createWhiteNoiseSource()` utility function that generates a 2-second looping `AudioBufferSourceNode` filled with random samples. Replaced all three high-pitch oscillators with white noise sources routed through `BiquadFilter` nodes set to bandpass mode (centre frequencies 800–1200 Hz, Q 0.5) to produce a soft, non-piercing hiss. Updated all related lifecycle functions (`startTitleAmbient`, `stopTitleAmbient`, `startAmbient`, `stopAmbient`, `updateAmbient`, `initZoneSounds`) and the audio ducking system. All other audio layers (low drone, pressure sawtooth, sound effects, TV/phone/car/printer zone sounds) were kept unchanged. Verified with `node -c sketch.js` — no syntax errors.
 
 ---
 
@@ -964,5 +986,44 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 **Codex:**
 
 > Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
+
+---
+
+### A.6 Conversation: Replacing High-Pitch Background Sounds with White Noise (April 5, 2026)
+
+**Tool Used:** Claude Code (Claude Opus 4.6) via VS Code extension
+
+---
+
+**User (Jimin):**
+
+> Read these current code files and we got the feedback below after playtesting so please change apply this change (background sound only) in this game from start part to stage 1 to 3, except this keep it as same:
+>
+> Balancing out the background noise (think of another noise that won't be too distracting) (take out the high pitch noise -> add white noises) (or change the frequency?)
+>
+> After this change please include this prompt in the genai documentation, and related content in the process doc with the same format of the original one please.
+
+**Claude Code:**
+
+> Read the full audio implementation in `sketch.js` and identified three high-pitch sine oscillators responsible for the piercing tinnitus/ringing effect:
+>
+> 1. **Title screen tinnitus** — 3800 Hz sine oscillator (`titleTinnitusOsc`) in `startTitleAmbient()`
+> 2. **Gameplay ambient ring** — 4200 Hz sine oscillator (`ringOsc`) in `startAmbient()`
+> 3. **Screen/glare zone** — 8000 Hz sine oscillator in `initZoneSounds()` (Stage 3 proximity sound)
+>
+> **Changes made:**
+>
+> - Created a `createWhiteNoiseSource()` utility function that generates a 2-second looping `AudioBufferSourceNode` filled with random samples (`Math.random() * 2 - 1`)
+> - Replaced all three high-pitch sine oscillators with white noise sources routed through `BiquadFilter` nodes set to `"bandpass"` mode:
+>   - Title tinnitus: centre frequency 800 Hz, Q 0.5
+>   - Gameplay ring: centre frequency 1000 Hz, Q 0.5
+>   - Screen/glare zone: centre frequency 1200 Hz, Q 0.5
+> - Updated variable names from oscillator-style (`titleTinnitusOsc`, `ringOsc`) to source-style (`titleTinnitusNode`, `ringNode`) with added filter references (`titleTinnitusFilter`, `ringFilter`)
+> - Updated all lifecycle functions: `startTitleAmbient()`, `stopTitleAmbient()`, `startAmbient()`, `stopAmbient()`, `updateAmbient()`, `initZoneSounds()`
+> - Updated the `duckBackgroundAudio()` ducking system (gain node references unchanged)
+> - All other audio layers kept unchanged: low drone (55 Hz), pressure sawtooth (110 Hz), pulse LFO, TV zone (60 Hz sawtooth), phone zone (600/640 Hz sine), car zone (40 Hz sawtooth), printer zone (120 Hz square), and all sound effect tones
+> - Verified with `node -c sketch.js` — no syntax errors
+>
+> Also added GenAI documentation entry 3.14, extended the Conversation Log, and appended this appendix transcript.
 
 ---

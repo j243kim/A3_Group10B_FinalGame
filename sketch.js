@@ -122,14 +122,16 @@ let ambientOsc = null;
 let ambientGain = null;
 let pressureOsc = null;
 let pressureGain = null;
-let ringOsc = null;
+let ringNode = null;    // white noise buffer source (replaces 4200 Hz sine)
+let ringFilter = null;
 let ringGain = null;
 let zoneAudioNodes = [];
 
 // Title screen ambient soundscape nodes
 let titleDroneOsc = null;
 let titleDroneGain = null;
-let titleTinnitusOsc = null;
+let titleTinnitusNode = null;  // white noise buffer source (replaces sine oscillator)
+let titleTinnitusFilter = null;
 let titleTinnitusGain = null;
 let titlePulseOsc = null;
 let titlePulseGain = null;
@@ -155,9 +157,23 @@ function initAudio() {
   } catch (e) {}
 }
 
+// --- White noise utility: creates a looping buffer of random samples ---
+function createWhiteNoiseSource() {
+  let bufferSize = audioCtx.sampleRate * 2; // 2 seconds of noise
+  let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  let data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  let source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  return source;
+}
+
 // --- Title screen ambient: layered soundscape conveying subtle TBI strain ---
 // Layer 1: Low drone — persistent pressure / headache sensation
-// Layer 2: Faint high-frequency tone — tinnitus-like ringing
+// Layer 2: Filtered white noise — soft tinnitus-like hiss (replaces high-pitch sine)
 // Layer 3: Slow-pulsing mid tone — uneasy rhythmic throb
 function setTitleAmbientMix(mode, fadeTime) {
   if (!audioCtx || !titleActive) return;
@@ -290,16 +306,19 @@ function startTitleAmbient(mode) {
   titleDroneGain.connect(audioCtx.destination);
   titleDroneOsc.start(now);
 
-  // Layer 2: Tinnitus-like ringing (3800 Hz sine, barely audible)
-  titleTinnitusOsc = audioCtx.createOscillator();
+  // Layer 2: Filtered white noise — soft hiss (replaces 3800 Hz sine)
+  titleTinnitusNode = createWhiteNoiseSource();
+  titleTinnitusFilter = audioCtx.createBiquadFilter();
+  titleTinnitusFilter.type = "bandpass";
+  titleTinnitusFilter.frequency.value = 800;
+  titleTinnitusFilter.Q.value = 0.5;
   titleTinnitusGain = audioCtx.createGain();
-  titleTinnitusOsc.type = "sine";
-  titleTinnitusOsc.frequency.value = 3800;
   titleTinnitusGain.gain.setValueAtTime(0, now);
   titleTinnitusGain.gain.linearRampToValueAtTime(levels.tinnitus, now + fadeIn);
-  titleTinnitusOsc.connect(titleTinnitusGain);
+  titleTinnitusNode.connect(titleTinnitusFilter);
+  titleTinnitusFilter.connect(titleTinnitusGain);
   titleTinnitusGain.connect(audioCtx.destination);
-  titleTinnitusOsc.start(now);
+  titleTinnitusNode.start(now);
 
   // Layer 3: Slow pulsing mid-tone (110 Hz triangle, amplitude-modulated)
   titlePulseOsc = audioCtx.createOscillator();
@@ -341,13 +360,14 @@ function stopTitleAmbient() {
     titleDroneOsc = null;
     titleDroneGain = null;
   }
-  if (titleTinnitusGain && titleTinnitusOsc) {
+  if (titleTinnitusGain && titleTinnitusNode) {
     try {
       titleTinnitusGain.gain.setValueAtTime(titleTinnitusGain.gain.value, now);
       titleTinnitusGain.gain.linearRampToValueAtTime(0, now + fadeOut);
-      titleTinnitusOsc.stop(now + fadeOut + 0.05);
+      titleTinnitusNode.stop(now + fadeOut + 0.05);
     } catch (e) {}
-    titleTinnitusOsc = null;
+    titleTinnitusNode = null;
+    titleTinnitusFilter = null;
     titleTinnitusGain = null;
   }
   if (titlePulseGain && titlePulseOsc) {
@@ -436,14 +456,17 @@ function startAmbient() {
   pressureGain.connect(audioCtx.destination);
   pressureOsc.start();
 
-  ringOsc = audioCtx.createOscillator();
+  ringNode = createWhiteNoiseSource();
+  ringFilter = audioCtx.createBiquadFilter();
+  ringFilter.type = "bandpass";
+  ringFilter.frequency.value = 1000;
+  ringFilter.Q.value = 0.5;
   ringGain = audioCtx.createGain();
-  ringOsc.type = "sine";
-  ringOsc.frequency.value = 4200;
   ringGain.gain.value = 0;
-  ringOsc.connect(ringGain);
+  ringNode.connect(ringFilter);
+  ringFilter.connect(ringGain);
   ringGain.connect(audioCtx.destination);
-  ringOsc.start();
+  ringNode.start();
 }
 function stopAmbient() {
   if (ambientOsc) {
@@ -460,11 +483,12 @@ function stopAmbient() {
     pressureOsc = null;
     pressureGain = null;
   }
-  if (ringOsc) {
+  if (ringNode) {
     try {
-      ringOsc.stop();
+      ringNode.stop();
     } catch (e) {}
-    ringOsc = null;
+    ringNode = null;
+    ringFilter = null;
     ringGain = null;
   }
 }
@@ -487,7 +511,7 @@ function updateAmbient() {
     pressureOsc.frequency.setTargetAtTime(110 + throb, now, 0.1);
   }
 
-  if (ringGain && ringOsc) {
+  if (ringGain && ringNode) {
     let rVol = overload > 65 ? map(overload, 65, overloadMax, 0.0, 0.025) : 0;
     ringGain.gain.setTargetAtTime(rVol, now, 0.1);
   }
@@ -552,12 +576,15 @@ function initZoneSounds() {
       lfo.start(now);
       nodesToStop.push(osc, lfo);
     } else if (lbl.includes("screen") || lbl.includes("glare")) {
-      let osc = audioCtx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.value = 8000;
-      osc.connect(gain);
-      osc.start(now);
-      nodesToStop.push(osc);
+      let noise = createWhiteNoiseSource();
+      let filt = audioCtx.createBiquadFilter();
+      filt.type = "bandpass";
+      filt.frequency.value = 1200;
+      filt.Q.value = 0.5;
+      noise.connect(filt);
+      filt.connect(gain);
+      noise.start(now);
+      nodesToStop.push(noise);
     } else if (lbl.includes("printer")) {
       let osc = audioCtx.createOscillator();
       osc.type = "square";

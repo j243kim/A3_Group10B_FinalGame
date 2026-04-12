@@ -197,13 +197,13 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 
 ### 3.14 Task: Replacing High-Pitch Background Sounds with White Noise Based on Playtest Feedback
 
-| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GenAI Tool Used**                    | Claude Code (Claude Opus 4.6) via VS Code extension                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **Date**                               | April 5, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **Task Description**                   | After playtesting, feedback indicated the high-pitch background sounds were too distracting and piercing. The task was to replace all high-frequency sine oscillators used for tinnitus/ringing effects with bandpass-filtered white noise across the title screen, gameplay ambient layers, and the Stage 3 screen/glare proximity zone — while keeping all other audio (drone, pressure, sound effects, other zone sounds) unchanged.                                                                                                                                                                                                                                                                                                                                                                                        |
+| Field                                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GenAI Tool Used**                    | Claude Code (Claude Opus 4.6) via VS Code extension                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Date**                               | April 5, 2026                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Task Description**                   | After playtesting, feedback indicated the high-pitch background sounds were too distracting and piercing. The task was to replace all high-frequency sine oscillators used for tinnitus/ringing effects with bandpass-filtered white noise across the title screen, gameplay ambient layers, and the Stage 3 screen/glare proximity zone — while keeping all other audio (drone, pressure, sound effects, other zone sounds) unchanged.                                                                                                                                                                                                                                                                                                                                                                           |
 | **How GenAI Was Used**                 | Claude Code read the full audio implementation in `sketch.js`, identified the three high-pitch sine oscillators (title tinnitus at 3800 Hz, gameplay ring at 4200 Hz, screen/glare zone at 8000 Hz), and replaced each with a `createWhiteNoiseSource()` utility that generates a looping `AudioBufferSourceNode` filled with random samples, routed through a `BiquadFilter` set to bandpass mode (centre frequencies 800–1200 Hz, Q 0.5). Updated all lifecycle functions (`startTitleAmbient`, `stopTitleAmbient`, `startAmbient`, `stopAmbient`, `updateAmbient`, `initZoneSounds`) and the ducking system to reference the new node types. Variable names were updated from oscillator-style (`titleTinnitusOsc`, `ringOsc`) to source-style (`titleTinnitusNode`, `ringNode`) with added filter references. |
-| **What Was Modified After Generation** | No further modifications — the changes were applied directly as requested and verified with `node -c sketch.js`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **What Was Modified After Generation** | No further modifications — the changes were applied directly as requested and verified with `node -c sketch.js`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ---
 
@@ -814,6 +814,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > The dark text on a warm cream pill now reads clearly against both the fog and the game world.
 
 ---
+
 ### A.4 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
 
 **Tool Used:** Codex (GPT-5)
@@ -901,6 +902,7 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > Added a new GenAI documentation entry for this stage 3 debugging session, extended the main Conversation Log with a summary of the exchange, and appended this appendix transcript in the same style used elsewhere in the document.
 
 ---
+
 ### A.5 Conversation: Stage 3 Label Placement and Decoration Debugging (April 2, 2026)
 
 **Tool Used:** Codex (GPT-5)
@@ -1025,5 +1027,87 @@ _[Add further design decisions as the game develops — e.g., mechanic choices, 
 > - Verified with `node -c sketch.js` — no syntax errors
 >
 > Also added GenAI documentation entry 3.14, extended the Conversation Log, and appended this appendix transcript.
+
+---
+
+### A.7 Conversation: ChatGPT Support for Mechanics, Assets, and Debugging (March 28-31, 2026)
+
+**Tool Used:** ChatGPT (GPT-5.3)
+
+---
+
+**User (Kevin):**
+
+> How can I redesign calm zones so they are not passive areas but something the player actively controls?
+
+**ChatGPT:**
+
+> Suggested converting the calm-zone mechanic into a player-triggered ability system instead of an automatic area effect. Recommended using a key press to activate recovery, limiting uses through charges, adding a cooldown so the action must be timed carefully, and showing the remaining charges in the HUD so players understand the mechanic clearly.
+
+---
+
+**User (Kevin):**
+
+> Where can I find free game assets for cars, houses, and environment visuals?
+
+**ChatGPT:**
+
+> Recommended sources such as itch.io and OpenGameArt for free or reusable game assets. Also suggested choosing assets with a consistent pixel-art style, organizing them clearly in the project folders, and renaming files consistently so they are easier to preload and manage in the codebase.
+
+---
+
+**User (Kevin):**
+
+> I changed the size of some objects, but nothing appears different in the game. What could be the problem?
+
+**ChatGPT:**
+
+> Explained that the game may be using separate values for collision size and drawing size. Noted that changing only `w` and `h` for interaction or blocking would not necessarily change the visible image if the rendered `drawW` and `drawH` values stayed the same. Recommended checking which values are used in the `image()` calls and confirming that the correct object-mapping condition is being hit during rendering.
+
+---
+
+**User (Kevin):**
+
+> I added new assets for the environment and furniture, but the game started failing to load afterward. I wanted to know whether the issue was caused by incorrect file names, file types, or something in preload().
+
+**ChatGPT:**
+
+> Suggested that the failure was likely caused by mismatched file names, incorrect file extensions such as `.png` vs `.jpg`, or a missing asset referenced in `preload()`. Recommended verifying that every referenced file exists in the expected folder, checking capitalization and extension consistency, and confirming that the paths used in `loadImage()` exactly match the project structure.
+
+---
+
+### A.8 Conversation: ChatGPT Support for Control Changes and Camera Presentation (April 2026)
+
+**Tool Used:** ChatGPT
+
+---
+
+**User (Catarina):**
+
+> Remove the key for “L = Low Sensory Mode” and also remove it from the How to Play page.
+
+**ChatGPT:**
+
+> Identified all references to the L key in both the input handling logic and UI text. Removed the low sensory mode toggle from the `keyPressed()` function and updated the How to Play instructions to ensure consistency with the revised control scheme.
+
+---
+
+**User (Catarina):**
+
+> Revise the visual presentation so it is less likely to be mistaken for a low-vision game. Instead, make the camera track and zoom in on the character.
+
+**ChatGPT:**
+
+> Suggested replacing the dark overlay approach with a camera system that follows the player position. Introduced a zoom-based camera transformation using `translate()` and `scale()` so that the player remains centered while the environment moves relative to the camera. This maintains visibility while still creating a focused experience.
+
+---
+
+**User (Catarina):**
+
+> I want the distortion effect to feel stronger when overload is around 60%.
+
+**ChatGPT:**
+
+> Suggested scaling the distortion intensity based on overload using a mapped function such as `map(overload, 60, 100, low, high)` and applying it to camera offsets and visual jitter to create a gradual increase in instability.
 
 ---

@@ -6,12 +6,12 @@ Group 10B — GBDA 302: Global Digital Project 2 (Winter 2026)
 
 ## Group Members
 
-| Name                | WatID         | Student Number |
-| ------------------- | ------------- | -------------- |
-| Jimin Kim           | j243kim       | 21062367       |
-| Catarina Jin        | c59jin        | 21077832       |
-| Kaiyang Sun (Kevin) | ky3sun        | 2102654        |
-| Annora Jo           | a3jo          | 21065832       |
+| Name                | WatID   | Student Number |
+| ------------------- | ------- | -------------- |
+| Jimin Kim           | j243kim | 21062367       |
+| Catarina Jin        | c59jin  | 21077832       |
+| Kaiyang Sun (Kevin) | ky3sun  | 2102654        |
+| Annora Jo           | a3jo    | 21065832       |
 
 ## Description
 
@@ -38,11 +38,15 @@ The design philosophy follows Bogost's concept of procedural rhetoric [5]: the g
 1. Open the game via the GitHub Pages link, or open `index.html` in Google Chrome.
 2. Press **ENTER** to start the game.
 3. Use **WASD or arrow keys** to move the player.
-4. Press **M** to briefly recall the objective when it fades.
-5. Press **J** to activate the Calm Ability (if charges are available).
-6. Press **L** to toggle Low Sensory Mode.
+4. Press **M** to recall the objective when it fades.
+5. Press **K** to activate the Calm Ability (reduces overload and stabilizes distortion).
+6. Press **M** to toggle the minimap.
 7. Press **R** to return to the title screen.
-8. Press **N** to toggle the map.
+
+### Developer Testing Controls
+
+- Press **L** to return to the previous level
+- Press **P** to skip to the next level
 
 ---
 
@@ -63,8 +67,9 @@ During the in-class playtesting session (Week 11), peers played the near-final p
    - Instead of relying on that effect, made the camera track and zoom in on the character.
 
 3. **Stage 3 mechanic and controls — added a new Level 3 mechanic and developer navigation keys**
-   - Added a new mechanic for Level 3 instead of reusing the moving obstacle and overload timer from Level 2.
-   - If a new Level 3 mechanic is added, removed the K key function.
+   - Added a new “Spatial Distortion” mechanic in Level 3, where the environment subtly shifts and becomes unstable as overload increases.
+   - When overload exceeds a threshold, the screen begins to distort and shake to reflect cognitive disorientation.
+   - The Calm Ability (K) was extended to stabilize this distortion, allowing players to temporarily regain control.
    - Added default level navigation buttons for easier testing:
      - L = return to the previous level
      - P = skip to the next level
@@ -87,23 +92,23 @@ All other image assets (furniture, office items, NPC, collectibles, UI elements)
 
 ### In-Code Citations (TBI Research)
 
-[1] CDC. 2024. *Get the Facts About TBI.* Centers for Disease Control and Prevention. Retrieved from https://www.cdc.gov/traumatic-brain-injury/data-research/facts-stats/
+[1] CDC. 2024. _Get the Facts About TBI._ Centers for Disease Control and Prevention. Retrieved from https://www.cdc.gov/traumatic-brain-injury/data-research/facts-stats/
 
-[2] Johansson, B., Berglund, P., and Ronnback, L. 2009. Mental fatigue and impaired information processing after mild and moderate traumatic brain injury. *Brain Injury* 23, 13-14, 1027–1040.
+[2] Johansson, B., Berglund, P., and Ronnback, L. 2009. Mental fatigue and impaired information processing after mild and moderate traumatic brain injury. _Brain Injury_ 23, 13-14, 1027–1040.
 
-[3] Lew, H. L., Poole, J. H., Guillory, S. B., Salerno, R. M., Leskin, G., and Sigford, B. 2006. Persistent problems after traumatic brain injury: The need for long-term follow-up and coordinated care. *Journal of Rehabilitation Research and Development* 43, 2, vii–x.
+[3] Lew, H. L., Poole, J. H., Guillory, S. B., Salerno, R. M., Leskin, G., and Sigford, B. 2006. Persistent problems after traumatic brain injury: The need for long-term follow-up and coordinated care. _Journal of Rehabilitation Research and Development_ 43, 2, vii–x.
 
-[4] Game Accessibility Guidelines. 2012. *A reference for inclusive game design.* Retrieved from http://gameaccessibilityguidelines.com
+[4] Game Accessibility Guidelines. 2012. _A reference for inclusive game design._ Retrieved from http://gameaccessibilityguidelines.com
 
-[5] Bogost, I. 2007. *Persuasive Games: The Expressive Power of Videogames.* MIT Press, Cambridge, MA.
+[5] Bogost, I. 2007. _Persuasive Games: The Expressive Power of Videogames._ MIT Press, Cambridge, MA.
 
 ### Asset Sources
 
-[6] OpenGameArt. n.d. *Red Car Top Down.* Retrieved from https://opengameart.org/content/red-car-top-down
+[6] OpenGameArt. n.d. _Red Car Top Down._ Retrieved from https://opengameart.org/content/red-car-top-down
 
-[7] Azez2. n.d. *A House.* itch.io. Retrieved from https://azez2.itch.io/a-house
+[7] Azez2. n.d. _A House._ itch.io. Retrieved from https://azez2.itch.io/a-house
 
-[8] Gamer247. n.d. *Sky.* itch.io. Retrieved from https://gamer247.itch.io/sky
+[8] Gamer247. n.d. _Sky._ itch.io. Retrieved from https://gamer247.itch.io/sky
 
 [9] Yahoo Images. n.d. “pixel bed top down.” Retrieved April 11, 2026 from https://ca.images.search.yahoo.com/search/images;_ylt=AwrE_AZ39MlpLgIAL07rFAx.;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3BpdnM-?p=pixel+bed+top+down&fr2=piv-web&type=E210CA885G0&fr=mcafee#id=0&iurl=https%3A%2F%2Fcdnb.artstation.com%2Fp%2Fassets%2Fimages%2Fimages%2F035%2F882%2F977%2Flarge%2Fgregory-ligman-bed-00.jpg%3F1616150094&action=click
 

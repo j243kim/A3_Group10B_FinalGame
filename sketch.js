@@ -700,7 +700,7 @@ let distortionTimer = 0;
 // ===================== TEST NAVIGATION =====================
 let testNavMessage = "";
 let testNavTimer = 0;
-let testNavTargetStage = -1; //!
+let testNavTargetStage = -1;
 
 // ===================== EMOTIONAL FRUSTRATION =====================
 const emotionalMessages = [

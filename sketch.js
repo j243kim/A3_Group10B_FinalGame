@@ -693,6 +693,9 @@ let calmAbilityMax = 2;
 let calmAbilityTimer = 0;
 let calmAbilityCooldown = 0;
 
+// ===================== DISTORTION =====================
+let distortionTimer = 0;
+
 // ===================== EMOTIONAL FRUSTRATION =====================
 const emotionalMessages = [
   "Where was I going?",
@@ -2123,15 +2126,37 @@ function drawPlayScreen() {
   // --- UPDATE GAME LOGIC HERE ---
   updateGame();
 
+  // Spatial distortion trigger (Level 3 only)
+  if (currentStage === 2 && overload >= 60 && !lowSensoryMode) {
+    distortionTimer = 999; // 계속 유지
+  } else {
+    distortionTimer = max(0, distortionTimer - 1);
+  }
+
   // --- WORLD / CAMERA ---
   push();
 
   if (overload > 65 && !lowSensoryMode) {
-    let shake = map(overload, 65, 100, 0, 4);
+    let shake = map(overload, 65, 100, 0, 3);
     translate(random(-shake, shake), random(-shake, shake));
   }
 
   applyPlayerCamera();
+
+  // ===== Spatial Distortion Effect =====
+  if (currentStage === 2 && distortionTimer > 0) {
+    let intensity = map(overload, 60, 100, 0, 8);
+
+    let waveX = sin(frameCount * 0.05) * intensity;
+    let waveY = cos(frameCount * 0.04) * intensity;
+
+    translate(waveX, waveY);
+
+    // subtle zoom breathing
+    let zoomPulse = 1 + sin(frameCount * 0.03) * 0.02;
+    scale(zoomPulse);
+  }
+
   drawStage();
 
   pop();
@@ -3973,6 +3998,7 @@ function keyPressed() {
       calmAbilityCharges--;
       calmAbilityTimer = 90;
       calmAbilityCooldown = 120;
+      distortionTimer = 0;
       playTone(330, 0.2, "triangle", 0.05);
     }
     return;

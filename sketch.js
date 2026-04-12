@@ -27,7 +27,6 @@
  *     overload, representing fading spatial/task memory [2].
  *
  * Accessibility:
- *  - Low Sensory Mode (press L) reduces visual effects [4].
  *  - Improved colour contrast and visual hierarchy [4].
  *
  * References (ACM):
@@ -122,7 +121,7 @@ let ambientOsc = null;
 let ambientGain = null;
 let pressureOsc = null;
 let pressureGain = null;
-let ringNode = null;    // white noise buffer source (replaces 4200 Hz sine)
+let ringNode = null; // white noise buffer source (replaces 4200 Hz sine)
 let ringFilter = null;
 let ringGain = null;
 let zoneAudioNodes = [];
@@ -130,7 +129,7 @@ let zoneAudioNodes = [];
 // Title screen ambient soundscape nodes
 let titleDroneOsc = null;
 let titleDroneGain = null;
-let titleTinnitusNode = null;  // white noise buffer source (replaces sine oscillator)
+let titleTinnitusNode = null; // white noise buffer source (replaces sine oscillator)
 let titleTinnitusFilter = null;
 let titleTinnitusGain = null;
 let titlePulseOsc = null;
@@ -723,12 +722,6 @@ let endSoundPlayed = false;
 let overloadWarnCooldown = 0;
 let calmSoundCooldown = 0;
 
-// ===================== PLAYER VISION =====================
-const visionRadiusBase = 75;
-const visionRadiusMin = 30;
-const visionSoftness = 60;
-let visionGraphics = null;
-
 // ===================== MINI MAP =====================
 const mapW = 160;
 const mapH = 100;
@@ -736,6 +729,10 @@ const mapPad = 10;
 const mapBorder = 6;
 let miniMapExpanded = false;
 let mapBounds = { x: 0, y: 0, w: mapW, h: mapH };
+
+// ===================== CAMERA =====================
+const CAMERA_ZOOM = 2.6;
+
 // ===================== HELPERS =====================
 function starsCollected() {
   if (!currentStageData) return 0;
@@ -1409,7 +1406,6 @@ function setup() {
   createStages();
   initAudio();
   startTitleAmbient("title");
-  initVisionGraphics();
 }
 
 // ===================== DRAW LOOP =====================
@@ -2051,8 +2047,7 @@ function drawHowToPlayOverlay() {
   drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
   drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
   drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
-  drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Toggle Low Sensory Mode");
-  drawHowToPlayRow(panelX + 54, panelY + 296, "R", "Return to title");
+  drawHowToPlayRow(panelX + 54, panelY + 252, "R", "Return to title");
 
   fill(255, 210, 75);
   textSize(12);
@@ -2101,56 +2096,53 @@ function drawHowToPlayRow(x, y, keyLabel, label) {
   text(label, x + 126, y + 1);
 }
 
+function applyPlayerCamera() {
+  let zoom = CAMERA_ZOOM;
+
+  // Center the player on screen
+  let tx = width / 2 - playerX * zoom;
+  let ty = height / 2 - playerY * zoom;
+
+  // Clamp camera so we do not show empty space outside the level
+  let minTx = width - CANVAS_W * zoom;
+  let maxTx = 0;
+  let minTy = height - CANVAS_H * zoom;
+  let maxTy = 0;
+
+  tx = constrain(tx, minTx, maxTx);
+  ty = constrain(ty, minTy, maxTy);
+
+  translate(tx, ty);
+  scale(zoom);
+}
+
 // ===================== PLAY SCREEN =====================
 function drawPlayScreen() {
-  if (floorImg) image(floorImg, 0, 0, CANVAS_W, CANVAS_H);
-
-  if (bedImg) {
-    let bedX = 200;
-    let bedY = 320;
-    let bedW = 120;
-    let bedH = 60;
-    image(bedImg, bedX, bedY, bedW, bedH);
-  }
-
   background(40, 40, 80);
 
   // --- UPDATE GAME LOGIC HERE ---
   updateGame();
 
-  // Background / environment images
-
+  // --- WORLD / CAMERA ---
   push();
+
   if (overload > 65 && !lowSensoryMode) {
     let shake = map(overload, 65, 100, 0, 4);
     translate(random(-shake, shake), random(-shake, shake));
   }
+
+  applyPlayerCamera();
   drawStage();
+
   pop();
 
-  if (overload > 45 && !lowSensoryMode) {
-    drawVignette();
-  }
-
-  drawFog();
+  // Keep emotional message and HUD in screen space
   drawEmotionMessage();
-
   drawHUD();
   drawStageIntroBanner();
 
   drawMinimap();
   drawExpandedMap();
-
-  if (lowSensoryMode) {
-    fill(120, 220, 180, 180);
-    noStroke();
-    rectMode(CORNER);
-    rect(CANVAS_W - 135, PLAY_TOP + 4, 127, 20, 4);
-    fill(30, 50, 40);
-    textSize(10);
-    textAlign(CENTER, CENTER);
-    text("LOW SENSORY MODE", CANVAS_W - 71, PLAY_TOP + 14);
-  }
 }
 
 // ===================== STAGE TRANSITION SCREEN =====================
@@ -3709,33 +3701,6 @@ function drawCheckpointMarker() {
   text("CP", cp.x, cp.y);
 }
 
-function drawVignette() {
-  let intensity = map(overload, 45, 100, 0, 200);
-  noStroke();
-  let depth = 70;
-  for (let i = 0; i < depth; i++) {
-    let a = map(i, 0, depth, intensity, 0);
-    fill(15, 15, 30, a);
-    rectMode(CORNER);
-    rect(0, PLAY_TOP + i, CANVAS_W, 1);
-  }
-  for (let i = 0; i < depth; i++) {
-    let a = map(i, 0, depth, intensity, 0);
-    fill(15, 15, 30, a);
-    rect(0, PLAY_BOTTOM - i, CANVAS_W, 1);
-  }
-  for (let i = 0; i < depth; i++) {
-    let a = map(i, 0, depth, intensity, 0);
-    fill(15, 15, 30, a);
-    rect(i, PLAY_TOP, 1, PLAY_BOTTOM - PLAY_TOP);
-  }
-  for (let i = 0; i < depth; i++) {
-    let a = map(i, 0, depth, intensity, 0);
-    fill(15, 15, 30, a);
-    rect(CANVAS_W - i, PLAY_TOP, 1, PLAY_BOTTOM - PLAY_TOP);
-  }
-}
-
 function drawEmotionMessage() {
   if (emotionTimer <= 0 || emotionMsg === "") return;
   let alpha = 180;
@@ -3804,7 +3769,7 @@ function drawStageIntroBanner() {
 
 // ===================== HUD =====================
 function drawHUD() {
-  drawPanel(0, 0, CANVAS_W, HUD_TOP, 0);
+  drawPanel(0, 0, CANVAS_W, 80, 0);
 
   let s = currentStageData;
   textAlign(LEFT, CENTER);
@@ -3861,7 +3826,7 @@ function drawHUD() {
 }
 function drawOverloadBar() {
   let barX = CANVAS_W - 200;
-  let barY = 10;
+  let barY = 30;
   let barW = 160;
   let barH = 14;
 
@@ -3971,13 +3936,6 @@ function keyPressed() {
   if ((key === "r" || key === "R") && gameState !== STATE_START) {
     returnToTitleScreen();
     return;
-  }
-
-  // Low sensory mode (L)
-  if (key === "l" || key === "L") {
-    lowSensoryMode = !lowSensoryMode;
-
-    if (gameState === STATE_START) return;
   }
 
   // Block input when how-to-play is open
@@ -4092,44 +4050,12 @@ function getCurrentVisionRadius() {
   return map(overload, 0, overloadMax, visionRadiusBase, visionRadiusMin);
 }
 
-function drawFog() {
-  if (!visionGraphics) return;
-
-  let g = visionGraphics;
-  let r = getCurrentVisionRadius();
-  let softness = visionSoftness;
-  let fogAlpha = lowSensoryMode ? 180 : 235;
-
-  g.clear();
-
-  g.background(10, 8, 20, fogAlpha);
-
-  g.blendMode(REMOVE);
-
-  let steps = 24;
-  for (let i = 0; i < steps; i++) {
-    let t = i / (steps - 1);
-    let ringR = r + softness - t * softness;
-    let alphaRemove = map(t, 0, 1, 20, fogAlpha);
-    g.fill(0, 0, 0, alphaRemove);
-    g.ellipse(playerX, playerY, ringR * 2, ringR * 2);
-  }
-
-  g.fill(0, 0, 0, 255);
-  g.ellipse(playerX, playerY, r * 2, r * 2);
-
-  g.blendMode(BLEND);
-
-  blendMode(BLEND);
-  image(g, 0, 0);
-}
-
 // ===================== MINI MAP =====================
 function drawMinimap() {
   if (gameState !== STATE_PLAY) return;
 
   let mapX = CANVAS_W - 200;
-  let mapY = HUD_TOP + mapPad;
+  let mapY = HUD_TOP + mapPad + 15;
 
   mapBounds = { x: mapX, y: mapY, w: mapW, h: mapH };
 

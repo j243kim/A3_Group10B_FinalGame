@@ -84,6 +84,7 @@ const COL_TRANSITION_LINE = [120, 130, 160];
 const STATE_START = "start";
 const STATE_PLAY = "play";
 const STATE_STAGE_TRANSITION = "stage_transition";
+const STATE_TEST_NAV = "test_nav";
 const STATE_WIN = "win";
 const STATE_LOSE = "lose";
 let gameState = STATE_START;
@@ -695,6 +696,11 @@ let calmAbilityCooldown = 0;
 
 // ===================== DISTORTION =====================
 let distortionTimer = 0;
+
+// ===================== TEST NAVIGATION =====================
+let testNavMessage = "";
+let testNavTimer = 0;
+let testNavTargetStage = -1;
 
 // ===================== EMOTIONAL FRUSTRATION =====================
 const emotionalMessages = [
@@ -1502,6 +1508,9 @@ function draw() {
       break;
     case STATE_STAGE_TRANSITION:
       drawStageTransitionScreen();
+      break;
+    case STATE_TEST_NAV:
+      drawTestNavigationScreen();
       break;
     case STATE_WIN:
       drawWinScreen();
@@ -2318,6 +2327,61 @@ function drawTransitionInfoLine(cx, y, nextStageName, carryOverload) {
   textAlign(CENTER, CENTER);
 }
 
+function drawTestNavigationScreen() {
+  background(COL_BG[0], COL_BG[1], COL_BG[2]);
+
+  let cx = CANVAS_W / 2;
+  let cy = CANVAS_H / 2;
+  let panelW = 520;
+  let panelH = 220;
+
+  noStroke();
+  if (!lowSensoryMode) {
+    fill(8, 10, 26, 42);
+    rectMode(CENTER);
+    rect(cx, cy + 8, panelW + 16, panelH + 16, 24);
+  }
+
+  fill(
+    COL_TRANSITION_CARD[0],
+    COL_TRANSITION_CARD[1],
+    COL_TRANSITION_CARD[2],
+    236,
+  );
+  rectMode(CENTER);
+  rect(cx, cy, panelW, panelH, 20);
+
+  fill(
+    COL_TRANSITION_TITLE[0],
+    COL_TRANSITION_TITLE[1],
+    COL_TRANSITION_TITLE[2],
+  );
+  textStyle(BOLD);
+  textSize(28);
+  text(testNavMessage, cx, cy - 18);
+
+  fill(COL_TRANSITION_SUB[0], COL_TRANSITION_SUB[1], COL_TRANSITION_SUB[2]);
+  textStyle(NORMAL);
+  textSize(14);
+  text("Loading the selected level...", cx, cy + 34);
+
+  rectMode(CORNER);
+
+  if (testNavTimer > 0) {
+    testNavTimer--;
+  }
+
+  if (testNavTimer <= 0 && testNavTargetStage >= 0) {
+    loadStage(testNavTargetStage, 0);
+    endSoundPlayed = false;
+    gameState = STATE_PLAY;
+    startAmbient();
+    initZoneSounds();
+    testNavMessage = "";
+    testNavTargetStage = -1;
+  }
+}
+
 // ===================== WIN SCREEN =====================
 function drawWinScreen() {
   background(COL_BG[0], COL_BG[1], COL_BG[2]);
@@ -2784,6 +2848,26 @@ function advanceStage() {
   setTitleAmbientMix("play", 0.8);
   startAmbient();
   initZoneSounds();
+}
+
+function goToPreviousStageForTest() {
+  if (currentStage <= 0) return;
+
+  stopZoneSounds();
+  testNavTargetStage = currentStage - 1;
+  testNavMessage = "Returning to the previous level...";
+  testNavTimer = 120; // about 2 seconds at 60 fps
+  gameState = STATE_TEST_NAV;
+}
+
+function goToNextStageForTest() {
+  if (currentStage >= stages.length - 1) return;
+
+  stopZoneSounds();
+  testNavTargetStage = currentStage + 1;
+  testNavMessage = "Skipping to the next level...";
+  testNavTimer = 120; // about 2 seconds at 60 fps
+  gameState = STATE_TEST_NAV;
 }
 
 // ===================== PARTICLES =====================
@@ -3938,6 +4022,16 @@ function returnToTitleScreen() {
 // ===================== INPUT =====================
 function keyPressed() {
   initAudio();
+
+  if (gameState === STATE_PLAY && (key === "l" || key === "L")) {
+    goToPreviousStageForTest();
+    return;
+  }
+
+  if (gameState === STATE_PLAY && (key === "p" || key === "P")) {
+    goToNextStageForTest();
+    return;
+  }
 
   // Map toggle (M)
   if (gameState === STATE_PLAY && (key === "m" || key === "M")) {

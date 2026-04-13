@@ -2059,23 +2059,25 @@ function drawHowToPlayOverlay() {
   drawHowToPlayRow(panelX + 54, panelY + 120, "WASD", "Move");
   drawHowToPlayRow(panelX + 54, panelY + 164, "M", "Open / close map");
   drawHowToPlayRow(panelX + 54, panelY + 208, "K", "Use calm ability");
-  drawHowToPlayRow(panelX + 54, panelY + 252, "R", "Return to title");
+  drawHowToPlayRow(panelX + 54, panelY + 252, "L", "Go to previous level");
+  drawHowToPlayRow(panelX + 54, panelY + 296, "P", "Skip to next level");
+  drawHowToPlayRow(panelX + 54, panelY + 340, "R", "Return to title");
 
   fill(255, 210, 75);
   textSize(12);
   textStyle(BOLD);
   textAlign(LEFT, CENTER);
-  text("Gameplay Guidance", panelX + 62, panelY + 348);
+  text("Gameplay Guidance", panelX + 62, panelY + 392);
 
   fill(214, 218, 230);
   textStyle(NORMAL);
   textSize(12);
-  text("Green zones help reduce overload.", panelX + 62, panelY + 374);
-  text("Red noise zones increase overload.", panelX + 62, panelY + 398);
+  text("Green zones help reduce overload.", panelX + 62, panelY + 418);
+  text("Red noise zones increase overload.", panelX + 62, panelY + 442);
   text(
     "Use calm ability and safe routing to finish each stage.",
     panelX + 62,
-    panelY + 422,
+    panelY + 466,
   );
 
   textAlign(LEFT, TOP);
